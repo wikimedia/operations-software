@@ -1,0 +1,9 @@
+geturls is a script to call many URLs quickly and discard the results.  It is
+useful when populating a read-through cache.  It has some performance
+statistics, so can be used for basic load testing.
+
+The one required argument to geturls is a text file containing a list of URLs,
+one per line.  Each URL is called once, though the order may be slightly
+shuffled due to the multithreaded nature.  (Restricting the number of threads
+to 1 will ensure the URLs are called in order.)  Run 'geturls --help' for a
+list of all options.

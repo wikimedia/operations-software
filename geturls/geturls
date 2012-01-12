@@ -1,0 +1,278 @@
+#!/usr/bin/python
+
+##
+##  multithreaded python script to call all the URLs in a list
+##  with configurable delay between calls and number of threads
+##  must be passed in the name of a file containing a list of URLs
+##
+##
+##  the purpose of this script is to consume a listing of all the
+##  thumbnails on ms5 and call out to swift, populating it via
+##  the 404 handler running there.
+##
+##  Author: Ben Hartshorne
+##  Copyright (c) 2011 Wikimedia Foundation
+##  License: Released under the GPL v2 or later.
+##  For a full description of the license, please visit http://www.gnu.org/licenses/gpl-2.0.html
+##
+
+from urllib import urlopen
+from optparse import OptionParser
+import time
+import datetime
+
+import threading
+import os
+
+class UrlCaller( threading.Thread ):
+    '''a threaded object that will call URLs from the urllist'''
+
+    # the filehandle of the open url list file
+    urlfh = None
+    # a global urllist shared between all threads
+    urllist=[]
+    # the index of the next url to be read - lock this with self.poslock b/f editing
+    position=0
+    # the number of URLs we've tried so far
+    tried=0
+    # the number of URLs that have failed so far - lock this with failedlock b/f editing
+    failed=0
+    # the time we started working
+    starttime = None
+    num_lines = 0
+    total_lines = 0
+
+    # passed in - cmd line options though all we really need is delay
+    def __init__(self, options):
+        threading.Thread.__init__(self)
+        self.delay = options.delay
+        self.num_lines = UrlCaller.num_lines
+        self.poslock = threading.Lock()
+        self.failedlock = threading.Lock()
+        self.tryinglock = threading.Lock()
+
+        self.print_status_num = int(min(UrlCaller.total_lines / 10, 100000))
+
+
+    # thread entry.
+    # go through urllist, exit when done
+    def run(self):
+        url = self.get_url()
+        while url:
+            # skip comments and empty lines
+            url = url.strip()
+            if( len(url) <= 1 or url.startswith('#') ):
+                url = self.get_url()
+                continue
+            self.call_url(url)
+            url = self.get_url()
+            if self.delay:
+                time.sleep(self.delay)
+
+
+    # set the urllist globally
+    @classmethod
+    def set_urllist(cls, urls):
+        UrlCaller.urllist = urls
+        UrlCaller.num_lines = len(urls)
+
+    # set the urllist filehandle globally
+    # takes an open filehandle and a chunksize (0 = infinite)
+    # FIXME set_urllist needs to be called with a chunk before calling this but it shouldn't
+    @classmethod
+    def set_urlfh(cls, fh, chunk, position):
+        UrlCaller.urlfh = fh
+        UrlCaller.chunk = chunk
+        filesize = os.fstat(fh.fileno()).st_size #size in bytes
+        if position:
+            # if we were suposed to start part way through the file, only count the remaining % of the file
+            filesize = int((float(filesize) * position / 100))
+        if (filesize > chunk and chunk != 0):
+            UrlCaller.total_lines = len(UrlCaller.urllist) * (float(filesize) / chunk)
+        else:
+            UrlCaller.total_lines = len(UrlCaller.urllist)
+
+    # set position in the urllist
+    # used when you don't want to start at the beginning
+    @classmethod
+    def set_position(cls, pos):
+        UrlCaller.position = pos
+
+    # set the starttime globally
+    @classmethod
+    def set_starttime(cls, start):
+        UrlCaller.starttime = start
+
+    # get the next URL to load
+    # returns a url or None if we're finished
+    # prints status every so often
+    def get_url(self):
+        self.poslock.acquire()
+        pos = UrlCaller.position
+        try:
+            url = UrlCaller.urllist[pos]
+            UrlCaller.position += 1
+        except IndexError:
+            # we're done with our chunk - read in some more!
+            UrlCaller.urllist = UrlCaller.urlfh.readlines(UrlCaller.chunk)
+            if (len(UrlCaller.urllist) == 0):
+                # if we're really done
+                url = None
+            else:
+                # return the first URL and keep going
+                url = UrlCaller.urllist[0]
+                UrlCaller.position = 1
+        self.poslock.release()
+
+        #only print status every print_status_num requests, and skip 100%
+        tried = UrlCaller.tried
+        if( tried > 0 and url and not tried % self.print_status_num ):
+            # lock both counters so we get a consistent view
+            # note that pos here is likely different from pos right above
+            # so it may not be an even number
+            self.poslock.acquire()
+            self.failedlock.acquire()
+            self.tryinglock.acquire()
+            pos = UrlCaller.position
+            tried = UrlCaller.tried
+            fail = UrlCaller.failed
+            self.tryinglock.release()
+            self.failedlock.release()
+            self.poslock.release()
+            percent_done = 100 * tried / self.total_lines
+            curtime = datetime.datetime.now()
+            exectime = curtime - self.starttime
+            print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %\
+                    (int(percent_done) + 1, tried, fail, exectime))
+        return url
+
+    @classmethod
+    def print_status(cls):
+        pos = UrlCaller.position
+        tried = UrlCaller.tried
+        fail = UrlCaller.failed
+        percent_done = 100 * tried / UrlCaller.total_lines
+        curtime = datetime.datetime.now()
+        exectime = curtime - UrlCaller.starttime
+        print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %\
+                (int(percent_done) + 1, tried, fail, exectime))
+
+
+    # call out to the net and retrieve the URL
+    # record failures, throw away success
+    def call_url(self, url=None):
+        self.tryinglock.acquire()
+        UrlCaller.tried += 1
+        self.tryinglock.release()
+        try:
+            req = urlopen(url)
+        except IOError as e:
+            # urlopen throws an exception on HTTP 401 but not on 404.
+            print("  error %s: %s" % (e[1], url))
+            self.failedlock.acquire()
+            UrlCaller.failed += 1
+            self.failedlock.release()
+            return
+        # store the HTTP return code from the query
+        resp = req.getcode()
+        if resp != 200:
+            print("  error %s: %s" % (resp, url))
+            self.failedlock.acquire()
+            UrlCaller.failed += 1
+            self.failedlock.release()
+
+class printStatus( threading.Thread ):
+    '''a class that prints current status when the user hits return'''
+#    def __init__(self):
+#        self.daemon = True
+    def run(self):
+        while(True):
+            raw_input()
+            UrlCaller.print_status()
+
+def main():
+    # set up command line arguments
+    usage="""usage: %prog [options] urllist
+
+    Calls all the URLs in urllist, throwing away the data.  """
+    parser = OptionParser(usage)
+    parser.add_option("-d", dest="delay", default=0, help="delay in milliseconds between calling URLs. default %default")
+    parser.add_option("-t", dest="num_threads", default=1, help="number of threads.  default %default")
+    parser.add_option("-r", dest="resume", default=0, help="start <resume>% of the way through the urllist. range 1-100")
+    parser.add_option("-c", dest="chunk", default=100, help="Number of MB to read from urllist at a time.  0 is all.  default %default")
+    (options, args) = parser.parse_args()
+
+    #convert millisec to seconds for sleep()
+    options.delay = float(options.delay) / 1000
+    # convert num_threads, chunk, and position to int so we can do MATHS
+    num_threads = int(options.num_threads)
+    chunk = int(float(options.chunk) * 1048576) #convert from bytes to MB
+    position = float(options.resume)
+
+
+    # make sure we've got a urllist passed in
+    if not args:
+        print "Error: urllist required"
+        parser.print_help()
+        exit(1)
+
+    # record our starting time so we can show stats at the end
+    starttime = datetime.datetime.now()
+
+    # open the file, seek to the middle if necessary, then set up the UrlCaller class
+    urlfh = open(args[0])
+    # if -r was specified, start % way through the list
+    if position:
+        filesize = os.fstat(urlfh.fileno()).st_size
+        urlfh.seek(int(float(filesize) * position / 100))
+        # throw out one line because we're probably in the middle of it
+        urlfh.readline()
+    # set up the UrlCaller class
+    urls = urlfh.readlines(chunk)
+    UrlCaller.set_urllist(urls)
+    UrlCaller.set_urlfh(urlfh, chunk, position)
+    UrlCaller.set_starttime(starttime)
+
+    # print header
+    print ""
+    print "   About to start calling all these URLs."
+    print "   I'll print status every 10% or 100k lines"
+    print "   Press <return> at any time for current status."
+    print ""
+    print("Ok, starting %s%% of the way through the file." % int(position))
+
+    # launch threads to go through the urllist
+    threads = {}
+    while( num_threads > 0 ):
+        uc = UrlCaller(options)
+        uc.start()
+        threads[num_threads] = uc
+        num_threads -= 1
+
+    # start up the status printing thread
+    status_printer = printStatus()
+    status_printer.setDaemon(True)
+    status_printer.start()
+
+    # wait until we're done before joining the threads
+    # so that we can catch ctrl-c
+    try:
+        while len(UrlCaller.urllist) != 0:
+            time.sleep(0.5) #1/2 second is reasonably responsive
+    except KeyboardInterrupt:
+        #set postition to the end so that all the threads think they're done
+        urlfh.seek(0, os.SEEK_END)
+        UrlCaller.position = len(urls)
+
+    # pick up all the threads
+    for num in threads.iterkeys():
+        threads[num].join()
+
+    # calculate final stats and print summary
+    endtime = datetime.datetime.now()
+    exectime = endtime - starttime
+    print("Final summary: total: %s, failed: %s, execution time: %s" % (UrlCaller.tried, UrlCaller.failed, exectime))
+
+if __name__ == '__main__':
+    main()
+
