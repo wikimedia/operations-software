@@ -352,11 +352,10 @@ def main():
 
     # launch threads to go through the urllist
     threads = {}
-    while( num_threads > 0 ):
+    for i in range(num_threads):
         uc = UrlCaller(options)
         uc.start()
-        threads[num_threads] = uc
-        num_threads -= 1
+        threads[i] = uc
 
     # start up the status printing and timing thread
     timer = TimingCollector()
