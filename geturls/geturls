@@ -181,14 +181,123 @@ class UrlCaller( threading.Thread ):
             UrlCaller.failed += 1
             self.failedlock.release()
 
-class printStatus( threading.Thread ):
+class PrintStatus( threading.Thread ):
     '''a class that prints current status when the user hits return'''
-#    def __init__(self):
-#        self.daemon = True
+    timer_thread = None
+    def __init__(self, timer_thread):
+        threading.Thread.__init__(self)
+        self.timer_thread = timer_thread
+
     def run(self):
         while(True):
             raw_input()
             UrlCaller.print_status()
+            self.timer_thread.print_short_stats()
+
+class TimingCollector( threading.Thread ):
+    '''a class to collect per-second throughput data.
+       maintains how many qps have gone by the previous second, the previous 5
+       seconds and 30 seconds, and a hash of how many seconds have a specific
+       qps throughput (i.e. there were 26 seconds during which throughput was
+       110qps)'''
+    cur_sec = 0
+    last_five_sec = [0,0,0,0,0]
+    last_thirty_sec = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    throughput_frequency = {}
+    last_pos = 0
+    def __init__(self):
+        threading.Thread.__init__(self)
+        cur_sec = 0
+        last_five_sec = [0,0,0,0,0]
+        last_thirty_sec = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        throughput_frequency = {}
+        last_pos = 0
+
+    def run(self):
+        #self.setDaemon(True)
+        while True:
+            # populate cur_sec, last_*_sec
+            self.collect_positions()
+            # wait a second, then do it all over again.
+            time.sleep(1)
+
+    def collect_positions(self):
+        cur_time = datetime.datetime.now().second
+        cur_pos = UrlCaller.tried
+        # cur_sec hold how many queries we hit this most recent second
+        self.cur_sec = cur_pos - self.last_pos
+        self.last_five_sec[cur_time % 5] = self.cur_sec
+        self.last_thirty_sec[cur_time % 30] = self.cur_sec
+        # add cur_sec to overall stats
+        try:
+            self.throughput_frequency[self.cur_sec] += 1
+        except KeyError:
+            self.throughput_frequency[self.cur_sec] = 1
+        # get ready for the next run
+        self.last_pos = cur_pos
+
+    def get_curent_throughput(self):
+        pass
+    def get_5s_avg_throughput(self):
+        pass
+    def get_30s_avg_throughput(self):
+        pass
+    def get_oveall_stats(self):
+        pass
+    def print_short_stats(self):
+        '''prints a one-liner with curren, 5s, and 30s throughput'''
+        five_avg = sum(int(x) for x in self.last_five_sec) / 5
+        thirty_avg = sum(int(x) for x in self.last_thirty_sec) / 30
+        print ("Current throughput: %s queries per second.  Last 5s avg: %sqps.  Last 30s avg: %sqps" % \
+                (self.cur_sec, five_avg, thirty_avg))
+    def print_full_stats(self):
+        tp_hash = self.throughput_frequency
+        tp_keys = tp_hash.keys()
+        tp_keys.sort()
+        new_perf = {}
+        new_perf_keys = []
+        # if fewer than 10 items, just print.
+        #if len(tp_keys) < 10:
+        #    new_perf = self.throughput_frequency
+        # now for some fancy footwork.  To decrease the number of lines printed, combine nearby stats.
+        # for each key, calculate 10%.  Sum all keys that show up between key and key+10%, then report as key + 5% +-5%
+        tp_keys.reverse() #work from small numbers up
+        real_max = tp_keys[0]
+        while len(tp_keys) > 0:
+            key = tp_keys.pop()
+            if(key == 0):
+                next
+            perfsum = 0
+            max_key = key + int(float(key) * 0.1)
+            avg_key = key + int(float(key) * 0.05)
+            avg_key = (real_max if avg_key > real_max else avg_key) #ceiling of real_max
+            while key < max_key:
+                # add the key's value to the sum if it exists
+                perfsum += tp_hash[key]
+                # remove it from the list
+                try:
+                    key = tp_keys.pop()
+                except IndexError:
+                    # tp_keys is empty
+                    key = max_key
+                    tp_keys = None
+            new_perf[avg_key] = perfsum
+            # push the last one back onto the stack for the next round
+            try:
+                tp_keys.append(key)
+            except AttributeError:
+                # tp_keys was unset above
+                # reset to an empty list so the next while loop will fail
+                tp_keys = []
+        new_perf_keys = new_perf.keys()
+        new_perf_keys.sort()
+
+        print "Throughput report:"
+        print "   qps: number of seconds during which performance was roughly (+-5%) that qps"
+        for key in new_perf_keys:
+            print(" %5s: %s" % (key, new_perf[key]))
+
+
 
 def main():
     # set up command line arguments
@@ -249,8 +358,11 @@ def main():
         threads[num_threads] = uc
         num_threads -= 1
 
-    # start up the status printing thread
-    status_printer = printStatus()
+    # start up the status printing and timing thread
+    timer = TimingCollector()
+    timer.setDaemon(True)
+    timer.start()
+    status_printer = PrintStatus(timer)
     status_printer.setDaemon(True)
     status_printer.start()
 
@@ -264,6 +376,7 @@ def main():
         urlfh.seek(0, os.SEEK_END)
         UrlCaller.position = len(urls)
 
+
     # pick up all the threads
     for num in threads.iterkeys():
         threads[num].join()
@@ -272,6 +385,7 @@ def main():
     endtime = datetime.datetime.now()
     exectime = endtime - starttime
     print("Final summary: total: %s, failed: %s, execution time: %s" % (UrlCaller.tried, UrlCaller.failed, exectime))
+    timer.print_full_stats()
 
 if __name__ == '__main__':
     main()
