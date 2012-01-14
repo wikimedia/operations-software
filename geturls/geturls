@@ -41,6 +41,10 @@ class UrlCaller( threading.Thread ):
     starttime = None
     num_lines = 0
     total_lines = 0
+    # timing storage
+    queryduration_exception = []
+    queryduration_success = []
+    queryduration_failed = []
 
     # passed in - cmd line options though all we really need is delay
     def __init__(self, options):
@@ -133,17 +137,15 @@ class UrlCaller( threading.Thread ):
             self.poslock.acquire()
             self.failedlock.acquire()
             self.tryinglock.acquire()
-            pos = UrlCaller.position
-            tried = UrlCaller.tried
-            fail = UrlCaller.failed
+            self.print_status()
             self.tryinglock.release()
             self.failedlock.release()
             self.poslock.release()
             percent_done = 100 * tried / self.total_lines
             curtime = datetime.datetime.now()
             exectime = curtime - self.starttime
-            print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %\
-                    (int(percent_done) + 1, tried, fail, exectime))
+            #print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %\
+            #        (int(percent_done) + 1, tried, fail, exectime))
         return url
 
     @classmethod
@@ -157,6 +159,99 @@ class UrlCaller( threading.Thread ):
         print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %\
                 (int(percent_done) + 1, tried, fail, exectime))
 
+    @classmethod
+    def crunch_querydur_stats(cls):
+        '''calculate statistics around query duration'''
+        exceptions = cls.queryduration_exception[:]
+        failed = cls.queryduration_failed[:]
+        success = cls.queryduration_success[:]
+        exceptions.sort()
+        exceptions.reverse()
+        failed.sort()
+        failed.reverse()
+        success.sort()
+        success.reverse()
+        min_dur = 0
+        max_dur = 0
+        for l in [exceptions, failed, success]:
+            try:
+                min_dur = min(l)
+                max_dur = max(l)
+            except ValueError:
+                pass
+        #min_dur = min(min(exceptions),min(failed),min(success))
+        #max_dur = max(max(exceptions),max(failed),max(success))
+
+        # count durations - bucket them by dur length
+        dur_buckets = {}
+        num_durs = {}
+        for l in ['exceptions', 'failed', 'success']:
+            queries = locals()[l]
+            dur_buckets[l] = {}
+            cur_dur = 0
+            min_dur_range = 0
+            max_dur_range = 0
+            # iterate from 0 to the longest duration query
+            while len(queries) > 0 and cur_dur <= max(queries):
+                min_dur_range = cur_dur
+                max_dur_range = int(cur_dur * 1.25)
+                key = "%s-%s" % (min_dur_range, max_dur_range)
+                dur_buckets[l][key] = 0
+                # iterate from the current index to 150% of that duration
+                while cur_dur <= max_dur_range:
+                    # if queries is empty, we're done
+                    if len(queries) == 0:
+                        cur_dur += 1
+                        continue
+                    # if the currently lowest duration is lower than our max range, add it to the bucket
+                    if queries[-1] <= max_dur_range:
+                        queries.pop()
+                        dur_buckets[l][key] += 1
+                    else:
+                        # we've collected all the durations that belong in this bucket
+                        # bump the counter to the next bucket
+                        cur_dur = max_dur_range + 1
+
+            num_durs[l] = sum(int(x) for x in dur_buckets[l].values())
+            # if a list is empty, set the num to 1 to protect against div-by-zero later
+            num_durs[l] = (1 if num_durs[l] == 0 else num_durs[l])
+        # clear out empty hash buckets
+        for key in dur_buckets['success'].keys():
+            # make sure the buckets exist in the other lists
+            for l in ['failed', 'exceptions']:
+                try:
+                    dur_buckets[l][key] += 0
+                except KeyError:
+                    dur_buckets[l][key] = 0
+            if dur_buckets['success'][key] == 0 \
+                    and dur_buckets['failed'][key] == 0 \
+                    and dur_buckets['exceptions'][key] == 0:
+                del dur_buckets['success'][key]
+                del dur_buckets['failed'][key]
+                del dur_buckets['exceptions'][key]
+
+        # sort based on the first number in the ###-### key
+        dur_buckets_keys = dur_buckets['success'].keys()
+        dur_buckets_keys.sort(lambda x,y: cmp(int(x), int(y)), lambda x: x.split('-')[0])
+        print "Query duration report:"
+        print "       dur: number of queries that took within <dur> range (in milliseconds)"
+        print "               successes         failures        exceptions"
+        for key in dur_buckets_keys:
+            sucval = dur_buckets['success'][key]
+            try:
+                failval = dur_buckets['failed'][key]
+            except KeyError:
+                failval = 0
+            try:
+                excval = dur_buckets['exceptions'][key]
+            except KeyError:
+                excval = 0
+            print(" %9s: %5s  (%2s%%)  |  %5s  (%2s%%)  |  %5s  (%2s%%)" % \
+                    (key, sucval, int(float(sucval) / num_durs['success'] * 100), \
+                     failval, int(float(failval) / num_durs['failed'] * 100), \
+                     excval, int(float(excval) / num_durs['exceptions'] * 100)))
+
+
 
     # call out to the net and retrieve the URL
     # record failures, throw away success
@@ -165,21 +260,31 @@ class UrlCaller( threading.Thread ):
         UrlCaller.tried += 1
         self.tryinglock.release()
         try:
+            starttime = datetime.datetime.now()
             req = urlopen(url)
         except IOError as e:
             # urlopen throws an exception on HTTP 401 but not on 404.
+            endtime = datetime.datetime.now()
+            dur = endtime - starttime
+            # store timing data in milliseconds
+            self.queryduration_exception.append(int((dur.seconds * 1000000) + dur.microseconds / 1000))
             print("  error %s: %s" % (e[1], url))
             self.failedlock.acquire()
             UrlCaller.failed += 1
             self.failedlock.release()
             return
+        endtime = datetime.datetime.now()
+        dur = endtime - starttime
         # store the HTTP return code from the query
         resp = req.getcode()
         if resp != 200:
+            self.queryduration_failed.append(int((dur.seconds * 1000000) + dur.microseconds / 1000))
             print("  error %s: %s" % (resp, url))
             self.failedlock.acquire()
             UrlCaller.failed += 1
             self.failedlock.release()
+        else:
+            self.queryduration_success.append(int((dur.seconds * 1000000) + dur.microseconds / 1000))
 
 class PrintStatus( threading.Thread ):
     '''a class that prints current status when the user hits return'''
@@ -192,7 +297,8 @@ class PrintStatus( threading.Thread ):
         while(True):
             raw_input()
             UrlCaller.print_status()
-            self.timer_thread.print_short_stats()
+            UrlCaller.crunch_querydur_stats()
+            self.timer_thread.print_full_stats()
 
 class TimingCollector( threading.Thread ):
     '''a class to collect per-second throughput data.
@@ -251,6 +357,7 @@ class TimingCollector( threading.Thread ):
         print ("Current throughput: %s queries per second.  Last 5s avg: %sqps.  Last 30s avg: %sqps" % \
                 (self.cur_sec, five_avg, thirty_avg))
     def print_full_stats(self):
+        '''Prints a few bucketted counts for throughput stats.'''
         tp_hash = self.throughput_frequency
         tp_keys = tp_hash.keys()
         tp_keys.sort()
@@ -268,9 +375,8 @@ class TimingCollector( threading.Thread ):
             if(key == 0):
                 next
             perfsum = 0
+            min_key = key
             max_key = key + int(float(key) * 0.1)
-            avg_key = key + int(float(key) * 0.05)
-            avg_key = (real_max if avg_key > real_max else avg_key) #ceiling of real_max
             while key < max_key:
                 # add the key's value to the sum if it exists
                 perfsum += tp_hash[key]
@@ -281,7 +387,8 @@ class TimingCollector( threading.Thread ):
                     # tp_keys is empty
                     key = max_key
                     tp_keys = None
-            new_perf[avg_key] = perfsum
+            # use the range of values covered as the key
+            new_perf["%s-%s" % (min_key, max_key)] = perfsum
             # push the last one back onto the stack for the next round
             try:
                 tp_keys.append(key)
@@ -290,12 +397,14 @@ class TimingCollector( threading.Thread ):
                 # reset to an empty list so the next while loop will fail
                 tp_keys = []
         new_perf_keys = new_perf.keys()
-        new_perf_keys.sort()
+        # sort based on the first number in the ###-### key
+        new_perf_keys.sort(lambda x,y: cmp(int(x), int(y)), lambda x: x.split('-')[0])
+        num_seconds = sum(int(x) for x in new_perf.values())
 
         print "Throughput report:"
-        print "   qps: number of seconds during which performance was roughly (+-5%) that qps"
+        print "       qps: number of seconds during which performance was in that qps range"
         for key in new_perf_keys:
-            print(" %5s: %s" % (key, new_perf[key]))
+            print(" %9s: %5s   (%2s%%)" % (key, new_perf[key], int(float(new_perf[key]) / num_seconds * 100)))
 
 
 
@@ -384,6 +493,7 @@ def main():
     endtime = datetime.datetime.now()
     exectime = endtime - starttime
     print("Final summary: total: %s, failed: %s, execution time: %s" % (UrlCaller.tried, UrlCaller.failed, exectime))
+    UrlCaller.crunch_querydur_stats()
     timer.print_full_stats()
 
 if __name__ == '__main__':
