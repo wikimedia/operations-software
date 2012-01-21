@@ -16,8 +16,7 @@ git config --global user.name "$name"
 
 # Setup remotes/aliases
 git remote add software ssh://$username@gerrit.wikimedia.org:29418/operations/software
-git config alias.push-for-review-test "push software HEAD:refs/for/test"
-git config alias.push-for-review-production "push software HEAD:refs/for/production"
+git config alias.push-for-review "push software HEAD:refs/for/master"
 
 TOPLEVEL=`git rev-parse --show-toplevel`
 which curl
