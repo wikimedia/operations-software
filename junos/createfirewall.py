@@ -57,7 +57,7 @@ def slax_header():
 def slax_footer():
     # Assumptions:
     # - everything in SLAX_DIRECTIVES needs a closing "}"
-    # - every line must be indented a descending number of tabs 
+    # - every line must be indented a descending number of tabs
     parts = []
 
     # This should end at 0, not 1, so substract 1 to start.
@@ -103,7 +103,7 @@ def main(args):
     firewall = filters.Firewall()
     fw_filter = filters.Filter('inbound-auto')
     firewall.filters.append(fw_filter)
-    
+
     for f in files:
         fh = open(os.path.join(sourcedir, f))
         name, ip, port = fh.readlines()[0].rstrip().split(',')

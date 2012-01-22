@@ -10,7 +10,7 @@ def TabExtend(parts, depth=1):
 class JunosSlaxBase(object):
     def GenerateRules(self):
         return '\n'.join(self.GetRuleParts())
-    
+
 
 class Firewall(JunosSlaxBase):
     """Shell class to represent JunOS firewall rules.
@@ -67,7 +67,7 @@ class Term(JunosSlaxBase):
         self.destination_port = []
         self.protocol = None
         self.actions = []
-    
+
     def GetRuleParts(self):
         parts = []
 
@@ -96,7 +96,7 @@ class Term(JunosSlaxBase):
         _GenPorts('destination', self.destination_port)
         if self.protocol:
             from_parts.append('<protocol> %s;' % (self.protocol))
-        
+
         if self.established:
             if self.protocol != 'tcp':
                 raise Error(
@@ -138,14 +138,14 @@ if __name__ == '__main__':
     term.destination_port.append('22')
     term.protocol = 'tcp'
     filter.terms.append(term)
-    
+
     term = Term('established')
     term.established = True
     term.protocol = 'tcp'
     filter.terms.append(term)
-    
+
     term = Term('other')
     term.actions.append('discard')
     filter.terms.append(term)
-    
+
     print firewall.GenerateRules()
