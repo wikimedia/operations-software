@@ -1,5 +1,36 @@
 #!/usr/bin/python
 
+"""A collection to encapsulate the structure of Juniper firewall rules.
+
+Example firewall generation (running this file will also run this):
+    firewall = Firewall()
+    filter = Filter('imafilter')
+    firewall.filters.append(filter)
+
+    term = Term('example')
+    term.source_addr.append('10.0.0.2')
+    term.destination_port.append('22')
+    term.protocol = 'tcp'
+    filter.terms.append(term)
+
+    term = Term('established')
+    term.established = True
+    term.protocol = 'tcp'
+    filter.terms.append(term)
+
+    term = Term('other')
+    term.actions.append('discard')
+    filter.terms.append(term)
+
+    print firewall.GenerateRules()
+
+
+Author: Ryan Anderson <ryan@michonline.com>
+Copyright (c) 2012 Wikimedia Foundation
+License: Released under the GPL v2 or later.
+For a full description of the license, please visit http://www.gnu.org/licenses/gpl-2.0.html
+"""
+
 class Error(Exception):
     pass
 

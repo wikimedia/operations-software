@@ -2,9 +2,11 @@
 
 """Convert exported Puppet resources into JunOS SLAX a firewall filter.
 
-<More details go here>
-
-"""
+Authors: Ryan Anderson <ryan@michonline.com>, Leslie Carr <lcarr@wikimedia.org>
+Copyright (c) 2012 Wikimedia Foundation
+License: Released under the GPL v2 or later.
+For a full description of the license, please visit http://www.gnu.org/licenses/gpl-2.0.html
+GG"""
 
 import os
 import sys
@@ -104,12 +106,23 @@ def main(args):
     fw_filter = filters.Filter('inbound-auto')
     firewall.filters.append(fw_filter)
 
+    # Map (port, protocol) -> [list of ip]
+    by_port_protocol = {}
+
     for f in files:
         fh = open(os.path.join(sourcedir, f))
-        name, ip, port = fh.readlines()[0].rstrip().split(',')
-        term = filters.Term('%s_%s' % (name, port))
-        term.destination_addr.append(ip)
+        # TODO: A CSV parser might be reasonable here.
+        for line in fh.readlines():
+            name, ip, protocol, port = line.rstrip().split(',')
+            by_port_protocol.setdefault((port, protocol), []).append(ip)
+        fh.close()
+
+    for (port, protocol), ips in by_port_protocol.iteritems():
+        term = filters.Term('port_%s_%s_v4' % (port, protocol))
+        for ip in ips:
+            term.destination_addr.append(ip)
         term.destination_port.append(port)
+        term.protocol = protocol
         fw_filter.terms.append(term)
 
     parts = filters.TabExtend(firewall.GetRuleParts(), tab_depth)

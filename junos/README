@@ -1,0 +1,13 @@
+createfirewalls.py / filters.py is a script to take firewall data from puppet
+(or another host configuration framework), and convert them into Juniper/SLAX
+configs.
+
+Trivial example input files are in testdata/
+Run the set with:
+
+./createfirewall.py test.slax testdata/ && cat test.slax
+
+Or, in a more normal, usage, format:
+
+createfirewall.py [<output file> [<source directory>]]
+
