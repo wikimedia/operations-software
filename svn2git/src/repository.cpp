@@ -547,7 +547,7 @@ void Repository::startFastImport()
 
 QByteArray Repository::formatMetadataMessage(const QByteArray &svnprefix, int revnum, const QByteArray &tag)
 {
-    QByteArray msg = "svn path=" + svnprefix + "; revision=" + QByteArray::number(revnum);
+    QByteArray msg = "https://mediawiki.org/wiki/Special:Code/MediaWiki/" + QByteArray::number(revnum);
     if (!tag.isEmpty())
         msg += "; tag=" + tag;
     msg += "\n";
