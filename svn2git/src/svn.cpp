@@ -609,6 +609,8 @@ int SvnRevision::exportEntry(const char *key, const svn_fs_path_change_t *change
         qDebug() << current << "was a directory; ignoring";
     } else if (change->change_kind == svn_fs_path_change_delete) {
         qDebug() << current << "is being deleted but I don't know anything about it; ignoring";
+    } else if ( CommandLineParser::instance()->contains("skip-misses") ) {
+    	qDebug() << current << "did not match any rules; ignoring";
     } else {
         qCritical() << current << "did not match any rules; cannot continue";
         return EXIT_FAILURE;
