@@ -22,8 +22,6 @@ import filters
 # import "../import/junos.xsl";
 
 #file parameters defined here
-outputfile = "test.slax"
-sourcedir = "/Users/lcarr/firewall_python/test"
 standard_headers = [
     '# This file should live in /var/db/scripts.',
     'version 1.0;',
