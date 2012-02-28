@@ -1,0 +1,801 @@
+create repository mediawiki/core
+end repository
+
+match /trunk/phase3/
+  repository mediawiki/core
+  branch master
+  min revision 1284
+end match
+
+match /branches/REL1_19/phase3/
+  repository mediawiki/core
+  branch REL1_19
+  min revision 110985
+end match
+
+match /branches/REL1_18/phase3/
+  repository mediawiki/core
+  branch REL1_18
+  min revision 92474
+end match
+
+match /branches/REL1_17/phase3/
+  repository mediawiki/core
+  branch REL1_17
+  min revision 77973
+end match
+
+match /branches/REL1_16/phase3/
+  repository mediawiki/core
+  branch REL1_16
+  min revision 62818
+  max revision 94747
+end match
+
+match /branches/REL1_15/phase3/
+  repository mediawiki/core
+  branch REL1_15
+  min revision 50059
+  max revision 86790
+end match
+
+match /branches/REL1_14/phase3/
+  repository mediawiki/core
+  branch REL1_14
+  min revision 45546
+  max revision 63287
+end match
+
+match /branches/REL1_13/phase3/
+  repository mediawiki/core
+  branch REL1_13
+  min revision 37957
+  max revision 55892
+end match
+
+match /branches/REL1_12/phase3/
+  repository mediawiki/core
+  branch REL1_12
+  min revision 31212
+  max revision 44600
+end match
+
+match /branches/REL1_11/phase3/
+  repository mediawiki/core
+  branch REL1_11
+  min revision 25545
+  max revision 36280
+end match
+
+match /branches/REL1_10/phase3/
+  repository mediawiki/core
+  branch REL1_10
+  min revision 21728
+  max revision 36280
+end match
+
+match /branches/REL1_9/phase3/
+  repository mediawiki/core
+  branch REL1_9
+  min revision 18954
+  max revision 31481
+end match
+
+match /branches/REL1_8/phase3/
+  repository mediawiki/core
+  branch REL1_8
+  min revision 16913
+  max revision 25743
+end match
+
+match /branches/REL1_7/phase3/
+  repository mediawiki/core
+  branch REL1_7
+  min revision 15386
+  max revision 20011
+end match
+
+match /branches/REL1_6/phase3/
+  repository mediawiki/core
+  branch REL1_6
+  min revision 13500
+  max revision 20012
+end match
+
+match /branches/REL1_5/phase3/
+  repository mediawiki/core
+  branch REL1_5
+  min revision 10341
+  max revision 13671
+end match
+
+match /branches/REL1_4/phase3/
+  repository mediawiki/core
+  branch REL1_4
+  min revision 6449
+  max revision 13339
+end match
+
+match /branches/REL1_3/phase3/
+  repository mediawiki/core
+  branch REL1_3
+  min revision 3891
+  max revision 13147
+end match
+
+match /branches/REL1_13A/phase3/
+  repository mediawiki/core
+  branch REL1_13A
+  min revision 5434
+  max revision 6922
+end match
+
+match /branches/REL1_2/phase3/
+  repository mediawiki/core
+  branch REL1_2
+  min revision 2549
+  max revision 8346
+end match
+
+match /branches/REL1_1/phase3/
+  repository mediawiki/core
+  branch REL1_1
+  min revision 2168
+  max revision 2286
+end match
+
+match /tags/REL1_10_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.0
+end match
+match /tags/REL1_10_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.0rc1
+end match
+match /tags/REL1_10_0RC2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.0rc2
+end match
+match /tags/REL1_10_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.1
+end match
+match /tags/REL1_10_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.2
+end match
+match /tags/REL1_10_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.3
+end match
+match /tags/REL1_10_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.10.4
+end match
+match /tags/REL1_11_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.11.0
+end match
+match /tags/REL1_11_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.11.0rc1
+end match
+match /tags/REL1_11_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.11.1
+end match
+match /tags/REL1_11_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.11.2
+end match
+match /tags/REL1_12_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.12.0
+end match
+match /tags/REL1_12_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.20.0rc1
+end match
+match /tags/REL1_12_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.12.1
+end match
+match /tags/REL1_12_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.12.2
+end match
+match /tags/REL1_12_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.12.3
+end match
+match /tags/REL1_12_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.12.4
+end match
+match /tags/REL1_13_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.0
+end match
+match /tags/REL1_13_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.0rc1
+end match
+match /tags/REL1_13_0RC2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.0rc2
+end match
+match /tags/REL1_13_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.1
+end match
+match /tags/REL1_13_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.2
+end match
+match /tags/REL1_13_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.3
+end match
+match /tags/REL1_13_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.4
+end match
+match /tags/REL1_13_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.13.5
+end match
+match /tags/REL1_14_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.14.0
+end match
+match /tags/REL1_14_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.14.0rc1
+end match
+match /tags/REL1_14_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.14.1
+end match
+match /tags/REL1_15_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.0
+end match
+match /tags/REL1_15_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.0rc1
+end match
+match /tags/REL1_15_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.1
+end match
+match /tags/REL1_15_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.2
+end match
+match /tags/REL1_15_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.3
+end match
+match /tags/REL1_15_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.4
+end match
+match /tags/REL1_15_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.15.5
+end match
+match /tags/REL1_16_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.0
+end match
+match /tags/REL1_16_0beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.0beta1
+end match
+match /tags/REL1_16_0beta2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.0beta2
+end match
+match /tags/REL1_16_0beta3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.0beta3
+end match
+match /tags/REL1_16_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.1
+end match
+match /tags/REL1_16_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.2
+end match
+match /tags/REL1_16_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.3
+end match
+match /tags/REL1_16_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.4
+end match
+match /tags/REL1_16_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.16.5
+end match
+match /tags/REL1_17_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.17.0
+end match
+match /tags/REL1_17_0beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.17.0beta1
+end match
+match /tags/REL1_17_0rc1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.17.0rc1
+end match
+match /tags/REL1_17_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.17.1
+end match
+match /tags/REL1_17_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.17.2
+end match
+match /tags/REL1_18_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.18.0
+end match
+match /tags/REL1_18_0beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.18.0beta1
+end match
+match /tags/REL1_18_0rc1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.18.0rc1
+end match
+match /tags/REL1_18_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.18.1
+end match
+match /tags/REL1_1_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.1.0
+end match
+match /tags/REL1_2_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.0
+end match
+match /tags/REL1_2_0rc1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.0rc1
+end match
+match /tags/REL1_2_0rc2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.0rc2
+end match
+match /tags/REL1_2_0rc3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.0rc3
+end match
+match /tags/REL1_2_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.1
+end match
+match /tags/REL1_2_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.2
+end match
+match /tags/REL1_2_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.3
+end match
+match /tags/REL1_2_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.4
+end match
+match /tags/REL1_2_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.5
+end match
+match /tags/REL1_2_6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.2.6
+end match
+match /tags/REL1_3_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0
+end match
+match /tags/REL1_3_0beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta1
+end match
+match /tags/REL1_3_0beta2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta2
+end match
+match /tags/REL1_3_0beta3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta3
+end match
+match /tags/REL1_3_0beta4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta4
+end match
+match /tags/REL1_3_0beta4a/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta4a
+end match
+match /tags/REL1_3_0beta5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta5
+end match
+match /tags/REL1_3_0beta6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.0beta6
+end match
+match /tags/REL1_3_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.1
+end match
+match /tags/REL1_3_10/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.10
+end match
+match /tags/REL1_3_11/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.11
+end match
+match /tags/REL1_3_12/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.12
+end match
+match /tags/REL1_3_13/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.13
+end match
+match /tags/REL1_3_14/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.14
+end match
+match /tags/REL1_3_15/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.15
+end match
+match /tags/REL1_3_16/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.16
+end match
+match /tags/REL1_3_17/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.17
+end match
+match /tags/REL1_3_18/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.18
+end match
+match /tags/REL1_3_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.2
+end match
+match /tags/REL1_3_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.3
+end match
+match /tags/REL1_3_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.4
+end match
+match /tags/REL1_3_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.5
+end match
+match /tags/REL1_3_6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.6
+end match
+match /tags/REL1_3_7/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.7
+end match
+match /tags/REL1_3_8/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.8
+end match
+match /tags/REL1_3_9/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.3.9
+end match
+match /tags/REL1_4_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0
+end match
+match /tags/REL1_4_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.1
+end match
+match /tags/REL1_4_10/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.10
+end match
+match /tags/REL1_4_11/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.11
+end match
+match /tags/REL1_4_12/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.12
+end match
+match /tags/REL1_4_13/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.13
+end match
+match /tags/REL1_4_14/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.14
+end match
+match /tags/REL1_4_15/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.15
+end match
+match /tags/REL1_4_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.2
+end match
+match /tags/REL1_4_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.3
+end match
+match /tags/REL1_4_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.4
+end match
+match /tags/REL1_4_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.5
+end match
+match /tags/REL1_4_6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.6
+end match
+match /tags/REL1_4_7/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.7
+end match
+match /tags/REL1_4_8/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.8
+end match
+match /tags/REL1_4_9/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.9
+end match
+match /tags/REL1_4beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0beta1
+end match
+match /tags/REL1_4beta2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0beta2
+end match
+match /tags/REL1_4beta3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0beta
+end match
+match /tags/REL1_4beta4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0beta4
+end match
+match /tags/REL1_4beta5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0beta5
+end match
+match /tags/REL1_4beta6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0beta6
+end match
+match /tags/REL1_4rc1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.4.0rc1
+end match
+match /tags/REL1_5_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0
+end match
+match /tags/REL1_5_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.1
+end match
+match /tags/REL1_5_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.2
+end match
+match /tags/REL1_5_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.3
+end match
+match /tags/REL1_5_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.4
+end match
+match /tags/REL1_5_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.5
+end match
+match /tags/REL1_5_6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.6
+end match
+match /tags/REL1_5_7/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.7
+end match
+match /tags/REL1_5_8/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.8
+end match
+match /tags/REL1_5_RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0rc1
+end match
+match /tags/REL1_5_RC2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0rc2
+end match
+match /tags/REL1_5_RC3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0rc1
+end match
+match /tags/REL1_5alpha1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0alpha1
+end match
+match /tags/REL1_5alpha2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0alpha2
+end match
+match /tags/REL1_5beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0beta1
+end match
+match /tags/REL1_5beta2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0beta2
+end match
+match /tags/REL1_5beta3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0beta3
+end match
+match /tags/REL1_5beta4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.5.0beta4
+end match
+match /tags/REL1_6_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.0
+end match
+match /tags/REL1_6_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.1
+end match
+match /tags/REL1_6_10/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.10
+end match
+match /tags/REL1_6_11/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.11
+end match
+match /tags/REL1_6_12/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.12
+end match
+match /tags/REL1_6_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.2
+end match
+match /tags/REL1_6_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.3
+end match
+match /tags/REL1_6_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.4
+end match
+match /tags/REL1_6_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.5
+end match
+match /tags/REL1_6_6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.6
+end match
+match /tags/REL1_6_7/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.7
+end match
+match /tags/REL1_6_8/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.8
+end match
+match /tags/REL1_6_9/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.6.9
+end match
+match /tags/REL1_7_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.7.0
+end match
+match /tags/REL1_7_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.7.1
+end match
+match /tags/REL1_7_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.7.2
+end match
+match /tags/REL1_7_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.7.3
+end match
+match /tags/REL1_8_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.8.0
+end match
+match /tags/REL1_8_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.8.1
+end match
+match /tags/REL1_8_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.8.2
+end match
+match /tags/REL1_8_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.8.3
+end match
+match /tags/REL1_8_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.8.4
+end match
+match /tags/REL1_8_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.8.5
+end match
+match /tags/REL1_9_0/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.0
+end match
+match /tags/REL1_9_0RC1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.0rc1
+end match
+match /tags/REL1_9_0RC2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.0rc2
+end match
+match /tags/REL1_9_1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.1
+end match
+match /tags/REL1_9_2/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.2
+end match
+match /tags/REL1_9_3/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.3
+end match
+match /tags/REL1_9_4/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.4
+end match
+match /tags/REL1_9_5/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.5
+end match
+match /tags/REL1_9_6/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.9.6
+end match
+
+match /
+end match

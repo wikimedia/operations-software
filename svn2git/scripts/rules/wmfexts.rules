@@ -1,0 +1,242 @@
+create repository mediawiki/extensions/AbuseFilter
+end repository
+create repository mediawiki/extensions/ActiveAbstract
+end repository
+create repository mediawiki/extensions/AntiBot
+end repository
+create repository mediawiki/extensions/AntiSpoof
+end repository
+create repository mediawiki/extensions/ApiSandbox
+end repository
+create repository mediawiki/extensions/ArticleFeedback
+end repository
+create repository mediawiki/extensions/AssertEdit
+end repository
+create repository mediawiki/extensions/Babel
+end repository
+create repository mediawiki/extensions/CategoryTree
+end repository
+create repository mediawiki/extensions/CentralAuth
+end repository
+create repository mediawiki/extensions/CentralNotice
+end repository
+create repository mediawiki/extensions/CharInsert
+end repository
+create repository mediawiki/extensions/CheckUser
+end repository
+create repository mediawiki/extensions/Cite
+end repository
+create repository mediawiki/extensions/cldr
+end repository
+create repository mediawiki/extensions/ClickTracking
+end repository
+create repository mediawiki/extensions/ClientSide
+end repository
+create repository mediawiki/extensions/CodeReview
+end repository
+create repository mediawiki/extensions/Collection
+end repository
+create repository mediawiki/extensions/CommunityApplications
+end repository
+create repository mediawiki/extensions/CommunityHiring
+end repository
+create repository mediawiki/extensions/CommunityVoice
+end repository
+create repository mediawiki/extensions/ConditionalShowSection
+end repository
+create repository mediawiki/extensions/ConfirmEdit
+end repository
+create repository mediawiki/extensions/CongressLookup
+end repository
+create repository mediawiki/extensions/ContactPage
+end repository
+create repository mediawiki/extensions/ContactPageFundraiser
+end repository
+create repository mediawiki/extensions/Contest
+end repository
+create repository mediawiki/extensions/ContributionReporting
+end repository
+create repository mediawiki/extensions/ContributionTracking
+end repository
+create repository mediawiki/extensions/CustomUserSignup
+end repository
+create repository mediawiki/extensions/DisableAccount
+end repository
+create repository mediawiki/extensions/DismissableSiteNotice
+end repository
+create repository mediawiki/extensions/DonationInterface
+end repository
+create repository mediawiki/extensions/DoubleWiki
+end repository
+create repository mediawiki/extensions/EditPageTracking
+end repository
+create repository mediawiki/extensions/EmailCapture
+end repository
+create repository mediawiki/extensions/ExpandTemplates
+end repository
+create repository mediawiki/extensions/ExtensionDistributor
+end repository
+create repository mediawiki/extensions/FeaturedFeeds
+end repository
+create repository mediawiki/extensions/FlaggedRevs
+end repository
+create repository mediawiki/extensions/FormPreloadPostCache
+end repository
+create repository mediawiki/extensions/FundraiserLandingPage
+end repository
+create repository mediawiki/extensions/Gadgets
+end repository
+create repository mediawiki/extensions/GlobalBlocking
+end repository
+create repository mediawiki/extensions/GlobalUsage
+end repository
+create repository mediawiki/extensions/GoogleNewsSitemap
+end repository
+create repository mediawiki/extensions/ImageMap
+end repository
+create repository mediawiki/extensions/InputBox
+end repository
+create repository mediawiki/extensions/intersection
+end repository
+create repository mediawiki/extensions/LabeledSectionTransclusion
+end repository
+create repository mediawiki/extensions/LandingCheck
+end repository
+create repository mediawiki/extensions/LiquidThreads
+end repository
+create repository mediawiki/extensions/LocalisationUpdate
+end repository
+create repository mediawiki/extensions/MWSearch
+end repository
+create repository mediawiki/extensions/MarkAsHelpful
+end repository
+create repository mediawiki/extensions/Math
+end repository
+create repository mediawiki/extensions/MobileFrontend
+end repository
+create repository mediawiki/extensions/MoodBar
+end repository
+create repository mediawiki/extensions/Narayam
+end repository
+create repository mediawiki/extensions/NewUserMessage
+end repository
+create repository mediawiki/extensions/normal
+end repository
+create repository mediawiki/extensions/Nuke
+end repository
+create repository mediawiki/extensions/OAI
+end repository
+create repository mediawiki/extensions/OggHandler
+end repository
+create repository mediawiki/extensions/OpenSearchXml
+end repository
+create repository mediawiki/extensions/Oversight
+end repository
+create repository mediawiki/extensions/PagedTiffHandler
+end repository
+create repository mediawiki/extensions/ParserFunctions
+end repository
+create repository mediawiki/extensions/PdfHandler
+end repository
+create repository mediawiki/extensions/Poem
+end repository
+create repository mediawiki/extensions/PoolCounter
+end repository
+create repository mediawiki/extensions/PrefStats
+end repository
+create repository mediawiki/extensions/PrefSwitch
+end repository
+create repository mediawiki/extensions/ProofreadPage
+end repository
+create repository mediawiki/extensions/Quiz
+end repository
+create repository mediawiki/extensions/ReaderFeedback
+end repository
+create repository mediawiki/extensions/Renameuser
+end repository
+create repository mediawiki/extensions/RSS
+end repository
+create repository mediawiki/extensions/ScanSet
+end repository
+create repository mediawiki/extensions/SecurePoll
+end repository
+create repository mediawiki/extensions/ShortUrl
+end repository
+create repository mediawiki/extensions/SimpleAntiSpam
+end repository
+create repository mediawiki/extensions/SimpleSurvey
+end repository
+create repository mediawiki/extensions/SiteMatrix
+end repository
+create repository mediawiki/extensions/SkinPerPage
+end repository
+create repository mediawiki/extensions/skins
+end repository
+create repository mediawiki/extensions/SpamBlacklist
+end repository
+create repository mediawiki/extensions/StrategyWiki
+end repository
+create repository mediawiki/extensions/StringFunctionsEscaped
+end repository
+create repository mediawiki/extensions/SubPageList3
+end repository
+create repository mediawiki/extensions/SwiftCloudFiles
+end repository
+create repository mediawiki/extensions/SyntaxHighlight_GeSHi
+end repository
+create repository mediawiki/extensions/timeline
+end repository
+create repository mediawiki/extensions/TitleBlacklist
+end repository
+create repository mediawiki/extensions/TitleKey
+end repository
+create repository mediawiki/extensions/TorBlock
+end repository
+create repository mediawiki/extensions/Translate
+end repository
+create repository mediawiki/extensions/TrustedXFF
+end repository
+create repository mediawiki/extensions/UnicodeConverter
+end repository
+create repository mediawiki/extensions/UploadBlacklist
+end repository
+create repository mediawiki/extensions/UploadWizard
+end repository
+create repository mediawiki/extensions/UserDailyContribs
+end repository
+create repository mediawiki/extensions/UserThrottle
+end repository
+create repository mediawiki/extensions/Vector
+end repository
+create repository mediawiki/extensions/VipsScaler
+end repository
+create repository mediawiki/extensions/VisualEditor
+end repository
+create repository mediawiki/extensions/WebFonts
+end repository
+create repository mediawiki/extensions/wikidiff2
+end repository
+create repository mediawiki/extensions/wikihiero
+end repository
+create repository mediawiki/extensions/WikiEditor
+end repository
+create repository mediawiki/extensions/WikiLove
+end repository
+create repository mediawiki/extensions/WikimediaIncubator
+end repository
+create repository mediawiki/extensions/WikimediaMaintenance
+end repository
+create repository mediawiki/extensions/WikimediaMessages
+end repository
+create repository mediawiki/extensions/ZeroRatedMobileAccess
+end repository
+create repository mediawiki/extensions/ArticleFeedbackv5
+end repository
+
+match /trunk/extensions/(AbuseFilter|ActiveAbstract|AntiBot|AntiSpoof|ApiSandbox|ArticleFeedback|AssertEdit|Babel|CategoryTree|CentralAuth|CentralNotice|CharInsert|CheckUser|Cite|cldr|ClickTracking|ClientSide|CodeReview|Collection|CommunityApplications|CommunityHiring|CommunityVoice|ConditionalShowSection|ConfirmEdit|CongressLookup|ContactPage|ContactPageFundraiser|Contest|ContributionReporting|ContributionTracking|CustomUserSignup|DisableAccount|DismissableSiteNotice|DonationInterface|DoubleWiki|EditPageTracking|EmailCapture|ExpandTemplates|ExtensionDistributor|FeaturedFeeds|FlaggedRevs|FormPreloadPostCache|FundraiserLandingPage|Gadgets|GlobalBlocking|GlobalUsage|GoogleNewsSitemap|ImageMap|InputBox|intersection|LabeledSectionTransclusion|LandingCheck|LiquidThreads|LocalisationUpdate|MWSearch|MarkAsHelpful|Math|MobileFrontend|MoodBar|Narayam|NewUserMessage|normal|Nuke|OAI|OggHandler|OpenSearchXml|Oversight|PagedTiffHandler|ParserFunctions|PdfHandler|Poem|PoolCounter|PrefStats|PrefSwitch|ProofreadPage|Quiz|ReaderFeedback|Renameuser|RSS|ScanSet|SecurePoll|ShortUrl|SimpleAntiSpam|SimpleSurvey|SiteMatrix|SkinPerPage|skins|SpamBlacklist|StrategyWiki|StringFunctionsEscaped|SubPageList3|SwiftCloudFiles|SyntaxHighlight_GeSHi|timeline|TitleBlacklist|TitleKey|TorBlock|Translate|TrustedXFF|UnicodeConverter|UploadBlacklist|UploadWizard|UserDailyContribs|UserThrottle|Vector|VipsScaler|VisualEditor|WebFonts|wikidiff2|wikihiero|WikiEditor|WikiLove|WikimediaIncubator|WikimediaMaintenance|WikimediaMessages|ZeroRatedMobileAccess|ArticleFeedbackv5)/
+  repository mediawiki/extensions/\1
+  branch master
+end match
+
+match /
+end match
