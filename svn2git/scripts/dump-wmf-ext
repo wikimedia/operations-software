@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /svnroot/git-dumps
+
+/svnroot/git-dumps/software/svn2git/svn-all-fast-export --identity-map=/home/demon/authors.alias --rules=/svnroot/git-dumps/software/svn2git/scripts/rules/wmfexts.rules --add-metadata-notes /svnroot/mediawiki
