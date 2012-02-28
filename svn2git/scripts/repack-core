@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /svnroot/git-dumps/mediawiki/core
+
+nice -n 10 git repack -a -d -f --depth=250 --window=250
