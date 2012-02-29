@@ -1,0 +1,82 @@
+create repository mediawiki/extensions2/EducationProgram
+end repository
+create repository mediawiki/extensions2/Maps
+end repository
+create repository mediawiki/extensions2/SemanticMaps
+end repository
+create repository mediawiki/extensions2/Validator
+end repository
+create repository mediawiki/extensions2/Push
+end repository
+create repository mediawiki/extensions2/LiveTranslate
+end repository
+create repository mediawiki/extensions2/SemanticWatchlist
+end repository
+create repository mediawiki/extensions2/Survey
+end repository
+create repository mediawiki/extensions2/SemanticResultFormats
+end repository
+create repository mediawiki/extensions2/SubPageList
+end repository
+create repository mediawiki/extensions2/SemanticImageInput
+end repository
+create repository mediawiki/extensions2/CreatePage
+end repository
+create repository mediawiki/extensions2/Ratings
+end repository
+create repository mediawiki/extensions2/Awesomeness
+end repository
+create repository mediawiki/extensions2/SemanticMediaWiki
+end repository
+create repository mediawiki/extensions2/AdminLinks
+end repository
+create repository mediawiki/extensions2/Lingo
+end repository
+create repository mediawiki/extensions2/GeoData
+end repository
+create repository mediawiki/extensions2/Offline
+end repository
+create repository mediawiki/extensions2/LastModified
+end repository
+create repository mediawiki/extensions2/UnitTest
+end repository
+create repository mediawiki/extensions2/AddThis
+end repository
+create repository mediawiki/extensions2/Blackout
+end repository
+create repository mediawiki/extensions2/TweetANew
+end repository
+create repository mediawiki/extensions2/WikiShare
+end repository
+create repository mediawiki/extensions2/TranslateSvg
+end repository
+create repository mediawiki/extensions2/Commentbox
+end repository
+create repository mediawiki/extensions2/OpenStackManager
+end repository
+create repository mediawiki/extensions2/LdapAuthentication
+end repository
+create repository mediawiki/extensions2/RT
+end repository
+create repository mediawiki/extensions2/WindowsAzureStorage
+end repository
+create repository mediawiki/extensions2/WindowsAzureSDK
+end repository
+create repository mediawiki/extensions2/Interlanguage
+end repository
+create repository mediawiki/extensions2/Scribunto
+end repository
+
+match /trunk/extensions/(EducationProgram|Maps|SemanticMaps|Validator|Push|LiveTranslate|SemanticWatchlist|Survey|SemanticResultFormats|SubPageList|SemanticImageInput|CreatePage|Ratings|Awesomeness|SemanticMediaWiki|AdminLinks|Lingo|GeoData|Offline|LastModified|UnitTest|AddThis|Blackout|TweetANew|WikiShare|TranslateSvg|Commentbox|OpenStackManager|LdapAuthentication|RT|WindowsAzureStorage|WindowsAzureSDK|Interlanguage|Scribunto)/
+  repository mediawiki/extensions2/\1
+  branch master
+end match
+
+match /trunk/extensions/Scripting/
+  repository mediawiki/extensions2/Scribunto
+  branch master
+end match
+
+match /
+end match
+

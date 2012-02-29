@@ -1,0 +1,10 @@
+create repository mediawiki/extensions/examples
+end repository
+
+match /trunk/extensions/examples/
+  repository mediawiki/extensions/examples
+  branch master
+end match
+
+match /
+end match

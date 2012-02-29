@@ -14,6 +14,10 @@ match /branches/REL1_19/phase3/
 end match
 
 match /branches/REL1_18/phase3/
+  max revision 92469
+end match
+
+match /branches/REL1_18/phase3/
   repository mediawiki/core
   branch REL1_18
   min revision 92474
@@ -57,7 +61,7 @@ match /branches/REL1_12/phase3/
   repository mediawiki/core
   branch REL1_12
   min revision 31212
-  max revision 44600
+  max revision 48879
 end match
 
 match /branches/REL1_11/phase3/
@@ -71,7 +75,7 @@ match /branches/REL1_10/phase3/
   repository mediawiki/core
   branch REL1_10
   min revision 21728
-  max revision 36280
+  max revision 46900
 end match
 
 match /branches/REL1_9/phase3/
@@ -92,21 +96,21 @@ match /branches/REL1_7/phase3/
   repository mediawiki/core
   branch REL1_7
   min revision 15386
-  max revision 20011
+  max revision 46910
 end match
 
 match /branches/REL1_6/phase3/
   repository mediawiki/core
   branch REL1_6
   min revision 13500
-  max revision 20012
+  max revision 46957
 end match
 
 match /branches/REL1_5/phase3/
   repository mediawiki/core
   branch REL1_5
   min revision 10341
-  max revision 13671
+  max revision 46910
 end match
 
 match /branches/REL1_4/phase3/
@@ -797,5 +801,45 @@ match /tags/REL1_9_6/phase3/
   branch refs/tags/1.9.6
 end match
 
-match /
+match /tags/REL1_19_0beta1/phase3/
+  repository mediawiki/core
+  branch refs/tags/1.19.0beta1
+end match
+
+match /branches/V_PHASE3REORG/phase3/
+  repository mediawiki/core
+  branch master
+end match
+
+match /branches/Wikidata/phase3/
+  repository mediawiki/core
+  branch Wikidata
+end match
+
+match /branches/liangent/makeCollapsible_custom/phase3/
+  repository mediawiki/core
+  branch make-collapsible-custom
+end match
+
+match /branches/iwtransclusion/phase3new/
+  repository mediawiki/core
+  branch iwtransclusion
+end match
+
+match /branches/V_PHASE3REORG/(yearbook|phpwiki)/
+end match
+
+match /(trunk|branches|tags?)/(extensions|CVSROOT|phpwiki|yearbook|Waikiki|wikitex|wiki2xml|flexbisonparse|tugelacache|servmon|telnetreader|lucene-search|tools|librdcp|udpmcast|willow|mwsearch|logwood|mwdumper|mwblocker|udpprofile|backup|pybal|release-tools|CentralAuth|rpms|dbzip2|CommonsBrowser|wikibugs|debs|ubuntu|ganglia_metrics|HTCPpurger|loreley|squid-log|fundcore|yawr|silly-regex-linker|Test|zedler|udplog|sixdeg|vendor|Frames|innodb|stable|newfeatures|load_balancer|squid|REL1_3A|SCHEMA_WORK|ORACLE_WORK|SHOW_VERIFIED|tony_sidaway-bug-856|wikidata|mwblocker|namespace-testing|namespace-manager|hashar|mlmw|rpms|liquidthreads|embed_media|robchurch|rotem|snapshot-work|SerbianVariants|localisation-work|consolidate-cssjs-work|simetrical|checkuser-work|vyznev|instantcommons|werdna|roman|phase3_rev_deleted|skirmish|Freeze-2002-06-25|R_PHASE3REORG|REV1_2|tug_0_1|merged_to_(schema_work[2-5]?|wikidata_[1-2])|REL1_4branch|MOSTLY_WORKING|WIKIMANIA_STEP1|REL1_5branch|Initial|REL1_5_branch|jhb|scavenger|wap|lucene-search-2.0|MWSearch-2.0|filerepo-work|wmfmailadmin|ssl-login-work|apiedit|mikeb|lucene-search-2.1|routing|lucene-search-2|ApiEdit_Vodafone|wikia|CentralNotice-delayed-load|webstatscollector|openid_2.0_update|LuceneSearch-ajax|cortado|location-search|pngds|titlerewrite|imgserv|wikiSDK|extensionclass|MetavidWiki-exp|php|visual_diff|category-redirects|daniel|switchboard|remotesite|group_rights|CentralNotice-SpecialPage-Integration|ContactPageFundraiser|on[_-]wiki_configuration|new-installer|hit-counter|new-upload|change-tagging|MwEmbedStandAlone(RL1_17)?|WikiWord|script-loader|otrs|wiki|wikiation|android-client|preferences-work|querypage-work|mutiple_languages_select|NssMySQLAuth-rewrite|testing|new-checkuser|maintenance-work|wmf|wmf-deployment|FundraiserPortal-multi|happy-melon|wmf-deployment-work|pChart|usability|wmf-deployment-2009-10-01|artwork|sqlite|js2-work|extensionless-files|overlordq|staged-upload|platonides|parser-work|SkinSystemRewrite|conrad|querypage-work2|UsabilityInitiativeJS2|img_metadata|resourceloader|RL2|lobbypop|test-server|LQTRewrite|parsers|ATTIC|phpunit-restructure|ganglia_plugins|ariel|uploadwizard|fundraising|uploadwizard-deployment|chad-pre-wmf-merge|Gadgets-work|usability-initiative-1_16|priyanka-wmf-fixes|uploadstash-backend|fundraiser-statistics|license-work|SemanticMaps0.8|Maps0.8|lqt-updates|wikistats|uploadwizard-firefogg|Maps0.7.x|SemanticMaps0.7.x|uploadstash-db-backend|nikola|fundraiser_analysis|Gadgets3.0|iwtransclusion\/phase3(v[2-3])?|salvatoreingala|hardy|extensions-realtime|uploadwizard-deployment2|pageoutput|wikimania|petrb|raymond|translatewiki|FileBackend|JSTesting|vitalif|mockups|concurrency|lucene-search-3|analytics|ParserFunctions-MaxSem|Wikidata|ArticleCreationWorkflow|MobileFrontend-API|jsgrammar|awjrichards)/
+end match
+
+match /branches/REL1_1[0-9]/extensions/
+end match
+
+match /(wikimedia-web|extensions|USERINFO|civicrm|db|hooks|conf|locks|debs|lobbypop|var|SolrStore)/
+end match
+
+match /(format|README\.txt|test.php)
+end match
+
+match /trunk/(SpecialListadmins\.php|test)
 end match

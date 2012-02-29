@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /svnroot/git-dumps/mediawiki/extensions2
+
+for dir in /svnroot/git-dumps/mediawiki/extensions2/*
+do
+  (cd $dir && git push origin master && git push origin refs/notes/commits)
+done
