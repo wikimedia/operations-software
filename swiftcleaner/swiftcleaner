@@ -224,10 +224,10 @@ class CheckObjects(threading.Thread):
             #print "  old token; returning token %s" % self.token
             return self.token
         # otherwise get a new token from Swift
-        # eg curl -k -v -H 'X-Auth-User: mw:thumb' -H 'X-Auth-Key: eDSC7gDU7AMC' http://ms-fe.pmtpa.wmnet/auth/v1.0
+        # eg curl -k -v -H 'X-Auth-User: mw:thumb' -H 'X-Auth-Key: $key' http://ms-fe.pmtpa.wmnet/auth/v1.0
         headers = {}
         headers['X-Auth-User'] = 'mw:thumb'
-        headers['X-Auth-Key'] = 'eDSC7gDU7AMC'
+        headers['X-Auth-Key'] = 'xxxxx'
         headers['User-Agent'] = 'swiftcleaner'
         req = urllib2.Request('http://ms-fe.pmtpa.wmnet/auth/v1.0', headers=headers)
         resp = urllib2.urlopen(req)
