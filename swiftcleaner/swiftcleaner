@@ -156,6 +156,8 @@ class CheckObjects(threading.Thread):
         except KeyError:
             # ok, we don't have it, let's go get the details.
             pass
+        # use the authed version of the URL to bypass rewrite.py and the 404 handler
+        # note that you don't actually need to authenticate to send HEAD requests to the thumb buckets.
         url = "http://ms-fe.pmtpa.wmnet/v1/AUTH_43651b15-ed7a-40b6-b745-47666abf8dfe/%s/%s" % (obj[0], obj[1])
         objdetails = self.head_url(url)
         self.swift_obj_details[obj] = objdetails
