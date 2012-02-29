@@ -29,7 +29,7 @@
 ####   re-read live.
 ####
 
-import re, urllib2, threading, time, sys
+import re, urllib2, threading, time, sys, subprocess
 from optparse import OptionParser
 import random
 
@@ -46,10 +46,13 @@ class Stats():
     def print_stats():
         return
 
-# subclassing urllib to send HEAD requests
+# subclassing urllib to send HEAD and DELETE requests
 class HeadRequest(urllib2.Request):
     def get_method(self):
         return "HEAD"
+class DeleteRequest(urllib2.Request):
+    def get_method(self):
+        return "DELETE"
 
 class CheckObjects(threading.Thread):
     # objlist should be between 100 and 10,000 objects for best results
@@ -71,6 +74,10 @@ class CheckObjects(threading.Thread):
         for obj in self.objlist:
             res = self.check_object(obj)
             print "checked out %s for object %s" % (res, obj[1])
+            if(res == False):
+                # we've found ourselves a bad object!
+                # go clean it up but don't slow us down.
+                threading.Thread(target=bad_object, args=(obj,)).start()
             # sleep for up to a second
             #timesleep = random.random()
             #time.sleep(timesleep)
@@ -82,12 +89,18 @@ class CheckObjects(threading.Thread):
         OK) or False (object should be deleted)"""
         objok = True
         # skip checks as soon as one fails
-        for check in [self.check_object_filename, self.check_object_filesize, self.check_object_against_ms5]:
+        for check in [self.check_if_object_exists, self.check_object_filename,
+                      self.check_object_filesize, self.check_object_against_ms5]:
             if objok:
                 objok = objok & check(obj)
                 if not objok:
                     # print out which check failed
                     print "check %s is %s for object %s" % (check.__name__, objok, obj)
+                    # if it was the existence check that failed, we should move on.
+                    if(check == self.check_if_object_exists):
+                        print "skipping file because it doesn't exist in swift: %s" % (obj,)
+                        return "Absent"
+                    # if it was the check against ms5, let's log more info to see what it was like before it got deleted.
                     if check == self.check_object_against_ms5:
                         # print out last mod time
                         print "mod time is %s for object %s" % (self.get_object_details_swift(obj)['Last-Modified'], obj[1])
@@ -112,6 +125,16 @@ class CheckObjects(threading.Thread):
             # if the regex didn't match, fail.
             objok = False
         return objok
+    def check_if_object_exists(self, obj):
+        """checks to see if the object exists in swift.  If it doesn't exist,
+        we shouldn't do any more checks but we also shouldn't try and delete
+        it."""
+        res = self.get_object_details_swift(obj)
+        if res == None:
+            # no dice.
+            return False
+        return True
+
     def check_object_filesize(self, obj):
         """checks to make sure the object size is not zero
         returns True if the ojbect is OK
@@ -122,7 +145,7 @@ class CheckObjects(threading.Thread):
                 return False
             return True
         except KeyError:
-            #object details didn't include Content-Length
+            #object details was a hash but didn't include Content-Length
             #  I don't know why this would happen, but if it does, purge the sucker
             return False
         except TypeError:
@@ -159,20 +182,13 @@ class CheckObjects(threading.Thread):
         # use the authed version of the URL to bypass rewrite.py and the 404 handler
         # note that you don't actually need to authenticate to send HEAD requests to the thumb buckets.
         url = "http://ms-fe.pmtpa.wmnet/v1/AUTH_43651b15-ed7a-40b6-b745-47666abf8dfe/%s/%s" % (obj[0], obj[1])
-        objdetails = self.head_url(url)
+        try:
+            objdetails = self.head_url(url)
+        except urllib2.URLError:
+            objdetails = None
         self.swift_obj_details[obj] = objdetails
         return objdetails
 
-    def obj_to_url(self, obj):
-        """translate an object tuple (container, objectpath) into a URL fit for swift or ms5
-        eg (wikipedia-commons-local-thumb.a2, a/a2/L.jpg/420px-L.jpg) => /wikipedia/commons/thumb/a/a2/L.jpg/420-L.jpg"""
-
-        contmatch = re.match("(?P<proj>[^-]+)-(?P<lang>[^-]+)-local-thumb(\.(?P<shard>\d{2}))?", obj[0])
-        if(contmatch):
-            url = "/%s/%s/%s/%s" % (contmatch.group('proj'), contmatch.group('lang'), "thumb", obj[1])
-        else:
-            url = None
-        return url
     def head_url(self, url):
         """performs an HTTP HEAD request against url, returns the headers as a dictionary."""
         req = HeadRequest(url)
@@ -182,9 +198,10 @@ class CheckObjects(threading.Thread):
         try:
             resp = urllib2.urlopen(req)
         except urllib2.HTTPError, e:
-            return None
+            # 404 or other 400 error
+            raise
         except urllib2.URLError:
-            # couldn't find the file
+            # something else went wrong
             return None
         # headers I'm interested in:
         headers = {}
@@ -214,46 +231,109 @@ class CheckObjects(threading.Thread):
         return headers
 
     def get_object_details_ms5(self, obj):
-        url = "http://ms5.pmtpa.wmnet%s" % self.obj_to_url(obj)
-        objdetails = self.head_url(url)
+        url = "http://ms5.pmtpa.wmnet%s" % obj_to_url(obj)
+        try:
+            objdetails = self.head_url(url)
+        except urllib2.URLError:
+            objdetails = None
         return objdetails
 
-    def get_token(self):
+# make a class to hold the swift authentication token and fetch a new one when necessary.
+class Token():
+    _token = 'AUTH_abc123'
+
+    @classmethod
+    def get_token(cls):
         # if we already have the token, return it.
-        if(self.token != None):
-            #print "  old token; returning token %s" % self.token
-            return self.token
+        if(cls._token != None):
+            #print "  old token; returning token %s" % cls._token
+            return cls._token
         # otherwise get a new token from Swift
-        # eg curl -k -v -H 'X-Auth-User: mw:thumb' -H 'X-Auth-Key: $key' http://ms-fe.pmtpa.wmnet/auth/v1.0
+        # eg curl -k -v -H 'X-Auth-User: mw:thumb' -H 'X-Auth-Key: xxxxxxxxxxxx' http://ms-fe.pmtpa.wmnet/auth/v1.0
         headers = {}
-        headers['X-Auth-User'] = 'mw:thumb'
-        headers['X-Auth-Key'] = 'xxxxx'
+        headers['X-Auth-User'] = 'mw:thumbnail'
+        headers['X-Auth-Key'] = 'xxxxxxxxxxxx'
         headers['User-Agent'] = 'swiftcleaner'
         req = urllib2.Request('http://ms-fe.pmtpa.wmnet/auth/v1.0', headers=headers)
-        resp = urllib2.urlopen(req)
+        try:
+            resp = urllib2.urlopen(req)
+        except urllib2.HTTPError, e:
+            print "getting token excepted with %s" % e
+            raise
         authtoken = resp.info()['X-Storage-Token']
         authurl = resp.info()['X-Storage-Url']
-        self.token = authtoken
-        #print "  new token; returning token %s" % self.token
+        cls._token = authtoken
+        #print "  new token; returning token %s" % cls._token
         return authtoken
 
-    def bad_object(self, obj):
-        """deletes the object from swift and sends an HTCP Purge message to squid"""
-            #print "inside head_url exception"
-            ##if we're talking to swift and it's a 401, reauth
-            #if('ms-fe.pmtpa.wmnet' in url and e.code == 401):
-            #    self.token = None
-            #    self.get_token()
-            #    try:
-            #        resp = urllib2.urlopen(req)
-            #    except urllib2.HTTPError, e:
-            #        # if we got an error again, give up
-            #        return None
-            ##any other error, return None anyways
-        return
+    @classmethod
+    def clear_token(cls):
+        # force the next request for a token to get a fresh one
+        cls._token = None
+
+
+def bad_object(obj):
+    """deletes the object from swift and sends an htcp purge message to squid.
+    To avoid ridiculous performance penalty, this should be called as a
+    separate thread."""
+    try:
+        delete_from_swift(obj)
+    except (urllib2.HTTPError, urllib2.URLError), e:
+        print "deleting from swift failed for obj %s with error %s" % (obj,e)
+    purge_from_squid(obj)
+    time.sleep(0.5)
+    purge_from_squid(obj) #purge a second time just for good measure
+
+def delete_from_swift(obj):
+    #DELETE /v1/AUTH_43651b15-ed7a-40b6-b745-47666abf8dfe/wikipedia-commons-local-thumb.a2/a/a2/Little_kitten_.jpg/56px-Little_kitten_.jpg HTTP/1.1
+    #Host: ms-fe-rr.pmtpa.wmnet
+    #Accept-Encoding: identity
+    #X-Auth-Token: AUTH_xxxxxxxxxxxxxxxxxxx
+    url = "http://ms-fe.pmtpa.wmnet/v1/AUTH_43651b15-ed7a-40b6-b745-47666abf8dfe/%s/%s" % (obj[0], obj[1])
+    req = DeleteRequest(url)
+    req.headers['User-Agent'] = 'swiftcleaner'
+    req.headers['Host'] = 'upload.wikimedia.org'
+    req.headers['X-Auth-Token'] = Token.get_token()
+    # send that HEAD to the target
+    try:
+        resp = urllib2.urlopen(req)
+    except urllib2.HTTPError, e:
+        #if we're talking to swift and it's a 401, reauth and try once more
+        if(e.code == 401):
+            Token.clear_token()
+            req.headers['X-Auth-Token'] = Token.get_token()
+            try:
+                resp = urllib2.urlopen(req)
+            except urllib2.HTTPError, e:
+                # if we got an error again, give up
+                raise
+            #hooray, we successfully deleted it the second time!
+            return
+        #any other error, return False anyways
+        raise
+    except urllib2.URLError:
+        raise
+
+def purge_from_squid(obj):
+    # call 'php htcp.php http://upload.yaddayadda'
+    url = "http://upload.wikimedia.org/%s" % obj_to_url(obj)
+    delete = subprocess.call(['php', './htcp.php', '%s' % url], shell=False)
+    #print "purge from squid returned %s " % delete
+    return
+
+def obj_to_url(obj):
+    """translate an object tuple (container, objectpath) into a URL fit for swift or ms5
+    eg (wikipedia-commons-local-thumb.a2, a/a2/L.jpg/420px-L.jpg) => /wikipedia/commons/thumb/a/a2/L.jpg/420-L.jpg"""
+
+    contmatch = re.match("(?P<proj>[^-]+)-(?P<lang>[^-]+)-local-thumb(\.(?P<shard>\d{2}))?", obj[0])
+    if(contmatch):
+        url = "/%s/%s/%s/%s" % (contmatch.group('proj'), contmatch.group('lang'), "thumb", obj[1])
+    else:
+        url = None
+    return url
 
 def delegate(objlistfile):
-    """This is the main control function.  hands out urls 100 at a time to
+    """this is the main control function.  hands out urls 100 at a time to
     check_objects(), manages the number of checking threads, re-reads the
     config, etc."""
 
@@ -263,40 +343,33 @@ def delegate(objlistfile):
     fh = open(objlistfile)
     fh_has_data = True
 
-    try:
-        while fh_has_data:
-            # if we've got too many threads, just chill.
-            if(threading.activeCount() >= max_threads):
-                time.sleep(1)
-                continue
-            # sweet, we've got a thread avaialable.
-            # fill up the objlist
-            try:
-                objcounter = 0
-                objlist = []
-                while(objcounter < objs_per_thread):
-                    line = fh.next()
-                    #print "read line %s" % line
-                    try:
-                        (cont, image) = line[:-1].split()
-                    except ValueError:
-                        # if there is an unescaped space in the line or no container, skip it
-                        print "skipping line %s" % line,
-                        continue
-                    objlist.append((cont, image))
-                    objcounter += 1
-            except StopIteration:
-                # this is the last thread to start.
-                fh_has_data = False
-            # start a thread with objlist
-            checker = CheckObjects(objlist)
-            checker.start()
-    except KeyboardInterrupt:
-        pass
-    sys.stderr.write("keyboard interrupt caught.  Waiting for threads to finish.\n")
-    for thread in threading.enumerate():
-        if(thread != threading.current_thread()):
-            thread.join()
+    while fh_has_data:
+        # if we've got too many threads, just chill.
+        if(threading.activeCount() >= max_threads):
+            time.sleep(1)
+            continue
+        # sweet, we've got a thread avaialable.
+        # fill up the objlist
+        try:
+            objcounter = 0
+            objlist = []
+            while(objcounter < objs_per_thread):
+                line = fh.next()
+                #print "read line %s" % line
+                try:
+                    (cont, image) = line[:-1].split()
+                except ValueError:
+                    # if there is an unescaped space in the line or no container, skip it
+                    print "skipping line %s" % line,
+                    continue
+                objlist.append((cont, image))
+                objcounter += 1
+        except StopIteration:
+            # this is the last thread to start.
+            fh_has_data = False
+        # start a thread with objlist
+        checker = CheckObjects(objlist)
+        checker.start()
 
 def read_config():
     """reads the config file and updates current settings (eg number of
@@ -328,8 +401,14 @@ def main():
 
     # open the file, seek to the middle if necessary, then set up the UrlCaller class
     urllists = args
-    for urllistfile in urllists:
-        delegate(urllistfile)
+    try:
+        for urllistfile in urllists:
+            delegate(urllistfile)
+    except KeyboardInterrupt:
+        sys.stderr.write("keyboard interrupt caught.  Waiting for threads to finish.\n")
+    for thread in threading.enumerate():
+        if(thread != threading.current_thread()):
+            thread.join()
 
 
 if __name__ == '__main__':
