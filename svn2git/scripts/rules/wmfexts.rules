@@ -238,5 +238,10 @@ match /trunk/extensions/(AbuseFilter|ActiveAbstract|AntiBot|AntiSpoof|ApiSandbox
   branch master
 end match
 
+match /branches/RL2/extensions/Gadgets/
+  repository mediawiki/extensions/Gadgets
+  branch RL2
+end match
+
 match /
 end match
