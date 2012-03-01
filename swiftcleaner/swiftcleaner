@@ -100,10 +100,12 @@ class CheckObjects(threading.Thread):
                     if(check == self.check_if_object_exists):
                         print "skipping file because it doesn't exist in swift: %s" % (obj,)
                         return "Absent"
+                    # if it was the check against filesize, go ahead and print out the filesize and mod time.
+                    if check == self.check_object_filesize:
+                        print "filesize is %s for %s" % (self.get_object_details_swift(obj), obj[1])
                     # if it was the check against ms5, let's log more info to see what it was like before it got deleted.
                     if check == self.check_object_against_ms5:
                         # print out last mod time
-                        print "mod time is %s for object %s" % (self.get_object_details_swift(obj)['Last-Modified'], obj[1])
                         print "deets are %s/%s for %s" % (self.get_object_details_swift(obj), self.get_object_details_ms5(obj), obj[1])
         return objok
 
@@ -333,13 +335,13 @@ def obj_to_url(obj):
     return url
 
 def delegate(objlistfile):
-    """this is the main control function.  hands out urls 100 at a time to
+    """this is the main control function.  hands out urls 50 at a time to
     check_objects(), manages the number of checking threads, re-reads the
     config, etc."""
 
     threads = []
-    objs_per_thread = 100
-    max_threads = 4
+    objs_per_thread = 50
+    max_threads = 20
     fh = open(objlistfile)
     fh_has_data = True
 
@@ -403,7 +405,12 @@ def main():
     urllists = args
     try:
         for urllistfile in urllists:
-            delegate(urllistfile)
+            try:
+                delegate(urllistfile)
+            except IOError, e:
+                # if I couldn't open the file, skip it.
+                print "skipping file %s - it triggered an IOError %s" % (urllistfile, e)
+                continue
     except KeyboardInterrupt:
         sys.stderr.write("keyboard interrupt caught.  Waiting for threads to finish.\n")
     for thread in threading.enumerate():
