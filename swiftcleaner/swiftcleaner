@@ -32,6 +32,7 @@
 import re, urllib2, threading, time, sys, subprocess
 from optparse import OptionParser
 import random
+from swiftcleaner_helper import Token, read_config
 
 class Stats():
     """create an instance of this, pass it into all the running threads, and
@@ -187,7 +188,8 @@ class CheckObjects(threading.Thread):
         url = "http://ms-fe.pmtpa.wmnet/v1/AUTH_43651b15-ed7a-40b6-b745-47666abf8dfe/%s/%s" % (obj[0], obj[1])
         try:
             objdetails = self.head_url(url)
-        except urllib2.URLError:
+        except urllib2.URLError, e:
+            #print "get_object_details returned %s for %s/%s" % (e.code, obj[0], obj[1])
             objdetails = None
         self.swift_obj_details[obj] = objdetails
         return objdetails
@@ -240,53 +242,6 @@ class CheckObjects(threading.Thread):
         except urllib2.URLError:
             objdetails = None
         return objdetails
-
-# make a class to hold the swift authentication token and fetch a new one when necessary.
-class Token():
-    _token = 'AUTH_abc123'
-    _user = 'account:user'
-    _key = 'xxxxxxxx'
-    _useragent = 'swiftcleaner'
-
-    @classmethod
-    def update_auth_creds(cls, conf):
-        try:
-            cls._user = conf['user']
-            cls._key = conf['key']
-            cls._useragent = conf['useragent']
-        except KeyError:
-            # if the cnofiguration doesn't have the one we want, juts ignore all of them.
-            pass
-
-    @classmethod
-    def get_token(cls):
-        # if we already have the token, return it.
-        if(cls._token != None):
-            #print "  old token; returning token %s" % cls._token
-            return cls._token
-        # otherwise get a new token from Swift
-        # eg curl -k -v -H 'X-Auth-User: mw:thumb' -H 'X-Auth-Key: xxxxxxxxxxxx' http://ms-fe.pmtpa.wmnet/auth/v1.0
-        headers = {}
-        headers['X-Auth-User'] = cls._user
-        headers['X-Auth-Key'] = cls._key
-        headers['User-Agent'] = cls._useragent
-        req = urllib2.Request('http://ms-fe.pmtpa.wmnet/auth/v1.0', headers=headers)
-        try:
-            resp = urllib2.urlopen(req)
-        except urllib2.HTTPError, e:
-            print "getting token excepted with %s" % e
-            raise
-        authtoken = resp.info()['X-Storage-Token']
-        authurl = resp.info()['X-Storage-Url']
-        cls._token = authtoken
-        #print "  new token; returning token %s" % cls._token
-        return authtoken
-
-    @classmethod
-    def clear_token(cls):
-        # force the next request for a token to get a fresh one
-        cls._token = None
-
 
 def bad_object(obj):
     """deletes the object from swift and sends an htcp purge message to squid.
@@ -382,6 +337,9 @@ def delegate(objlistfile, conf):
                     # if there is an unescaped space in the line or no container, skip it
                     print "skipping line %s" % line,
                     continue
+                # skip the monitoring container cuz it's special
+                if(cont == 'monitoring'):
+                    continue
                 objlist.append((cont, image))
                 objcounter += 1
         except StopIteration:
@@ -390,42 +348,6 @@ def delegate(objlistfile, conf):
         # start a thread with objlist
         checker = CheckObjects(objlist, delay=conf['delay'])
         checker.start()
-
-def read_config(conffile, conf):
-    # which configs are what type?
-    intconfs = ['numthreads', 'objsperthread']
-    floatconfs = ['delay']
-    boolconfs = ['test']
-    #try and pull in optinos from the config file
-    try:
-        configfh = open(conffile)
-        for line in configfh.readlines():
-            if "#" in line:
-                # throw away the part after the comment character
-                (line, comment) = line.split("#", 1)
-            try:
-                (opt,val) = line.split("=")
-            except ValueError:
-                # no = sign in the line, skip this line
-                continue
-            opt = opt.strip().lower()
-            val = val.strip()
-            # cast val
-            if opt in intconfs:
-                val = int(val)
-            if opt in floatconfs:
-                val = float(val)
-            if opt in boolconfs:
-                # if it's set to anything but 'False', go ahead and enter testing mode.  safer that way.
-                val = (False if val == False or val == 'False' else True)
-            conf[opt] = val
-        configfh.close()
-    except (IOError, TypeError), e:
-        # if the conf file doesn't exist, that's cool.  no biggy.
-        #print "passing with exp %s" % e
-        pass
-    return conf
-
 
 def main():
     # set up command line arguments
@@ -453,7 +375,7 @@ def main():
     conf['objsperthread'] = int(options.objsperthread)
     conf['delay'] = float(options.delay)
     #conf['logfile'] = options.logfile
-    conf['test'] = (False if options.test == False or options.test == 'False' else True)
+    conf['test'] = (True if options.test == True or options.test == 'True' else False)
 
     # make sure we've got a urllist passed in
     if not args:
