@@ -287,9 +287,8 @@ def delete_from_swift(obj):
 
 def purge_from_squid(obj):
     # call 'php htcp.php http://upload.yaddayadda'
-    url = "http://upload.wikimedia.org/%s" % obj_to_url(obj)
+    url = "http://upload.wikimedia.org%s" % obj_to_url(obj)
     delete = subprocess.call(['php', './htcp.php', '%s' % url], shell=False)
-    #print "purge from squid returned %s " % delete
     return
 
 def obj_to_url(obj):
