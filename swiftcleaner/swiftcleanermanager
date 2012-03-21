@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python
 
 ##
 ##  This script's goal is to call swiftcleaner with all the objects added to Swift
@@ -12,6 +12,7 @@ from swiftcleaner_helper import Token, read_config
 from optparse import OptionParser
 import os
 import time
+from random import random
 from time import asctime
 import eventlet
 from eventlet.green import urllib, urllib2, subprocess
@@ -86,9 +87,38 @@ def get_swift_listing(conf, container=None):
                 raise
     return swiftlist
 
+## take a list of containers and prune out the ones we don't want
+## return a new list of the containers we want to keep
+def clean_container_listing(conf, origcontlist):
+    contlist = []
+    for cont in origcontlist:
+        # we should skip the monitoring container
+        if(cont == 'monitoring'):
+            continue
+        # we should keep containers that end with -thumb
+        if(cont.endswith('-thumb')):
+            contlist.append(cont)
+            continue
+        # we should keep containers that end with -thumb.[0-9a-f]{2}
+        if(cont[-9:-3].endswith('-thumb')): #aka cut off the .a2 and then compare
+            contlist.append(cont)
+            continue
+        # we didn't explicitly skip it, but we didn't include it either.
+        # I'm going to default to only checking the -thumb containers
+        # so we'll skip everything that doesn't get caught above
+    return contlist
+
 ## read a container listing from the file in the statedir (from last time) if it exists
 def get_old_container_listing(conf, container):
     objlist = []
+    if (conf['scrubstate'] == 'True'):
+        # if we're supposed to clean up old state
+        # delete the statefile if it exists and return an empty list.
+        try:
+            os.unlink("%s/%s.prev" % (conf['statedir'], container))
+        except:
+            pass
+        return objlist
     try:
         fh = open("%s/%s.prev" % (conf['statedir'], container))
     except IOError:
@@ -146,25 +176,80 @@ def process_container(conf, cont):
     if(len(newobjs) != 0):
         write_list(conf, cont, 'new', newobjs)
         print "calling swiftcleaner for %s" % cont
-        sc = subprocess.call(["./swiftcleaner", "-c", conf['config'], "%s/%s.new" % (conf['statedir'], cont)])
+        sc = subprocess.call([conf['swiftcleaner'], "-c", conf['config'], "%s/%s.new" % (conf['statedir'], cont)])
         if(sc == 0):
             # only move current to prev (aka we successfully checked these objects) if swiftcleaner succeeded.
             print "swiftcleaner succeeded for %s.  moving container listing from curr to prev." % cont
             os.rename("%s/%s.curr" % (conf['statedir'], cont), "%s/%s.prev" % (conf['statedir'], cont))
 
+# checks for a pidfile
+# if the pidfile exists, checks to see whether the script is actually running with that pid
+# writes a pidfile if nobody else is running
+# the race condition logic isn't perfect but it's good enough.  It's not the end of the world if it fails and we get two copies running.
+# returns True if another instance is running, False otherwise
+def am_i_alone(conf):
+    pidfile = conf['pidfile']
+    pid = os.getpid()
+    if os.path.isfile(pidfile):
+        otherpid = int(open(pidfile).readline().strip())
+        try:
+            os.kill(otherpid, 0)
+        except OSError:
+            # pid is not running - remove the pidfile and continue on our way (it musta crashed)
+            os.unlink(pidfile)
+        else:
+            # pid is running.  We are not alone.  Return false.
+            return False
+    # at this point the pidfile doesn't exist and we're clear to continue
+    try:
+        fh = open(pidfile, 'w')
+        fh.write(str(pid))
+        fh.close()
+    except:
+        # blew up trying to write the pidfile.  log it and fail
+        print "failed to write pidfile."
+        raise
+    # ok, we've declared that we're the only one running.
+    # But wait!  there's a race condition!
+    # so let's pause for 0-0.1 sec and then
+    # let's check again and make sure that we actually put our own pid in that file and someone else didn't jump in the middle.
+    time.sleep(random()/10)
+    otherpid = int(open(pidfile).readline().strip())
+    if(otherpid == pid):
+        # hooray!  we're really the only one running.
+        return True
+    # ruh roh!  at this point, we tried to write in our own pid but someone beat us to it.
+    # let's back off for some time and try again.
+    time.sleep(random())
+    # recurse as many times as necessary to stop fighting.  probably only once.
+    return am_i_alone(conf)
+
+
+
+
 def main():
     parser = OptionParser()
     parser.add_option("-c", dest="config", default="./swiftcleaner.conf", help="swiftcleaner and swiftcleanermanager use the same config file.  this option specifies the path to the config file.  The long form of any option to either script can be defined in the config file. The config file is re-read throughout execution to dynamically adjust the number of running threads.")
     parser.add_option("-s", dest="statedir", default="/var/lib/swiftcleaner", help="directory in which to store state (container and object lists).")
+    parser.add_option("-S", dest="scrubstate", action='store_const', const='True', default='False', help="if defined as True, will remove all state before starting (and do a complete check)")
     parser.add_option("-n", dest="nummanagerthreads", default=2, help="number of manager threads to run (multiply this number by the number of cleaner threads to get the total number of threads.)")
+    parser.add_option("-p", dest="pidfile", default="/tmp/swiftcleanermanager.pid", help="location for the pidfile - only one instance will run at a time.")
     (options, args) = parser.parse_args()
 
     conf = {}
     conf['config'] = options.config
     conf['statedir'] = options.statedir
+    conf['scrubstate'] = options.scrubstate
+    conf['pidfile'] = options.pidfile
     # get the rest of the config from the config file
     conf = read_config(conf['config'], conf)
 
+    # amke sure there's only one copy of the manager running.
+    # note that pidfile is an option, so you can have multiple instances by specifying separate pid files
+    if not am_i_alone(conf):
+        # I'm already running!  exit with an error.
+        print "Cowardly refusing to run a second instance."
+        exit(1)
     # make sure the statedir exists
     if not os.path.isdir(conf['statedir']):
         try:
@@ -178,6 +263,8 @@ def main():
 
     # get a list of all containers
     contlist = get_swift_listing(conf)
+    # clean the list of containers - we don't actually want to check all of them
+    contlist = clean_container_listing(conf, contlist)
 
     # for each container, get the new and old lists, compare, spit out a comparison file,
     # then launch swiftcleaner for all the new objects
@@ -196,6 +283,10 @@ def main():
             results[cont] = pool.spawn(process_container, conf, cont)
         except (SystemExit, KeyboardInterrupt):
             break
+
+    # clear out the pidfile now that we're done
+    os.unlink(conf['pidfile'])
+    # and exit
     exit(0)
 
 if __name__ == '__main__':
