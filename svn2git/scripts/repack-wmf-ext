@@ -4,5 +4,5 @@ cd /svnroot/git-dumps/mediawiki/extensions
 
 for dir in /svnroot/git-dumps/mediawiki/extensions/*
 do
-  (cd $dir && git repack -a -d -f --depth=250 --window=250)
+  (cd $dir && nice -n 10 git repack -a -d -f --depth=250 --window=250)
 done

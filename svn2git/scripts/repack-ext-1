@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /svnroot/git-dumps/mediawiki/extensions2
+
+for dir in /svnroot/git-dumps/mediawiki/extensions2/*
+do
+  (cd $dir && nice -n 10 git repack -a -d -f --depth=250 --window=250)
+done
