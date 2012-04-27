@@ -1,0 +1,22 @@
+Format: 1.8
+Date: Tue, 21 Feb 2012 21:16:32 +0000
+Source: fwconfigtool
+Binary: fwconfigtool
+Architecture: all
+Version: 1.0
+Distribution: unstable
+Urgency: low
+Maintainer: Lcarr <lcarr@wikimedia.org>
+Changed-By: Lcarr <lcarr@wikimedia.org>
+Description: 
+ fwconfigtool - converts puppet output to SLAX
+Changes: 
+ fwconfigtool (1.0) unstable; urgency=low
+ .
+   * Initial release
+Checksums-Sha1: 
+ 3080d29ac0bb5ecf2ab5cb6d6f1d5a86f853475c 4598 fwconfigtool_1.0_all.deb
+Checksums-Sha256: 
+ 1e5a7f0b1522a39426e62e57a46b9efa39a738077fe4c9e486ec4f05e1f97c31 4598 fwconfigtool_1.0_all.deb
+Files: 
+ fc5a965983b117340ca08a61d45a7965 4598 - extra fwconfigtool_1.0_all.deb
