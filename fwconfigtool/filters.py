@@ -78,7 +78,7 @@ class Filter(JunosSlaxBase):
     def GetRuleParts(self):
         parts = []
         if self.terms:
-            parts.append('<filter> "%s" {' % (self.name))
+            parts.append('<filter> "%s" { ' % (self.name))
             for term in self.terms:
                 parts.extend(TabExtend(term.GetRuleParts()))
             parts.append('}')

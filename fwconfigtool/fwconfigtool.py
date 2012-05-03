@@ -14,6 +14,7 @@ import csv
 import os.path
 import datetime
 import filters
+from future import argparse
 
 # version 1.0;
 # ns junos = "http://xml.juniper.net/junos/*/junos";
@@ -23,7 +24,7 @@ import filters
 
 #file parameters defined here
 standard_headers = [
-    '# This file should live in /var/db/scripts.',
+    '/* This file should live in /var/db/scripts/commit'*/,
     'version 1.0;',
     ''
     'ns junos = "http://xml.juniper.net/junos/*/junos";',
@@ -35,7 +36,7 @@ standard_headers = [
 def file_header():
     timestamp = datetime.datetime.now()
     return '\n'.join(
-        ['# File automatically created at ' + str(timestamp)] +
+        ['/* # File automatically created at ' + str(timestamp) + '*/'] +
         standard_headers) + '\n'
 
 # The standard opening directives for the SLAX firewall configuraation:
@@ -68,25 +69,33 @@ def slax_footer():
     return parts
 
 
-def main(args):
+def main():
     """Generate junos firewall rules from a sourcedir.
 
     Args:
         output file: str, filename to write the rules into.
         source dir: str, directory to read inputs from.
     """
-    if len(args) >= 2:
-        sourcedir = args[1]
+    parser = argparse.ArgumentParser(
+             description='Converts puppet resources to junos SLAX')
+    parser.add_argument('sourcedir', help='Source directory with files')
+    parser.add_argument('outputfile', help='Output SLAX file')
 
-    if len(args) >= 1:
-        outputfile = args[0]
+    args = parser.parse_args()
+
+
+#    if len(args) >= 1:
+#        sourcedir = args[0]
+
+#    if len(args) >= 2:
+#        outputfile = args[1]
 
     # First write the generic information to the top of the file
     try:
-        output = open(outputfile, 'w', 0)
+        output = open(args.outputfile, 'w', 0)
         output.write(file_header())
     except IOError, e:
-        print('output file (%s) has problems: %s.' % (outputfile, e))
+        print('output file (%s) has problems: %s.' % (args.outputfile, e))
         return 1
 
     # Then we start the actual code bits
@@ -96,9 +105,9 @@ def main(args):
     # Now we need to take the various inputs in the directory and make them
     # into slax terms
     try:
-        files = os.listdir(sourcedir)
+        files = os.listdir(args.sourcedir)
     except OSError, e:
-        print('Error reading directory %s: %s' % (sourcedir, e))
+        print('Error reading directory %s: %s' % (args.sourcedir, e))
 
     firewall = filters.Firewall()
     fw_filter = filters.Filter('inbound-auto')
@@ -108,7 +117,7 @@ def main(args):
     by_port_protocol = {}
 
     for f in files:
-        fh = open(os.path.join(sourcedir, f))
+        fh = open(os.path.join(args.sourcedir, f))
         # TODO: A CSV parser might be reasonable here.
         for line in fh.readlines():
             name, ip, protocol, port = line.rstrip().split(',')
@@ -134,8 +143,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        args = sys.argv[1:]
-    else:
-        args = []
-    sys.exit(main(args))
+    sys.exit(main())
