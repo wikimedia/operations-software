@@ -14,7 +14,7 @@ import csv
 import os.path
 import datetime
 import filters
-from future import argparse
+import argparse
 
 # version 1.0;
 # ns junos = "http://xml.juniper.net/junos/*/junos";
@@ -24,7 +24,7 @@ from future import argparse
 
 #file parameters defined here
 standard_headers = [
-    '/* This file should live in /var/db/scripts/commit'*/,
+    '/* This file should live in /var/db/scripts/commit */',
     'version 1.0;',
     ''
     'ns junos = "http://xml.juniper.net/junos/*/junos";',
@@ -45,26 +45,26 @@ SLAX_DIRECTIVES = ('match configuration',
 def slax_header():
     # Assumptions:
     # - every line needs to end in a "{"
-    # - every line must be indented an additional tab. (first = none).
+    # - every line must be indented an additional level. (first = none).
     parts = []
-    tabs = 0
+    indent_level = 0
     for line in SLAX_DIRECTIVES:
-        parts.append('\t' * tabs + line + ' {')
-        tabs += 1
-    return parts, tabs
+        parts.append(' ' * indent_level * 2 + line + ' {')
+        indent_level += 1
+    return parts, indent_level
 
 
 def slax_footer():
     # Assumptions:
     # - everything in SLAX_DIRECTIVES needs a closing "}"
-    # - every line must be indented a descending number of tabs
+    # - every line must be indented a descending number of double spaces
     parts = []
 
     # This should end at 0, not 1, so substract 1 to start.
-    tabs = len(SLAX_DIRECTIVES) - 1
+    indent_level = len(SLAX_DIRECTIVES) - 1
     for line in reversed(SLAX_DIRECTIVES):
-        parts.append('\t' * tabs + '}')
-        tabs -= 1
+        parts.append(' ' * indent_level * 2 + '}')
+        indent_level -= 1
     return parts
 
 
@@ -72,8 +72,8 @@ def main():
     """Generate junos firewall rules from a sourcedir.
 
     Args:
-        output file: str, filename to write the rules into.
         source dir: str, directory to read inputs from.
+        output file: str, filename to write the rules into.
     """
     parser = argparse.ArgumentParser(
              description='Converts puppet resources to junos SLAX')
@@ -91,7 +91,7 @@ def main():
         return 1
 
     # Then we start the actual code bits
-    header, tab_depth = slax_header()
+    header, indent_depth = slax_header()
     output.write('\n'.join(header) + '\n')
 
     # Now we need to take the various inputs in the directory and make them
@@ -124,7 +124,7 @@ def main():
         term.protocol = protocol
         fw_filter.terms.append(term)
 
-    parts = filters.TabExtend(firewall.GetRuleParts(), tab_depth)
+    parts = filters.IndentExtend(firewall.GetRuleParts(), indent_depth)
     output.write('\n'.join(parts) + '\n')
 
     # Now we complete and close our configuration bit

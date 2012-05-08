@@ -34,9 +34,9 @@ For a full description of the license, please visit http://www.gnu.org/licenses/
 class Error(Exception):
     pass
 
-def TabExtend(parts, depth=1):
-    """Prepend a tab to every item in parts, and return it."""
-    return ['\t' * depth + p for p in parts]
+def IndentExtend(parts, depth=1):
+    """Prepend two spaces to every item in parts, and return it."""
+    return [' ' * depth * 2 + p for p in parts]
 
 class JunosSlaxBase(object):
     def GenerateRules(self):
@@ -55,14 +55,14 @@ class Firewall(JunosSlaxBase):
         parts = []
         if self.filters:
             for level in ('firewall', 'family', 'inet'):
-                parts.append('\t' * len(parts) + '<%s> {' % (level))
+                parts.append(' ' * len(parts) * 2 + '<%s> {' % (level))
 
-            tab_depth = len(parts)
+            indent_depth = len(parts)
             for f in self.filters:
-                parts.extend(TabExtend(f.GetRuleParts(), tab_depth))
+                parts.extend(IndentExtend(f.GetRuleParts(), indent_depth))
 
-            for i in xrange(tab_depth, 0, -1):
-                parts.append('\t' * (i - 1) + '}')
+            for i in xrange(indent_depth, 0, -1):
+                parts.append(' ' * (i - 1) * 2 + '}')
         return parts
 
 
@@ -80,7 +80,7 @@ class Filter(JunosSlaxBase):
         if self.terms:
             parts.append('<filter> "%s" { ' % (self.name))
             for term in self.terms:
-                parts.extend(TabExtend(term.GetRuleParts()))
+                parts.extend(IndentExtend(term.GetRuleParts()))
             parts.append('}')
         return parts
 
@@ -136,7 +136,7 @@ class Term(JunosSlaxBase):
 
         if from_parts:
             parts.append('<from> {')
-            parts.extend(TabExtend(from_parts))
+            parts.extend(IndentExtend(from_parts))
             parts.append('}')  # end of from
 
         # What do we do with it?
@@ -149,10 +149,10 @@ class Term(JunosSlaxBase):
             actions.append(action + ';')
         if not actions:
             actions.append('<accept>;')
-        parts.extend(TabExtend(actions))
+        parts.extend(IndentExtend(actions))
         parts.append('}')
 
-        return ['<term> { "%s"' % self.name] + TabExtend(parts) + ['}']
+        return ['<term> { "%s"' % self.name] + IndentExtend(parts) + ['}']
 
     def GenerateRules(self):
         return '\n'.join(self.GetRuleParts())
