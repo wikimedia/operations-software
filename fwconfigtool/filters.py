@@ -78,7 +78,9 @@ class Filter(JunosSlaxBase):
     def GetRuleParts(self):
         parts = []
         if self.terms:
-            parts.append('<filter> "%s" { ' % (self.name))
+            parts.append('<filter> { ')
+            parts.extend(IndentExtend(['<name> "%s";' % (self.name)]))
+            parts.extend(IndentExtend(['<interface-specific>;']))
             for term in self.terms:
                 parts.extend(IndentExtend(term.GetRuleParts()))
             parts.append('}')
@@ -100,7 +102,7 @@ class Term(JunosSlaxBase):
         self.actions = []
 
     def GetRuleParts(self):
-        parts = []
+        parts = ['<name> "%s";' % self.name]
 
         from_parts = []
 
@@ -109,16 +111,16 @@ class Term(JunosSlaxBase):
             if addrs:
                 from_parts.append('<%s-address> {' % endpoint)
                 for ip in addrs:
-                    from_parts.append('\t%s/32;' % ip)
+                    from_parts.append('  <name> "%s/32";' % ip)
                 from_parts.append('}')
 
         def _GenPorts(endpoint, ports):
             if ports:
                 if len(ports) > 1:
-                    port = '[%s]' % ' '.join(ports)
+                    port = '["%s"]' % ' '.join(ports)
                 else:
-                    port = '%s' % ' '.join(ports)
-                from_parts.append('<%s-port> %s;' % (endpoint, ports[0]))
+                    port = '"%s"' % ' '.join(ports)
+                from_parts.append('<%s-port> "%s";' % (endpoint, ports[0]))
 
         # What type of traffic are filtering:
         _GenAddrs('source', self.source_addr)
@@ -126,7 +128,7 @@ class Term(JunosSlaxBase):
         _GenAddrs('destination', self.destination_addr)
         _GenPorts('destination', self.destination_port)
         if self.protocol:
-            from_parts.append('<protocol> %s;' % (self.protocol))
+            from_parts.append('<protocol> "%s";' % (self.protocol))
 
         if self.established:
             if self.protocol != 'tcp':
@@ -152,7 +154,7 @@ class Term(JunosSlaxBase):
         parts.extend(IndentExtend(actions))
         parts.append('}')
 
-        return ['<term> { "%s"' % self.name] + IndentExtend(parts) + ['}']
+        return ['<term> {'] + IndentExtend(parts) + ['}']
 
     def GenerateRules(self):
         return '\n'.join(self.GetRuleParts())
