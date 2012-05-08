@@ -6,7 +6,7 @@ Authors: Ryan Anderson <ryan@michonline.com>, Leslie Carr <lcarr@wikimedia.org>
 Copyright (c) 2012 Wikimedia Foundation
 License: Released under the GPL v2 or later.
 For a full description of the license, please visit http://www.gnu.org/licenses/gpl-2.0.html
-GG"""
+"""
 
 import os
 import sys
@@ -31,7 +31,6 @@ standard_headers = [
     'ns xnm = "http://xml.juniper.net/xnm/1.1/xnm";',
     'ns jcs = "http://xml.juniper.net/junos/commit-scripts/1.0";',
     'import "../import/junos.xsl";']
-
 
 def file_header():
     timestamp = datetime.datetime.now()
@@ -82,13 +81,6 @@ def main():
     parser.add_argument('outputfile', help='Output SLAX file')
 
     args = parser.parse_args()
-
-
-#    if len(args) >= 1:
-#        sourcedir = args[0]
-
-#    if len(args) >= 2:
-#        outputfile = args[1]
 
     # First write the generic information to the top of the file
     try:
