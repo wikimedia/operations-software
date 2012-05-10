@@ -1,0 +1,33 @@
+Format: 1.8
+Date: Tue, 08 May 2012 23:02:19 +0000
+Source: fwconfigtool
+Binary: fwconfigtool
+Architecture: source all
+Version: 1.1
+Distribution: lucid
+Urgency: low
+Maintainer: Lcarr <lcarr@wikimedia.org>
+Changed-By: Lcarr <lcarr@wikimedia.org>
+Description: 
+ fwconfigtool - Input information files and output an SLAX file usable by JUNOS t
+Changes: 
+ fwconfigtool (1.1) lucid; urgency=low
+ .
+   * Switched variable order
+   * Fixed the output to work with JUNOS
+   * Switched argument parser (now requires argparse)
+Checksums-Sha1: 
+ a33a5597c2e3640aea8af06506e0d66de9f524f9 763 fwconfigtool_1.1.dsc
+ 94552729774feeebd925e7fd4d1084f45b468465 8843 fwconfigtool_1.1.orig.tar.gz
+ 7ccedfaba3f30b6f9c63e77b5ad6fbda5d00f299 271 fwconfigtool_1.1.diff.gz
+ 2a8483cadaf149d3c47433298b404a6aee5854c6 4866 fwconfigtool_1.1_all.deb
+Checksums-Sha256: 
+ d0e9f5247190659d0ffd21bf54952987eb36e6e20175c9561dd736aac292b1e4 763 fwconfigtool_1.1.dsc
+ f3b08845cc4ecf0969f4df158a21282e5de668d7bb0d6afe8995155d803d9a45 8843 fwconfigtool_1.1.orig.tar.gz
+ 506fb16f5299fc8f52d7158af9beb76108ee3b83a10f754d6fd17aa60f11484d 271 fwconfigtool_1.1.diff.gz
+ e5a84420574981dbe32eb272721adefe6ec340c286c504ae863d90809983b240 4866 fwconfigtool_1.1_all.deb
+Files: 
+ de91368715d66bba59549f552a7611ae 763 network extra fwconfigtool_1.1.dsc
+ 53bccad02d5d8b82f9b97c57827f7373 8843 network extra fwconfigtool_1.1.orig.tar.gz
+ 8ea80670d55ce9b455e545df353eab5c 271 network extra fwconfigtool_1.1.diff.gz
+ cdc60d05dab54234475afa963f3dd0d7 4866 network extra fwconfigtool_1.1_all.deb

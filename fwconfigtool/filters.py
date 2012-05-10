@@ -31,6 +31,8 @@ License: Released under the GPL v2 or later.
 For a full description of the license, please visit http://www.gnu.org/licenses/gpl-2.0.html
 """
 
+final_rule = ['<term> {', '<name "next_policy";', '<then> {', '<next-policy>;']
+
 class Error(Exception):
     pass
 
@@ -60,7 +62,7 @@ class Firewall(JunosSlaxBase):
             indent_depth = len(parts)
             for f in self.filters:
                 parts.extend(IndentExtend(f.GetRuleParts(), indent_depth))
-
+            parts.extend(IndentExtend(final_rule, indent_depth))
             for i in xrange(indent_depth, 0, -1):
                 parts.append(' ' * (i - 1) * 2 + '}')
         return parts
