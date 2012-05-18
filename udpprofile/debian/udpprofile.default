@@ -1,0 +1,7 @@
+# Defaults for udpprofile initscript
+# sourced by /etc/init.d/udpprofile
+# installed at /etc/default/udpprofile by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#

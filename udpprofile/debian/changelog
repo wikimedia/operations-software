@@ -1,0 +1,74 @@
+udpprofile (1.6) lucid-wikimedia; urgency=low
+
+  * Domas "set in-RAM cache size to 256M instead of 256k - cuts CPU usage in half on busy systems"
+  * Replaced 99.9th percentile calculation with 90th
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Thu, 6 Mar 2012 00:43:00 +0000
+
+udpprofile (1.5) lucid-wikimedia; urgency=low
+
+  * profiler-to-carbon skips non-ascii event keys
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Thu, 16 Feb 2012 22:23:00 +0000
+
+udpprofile (1.4) lucid-wikimedia; urgency=low
+
+  * Aggregate stats separately to profiling
+
+ -- Tim Starling <tstarling@wikimedia.org>  Thu, 16 Feb 2012 15:24:35 +1100
+
+udpprofile (1.3-1) lucid-wikimedia; urgency=low
+
+  * Added automatic aggregation across DBs to collector
+
+ -- Tim Starling <tstarling@wikimedia.org>  Thu, 16 Feb 2012 14:46:14 +1100
+
+udpprofile (1.2-2) lucid-wikimedia; urgency=low
+
+  * exception handing in profiler-to-carbon, for when collector has no data
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Fri, 19 Nov 2011 01:48:00 +0000
+
+udpprofile (1.2-1) lucid-wikimedia; urgency=low
+
+  * collector now stores a cyclic buffer of sample times 
+  * graphite injector calculates timing percentiles via the sample buffer
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Thu, 18 Nov 2011 01:12:00 +0000
+
+udpprofile (1.1-2) lucid-wikimedia; urgency=low
+
+  * init also starts carbon collector if installed
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Thu, 03 Nov 2011 21:28:00 +0000
+
+udpprofile (1.1-1) lucid-wikimedia; urgency=low
+
+  * init and py path fixes
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Wed, 12 Oct 2011 01:19:00 +0000
+
+udpprofile (1.1) lucid-wikimedia; urgency=low
+
+  * profiler-to-carbon - realtime graphing of rate and timing in ms of 
+    profiling data in the all and stats/all dbs
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Tue, 11 Oct 2011 21:55:00 +0000
+
+udpprofile (1.0-2) lucid-wikimedia; urgency=low
+
+  * Fix init script agin
+
+ -- Ryan Lane <rlane@wikimedia.org>  Wed, 30 Mar 2011 23:07:00 +0000
+
+udpprofile (1.0-1) lucid-wikimedia; urgency=low
+
+  * Fix init script
+
+ -- Ryan Lane <rlane@wikimedia.org>  Wed, 30 Mar 2011 22:59:28 +0000
+
+udpprofile (1.0) lucid-wikimedia; urgency=low
+
+  * Initial package
+
+ -- Ryan Lane <rlane@wikimedia.org>  Wed, 30 Mar 2011 21:35:28 +0000

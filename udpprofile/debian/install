@@ -1,0 +1,11 @@
+collector /usr/udpprofile/sbin
+exporter /usr/udpprofile/sbin
+profiler-to-carbon /usr/udpprofile/sbin
+web /usr/udpprofile/web
+web/admin.py /usr/udpprofile/web
+web/config.py /usr/udpprofile/web
+web/extractprofile.py /usr/udpprofile/web
+web/pcache-hit-rate.py /usr/udpprofile/web
+web/pcache-request-rate.py /usr/udpprofile/web
+web/report.py /usr/udpprofile/web
+web/VERSION /usr/udpprofile/web

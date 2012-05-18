@@ -1,0 +1,11 @@
+Source: udpprofile
+Section: net
+Priority: extra
+Maintainer: Ryan Lane <rlane@wikimedia.org>
+Build-Depends: debhelper (>= 4), libdb4.8-dev, gcc
+Standards-Version: 1.0
+
+Package: udpprofile
+Architecture: amd64
+Depends: libdb4.8
+Description: UDP profiling daemon
