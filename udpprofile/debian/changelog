@@ -1,4 +1,10 @@
-udpprofile (1.6) lucid-wikimedia; urgency=low
+udpprofile (1.6-2) lucid-wikimedia; urgency=low
+
+  * Fixed issue with percentile calculations in profiler-to-carbon
+
+ -- Asher Feldman <afeldman@wikimedia.org>  Thu, 18 Mar 2012 02:00:00 +0000
+
+udpprofile (1.6-1) lucid-wikimedia; urgency=low
 
   * Domas "set in-RAM cache size to 256M instead of 256k - cuts CPU usage in half on busy systems"
   * Replaced 99.9th percentile calculation with 90th
