@@ -115,7 +115,7 @@ function get_db_color($db) {
 	if ($dbdata['latest'] - $dbdata[$db]['REPORTED'] > $stale || !$dbdata[$db]['REPORTED']) {
 		$color = 'black';
 	} else if ($dbdata[$db]['mysql_slave_running'] != 1) {
-		$color = 'red';
+		$color = 'black';
 	} else if ($dbdata[$db]['mysql_slave_lag'] > 10) {
 		$color = 'red';
 	} else if ($dbdata[$db]['mysql_slave_lag'] > 2) {
@@ -228,8 +228,8 @@ print '<div id=txt style="color:#000000; background:#aaaaaa; width:600px; positi
 print '<div style="text-align:center;">
 	<blockquote><div style="background-color:white;width:120px;border:1px solid #000">Ok</div>
 	<div style="background-color:yellow;width:120px;border:1px solid #000">2 > Lag > 10</div>
-	<div style="background-color:red;width:120px;border:1px solid #000">Lag > 10 or Not Replicating</div>
-	<div style="background-color:black;width:120px;border:1px solid #000;color:#ffffff">Not Reporting</div></blockquote>
+	<div style="background-color:red;width:120px;border:1px solid #000">Lag > 10</div>
+	<div style="background-color:black;width:120px;border:1px solid #000;color:#ffffff">Not Reporting or Replicating</div></blockquote>
 	</div>
 	Click shard name for list of wikis.
 	<div id="wikis" style="font-weight:bold";> </div></div>';
