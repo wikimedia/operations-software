@@ -57,9 +57,9 @@ do_start()
 	fi
 
 	if [ -x "$DAEMON3" ] ; then
-		start-stop-daemon --start --quiet --pidfile /opt/graphite/storage/carbon-cache-a.pid -d /tmp \
+		start-stop-daemon --start --quiet --pidfile /var/lock/carbon-cache-a.pid -d /tmp \
 			--exec /usr/bin/python --test -- $DAEMON3 start > /dev/null || return 1
-		start-stop-daemon --start --quiet --pidfile /opt/graphite/storage/carbon-cache-a.pid -d /tmp \
+		start-stop-daemon --start --quiet --pidfile /var/lock/carbon-cache-a.pid -d /tmp \
 			--exec /usr/bin/python -- $DAEMON3 start > /dev/null || return 2
 	fi
 
