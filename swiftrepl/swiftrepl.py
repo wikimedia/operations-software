@@ -41,12 +41,12 @@ def replicate_object(srcobj, dstobj):
 	for i in range(2):
 		try:
 			dstobj.send(stream)
-		except (AttributeError, httplib.CannotSendRequest):
+		except (AttributeError, httplib.CannotSendRequest, socket.error, httplib.ResponseNotReady):
 			# httplib bug?
 			continue
-		except cloudfiles.errors.ResponseError, e:
+		except cloudfiles.errors.ResponseError as e:
 			if e.status == 404:
-				print "Object", srcobj.name, "doesn't exist at the source after all. Skipping."
+				print "Object", srcobj.name.encode("ascii", errors="ignore"), "doesn't exist at the source after all. Skipping."
 				break
 			else:
 				print "Error occurred, skipping"
@@ -55,6 +55,31 @@ def replicate_object(srcobj, dstobj):
 				break
 		else:
 			break
+
+def get_container_objects(container, limit, marker):
+	objects = None
+	while objects is None:
+		try:
+			objects = container.get_objects(limit=limit, marker=marker)
+		except AttributeError:
+			# httplib bug?
+			continue
+		except socket.timeout:
+			continue
+		except socket.error as e:
+			if e.errno == errno.EAGAIN:
+				continue
+			else:
+				print >> sys.stderr, e, traceback.format_exc()
+				continue
+		except httplib.ResponseNotReady:
+			time.sleep(1000)
+			continue
+		except Exception as e:
+			print >> sys.stderr, e, traceback.format_exc()
+			continue
+	else:
+		return objects
 
 def sync_container(srccontainer, srcconnpool, dstconnpool):
 	global NOBJECT
@@ -66,29 +91,16 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 
 	try:
 		dstcontainer = dstconn.get_container(srccontainer.name)
-	except cloudfiles.errors.NoSuchContainer, e:
+	except cloudfiles.errors.NoSuchContainer as e:
 		dstcontainer = dstconn.create_container(srccontainer.name)
 
 	while True:
-		try:
-			srcobjects = srccontainer.get_objects(limit=NOBJECT, marker=last)
-		except AttributeError:
-			# httplib bug?
-			continue
-		except socket.error, e:
-			if e.errno == errno.EAGAIN: continue
+		srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last)
 		dstobjects = None
 
 		limit = 10*NOBJECT
 		while dstobjects is None or (len(dstobjects) == limit and dstobjects[-1].name < srcobjects[-1].name):
-			try:
-				dstobjects = dstcontainer.get_objects(limit=limit, marker=last)
-			except AttributeError:
-				# httplib bug?
-				continue
-			except socket.error, e:
-				if e.errno == errno.EAGAIN: continue
-
+			dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last)
 			if len(dstobjects) == limit:
 				limit *= 2
 				if limit > 10000:
@@ -97,21 +109,22 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 
 		for srcobj in srcobjects:
 			processed += 1
-			last = srcobj.name
-			msg = "%s\t%s\t%s\t%s\t%s" % (srccontainer.name, srcobj.etag, srcobj.size, srcobj.name, srcobj.last_modified)
+			last = srcobj.name.encode("utf-8")
+			objname = srcobj.name.encode("ascii", errors="ignore")
+			msg = "%s\t%s\t%s\t%s\t%s" % (srccontainer.name, srcobj.etag, srcobj.size, objname, srcobj.last_modified)
 			try:
 				if dstobjects is not None:
 					dstobj = dstobjects[dstobjects.index(srcobj.name)]
 				else:
 					dstobj = dstcontainer.get_object(srcobj.name)
-			except (ValueError, cloudfiles.errors.NoSuchObject), e:
+			except (ValueError, cloudfiles.errors.NoSuchObject) as e:
 				print msg
-				print "Destination does not have %s, syncing" % srcobj.name
+				print "Destination does not have %s, syncing" % objname
 				dstobj = dstcontainer.create_object(srcobj.name)
 			else:
 				if srcobj.etag != dstobj.etag:
 					print msg
-					print "%s\t%s\tE-Tag mismatch: %s/%s, syncing" % (srccontainer.name, dstobj.name, srcobj.etag, dstobj.etag)
+					print "%s\t%s\tE-Tag mismatch: %s/%s, syncing" % (srccontainer.name, objname, srcobj.etag, dstobj.etag)
 				else:
 					# Object already exists
 					hits += 1
@@ -134,8 +147,8 @@ def replicator_thread(*args, **kwargs):
 		try:
 			container = containers.popleft()
 			sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
-		except Exception, e:
-			print e, traceback.format_exc()
+		except Exception as e:
+			print >> sys.stderr, e, traceback.format_exc()
 			time.sleep(10);
 		finally:
 			containers.append(container)
