@@ -143,12 +143,9 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 			except (ValueError, cloudfiles.errors.NoSuchObject) as e:
 				print msg
 				print "Destination does not have %s, syncing" % objname
-				dstcontainer.conn = dstconnpool.get()
-				try:
-					dstobj = dstcontainer.create_object(srcobj.name)
-				finally:
-					dstconnpool.put(dstcontainer.conn)
-					dstcontainer.conn = None
+				object_record = dict.fromkeys(['content_type', 'bytes', 'last_modified', 'hash'], None)
+				object_record['name'] = srcobj.name
+				dstobj = cloudfiles.storage_object.Object(dstcontainer, object_record=object_record)
 			else:
 				if srcobj.etag != dstobj.etag:
 					print msg
