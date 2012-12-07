@@ -29,7 +29,7 @@ def connect(params):
 		authurl=params['auth_url'],
 		timeout=60)
 
-def replicate_object(srcobj, dstobj):
+def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 	dstobj.content_type = srcobj.content_type
 	dstobj.etag = srcobj.etag
 	dstobj.last_modified = srcobj.last_modified
@@ -37,70 +37,87 @@ def replicate_object(srcobj, dstobj):
 	dstobj.metadata = dict(srcobj.metadata)
 	
 	stream = srcobj.stream(chunksize=65536)
-	
-	for i in range(2):
-		try:
-			dstobj.send(stream)
-		except (AttributeError, httplib.CannotSendRequest, socket.error, httplib.ResponseNotReady):
-			# httplib bug?
-			continue
-		except cloudfiles.errors.ResponseError as e:
-			if e.status == 404:
-				print "Object", srcobj.name.encode("ascii", errors="ignore"), "doesn't exist at the source after all. Skipping."
-				break
-			else:
-				print "Error occurred, skipping"
-				print e
-				# FIXME
-				break
-		else:
-			break
 
-def get_container_objects(container, limit, marker):
-	objects = None
-	while objects is None:
-		try:
-			objects = container.get_objects(limit=limit, marker=marker)
-		except AttributeError:
-			# httplib bug?
-			continue
-		except socket.timeout:
-			continue
-		except socket.error as e:
-			if e.errno == errno.EAGAIN:
+	# Replace the connections
+	srcobj.container.conn = srcconnpool.get()
+	dstobj.container.conn = dstconnpool.get()
+	try:
+		for i in range(2):
+			try:
+				dstobj.send(stream)
+			except (AttributeError, httplib.CannotSendRequest, socket.error, httplib.ResponseNotReady):
+				# httplib bug?
 				continue
+			except cloudfiles.errors.ResponseError as e:
+				if e.status == 404:
+					print "Object", srcobj.name.encode("ascii", errors="ignore"), "doesn't exist at the source after all. Skipping."
+					break
+				else:
+					print "Error occurred, skipping"
+					print e
+					# FIXME
+					break
 			else:
+				break
+	finally:
+		srcconnpool.put(srcobj.container.conn)
+		dstconnpool.put(dstobj.container.conn)
+		srcobj.container.conn, dstobj.container.conn = None, None
+
+def get_container_objects(container, limit, marker, connpool):
+
+	container.conn = connpool.get()
+	try:
+		objects = None
+		while objects is None:
+			try:
+				objects = container.get_objects(limit=limit, marker=marker)
+			except AttributeError:
+				# httplib bug?
+				continue
+			except socket.timeout:
+				continue
+			except socket.error as e:
+				if e.errno == errno.EAGAIN:
+					continue
+				else:
+					print >> sys.stderr, e, traceback.format_exc()
+					continue
+			except httplib.ResponseNotReady:
+				time.sleep(1000)
+				continue
+			except Exception as e:
 				print >> sys.stderr, e, traceback.format_exc()
 				continue
-		except httplib.ResponseNotReady:
-			time.sleep(1000)
-			continue
-		except Exception as e:
-			print >> sys.stderr, e, traceback.format_exc()
-			continue
-	else:
-		return objects
+		else:
+			return objects
+	finally:
+		connpool.put(container.conn)
+		container.conn = None
 
 def sync_container(srccontainer, srcconnpool, dstconnpool):
 	global NOBJECT
 	
-	srcconn = srcconnpool.get()
-	dstconn = dstconnpool.get()
 	last = ''
 	hits, processed = 0, 0
 
+	dstconn = dstconnpool.get()
 	try:
-		dstcontainer = dstconn.get_container(srccontainer.name)
-	except cloudfiles.errors.NoSuchContainer as e:
-		dstcontainer = dstconn.create_container(srccontainer.name)
+		try:
+			dstcontainer = dstconn.get_container(srccontainer.name)
+		except cloudfiles.errors.NoSuchContainer as e:
+			dstcontainer = dstconn.create_container(srccontainer.name)
+	finally:
+		dstconnpool.put(dstconn)
+		dstconn = None
 
 	while True:
-		srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last)
+		srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
 		dstobjects = None
 
 		limit = 10*NOBJECT
 		while dstobjects is None or (len(dstobjects) == limit and dstobjects[-1].name < srcobjects[-1].name):
-			dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last)
+			dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last, connpool=dstconnpool)
 			if len(dstobjects) == limit:
 				limit *= 2
 				if limit > 10000:
@@ -116,11 +133,21 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 				if dstobjects is not None:
 					dstobj = dstobjects[dstobjects.index(srcobj.name)]
 				else:
-					dstobj = dstcontainer.get_object(srcobj.name)
+					dstcontainer.conn = dstconnpool.get()
+					try:
+						dstobj = dstcontainer.get_object(srcobj.name)
+					finally:
+						dstconnpool.put(dstcontainer.conn)
+						dstcontainer.conn = None
 			except (ValueError, cloudfiles.errors.NoSuchObject) as e:
 				print msg
 				print "Destination does not have %s, syncing" % objname
-				dstobj = dstcontainer.create_object(srcobj.name)
+				dstcontainer.conn = dstconnpool.get()
+				try:
+					dstobj = dstcontainer.create_object(srcobj.name)
+				finally:
+					dstconnpool.put(dstcontainer.conn)
+					dstcontainer.conn = None
 			else:
 				if srcobj.etag != dstobj.etag:
 					print msg
@@ -130,7 +157,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 					hits += 1
 					continue
 		
-			replicate_object(srcobj, dstobj)
+			replicate_object(srcobj, dstobj, srcconnpool, dstconnpool)
 
 		print "STATS: %s processed: %d/%d (%d%%), hit rate: %d%%" % (srccontainer.name,
 		                                                       processed, srccontainer.object_count,
