@@ -2,12 +2,12 @@
 
 # Written by Mark Bergsma <mark@wikimedia.org>
 
-import sys, re, collections, threading, time, traceback, httplib, socket, errno
+import sys, re, collections, threading, time, traceback, httplib, socket, errno, random
 import cloudfiles
 
 from Queue import Queue
 
-container_regexp = "^wikipedia-en-local-public.[0-9a-f]{2}$"
+container_regexp = "^wikipedia-en-local-thumb.[0-9a-f]{2}$"
 
 NOBJECT=100
 
@@ -149,6 +149,7 @@ def replicator_thread(*args, **kwargs):
 			sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
 		except Exception as e:
 			print >> sys.stderr, e, traceback.format_exc()
+			print >> sys.stderr, "Abandoning container %s for now" % container
 			time.sleep(10);
 		finally:
 			containers.append(container)
@@ -167,9 +168,10 @@ if __name__ == '__main__':
 	dstconnpool = connect(dst)
 	
 	srcconn = srcconnpool.get()
-	containers = collections.deque([container
-	                                  for container in srcconn.get_all_containers()
-	                                  if re.match(container_regexp, container.name)])
+	containerlist = [container for container in srcconn.get_all_containers()
+	                           if re.match(container_regexp, container.name)]
+	random.shuffle(containerlist)
+	containers = collections.deque(containerlist)
 	srcconnpool.put(srcconn)
 
 	# Start threads
