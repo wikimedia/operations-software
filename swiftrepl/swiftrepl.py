@@ -99,7 +99,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 	global NOBJECT
 	
 	last = ''
-	hits, processed = 0, 0
+	hits, processed, gets = 0, 0, 0
 
 	dstconn = dstconnpool.get()
 	try:
@@ -111,12 +111,12 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		dstconnpool.put(dstconn)
 		dstconn = None
 
+	dstobjects = None
 	while True:
 		srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
-		dstobjects = None
 
 		limit = 10*NOBJECT
-		while dstobjects is None or (len(dstobjects) == limit and dstobjects[-1].name < srcobjects[-1].name):
+		while dstobjects is None or (len(dstobjects) >= limit and dstobjects[-1].name < srcobjects[-1].name):
 			dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last, connpool=dstconnpool)
 			if len(dstobjects) == limit:
 				limit *= 2
@@ -133,6 +133,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 				if dstobjects is not None:
 					dstobj = dstobjects[dstobjects.index(srcobj.name)]
 				else:
+					gets += 1
 					dstcontainer.conn = dstconnpool.get()
 					try:
 						dstobj = dstcontainer.get_object(srcobj.name)
@@ -159,10 +160,10 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		
 			replicate_object(srcobj, dstobj, srcconnpool, dstconnpool)
 
-		print "STATS: %s processed: %d/%d (%d%%), hit rate: %d%%" % (srccontainer.name,
+		print "STATS: %s processed: %d/%d (%d%%), hit rate: %d%%, gets: %d" % (srccontainer.name,
 		                                                       processed, srccontainer.object_count,
 		                                                       int(float(processed)/srccontainer.object_count*100),
-		                                                       int(float(hits)/processed*100))
+		                                                       int(float(hits)/processed*100), gets)
 
 		if len(srcobjects) < NOBJECT:
 			break
