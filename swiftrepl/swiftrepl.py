@@ -7,7 +7,7 @@ import cloudfiles
 
 from Queue import Queue
 
-container_regexp = "^wikipedia-en-local-thumb.[0-9a-f]{2}$"
+container_regexp = sys.argv[2] #"^wikipedia-en-local-thumb.[0-9a-f]{2}$"
 
 NOBJECT=100
 
@@ -42,26 +42,36 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 	srcobj.container.conn = srcconnpool.get()
 	dstobj.container.conn = dstconnpool.get()
 	try:
-		for i in range(2):
+		for i in range(3):
 			try:
 				dstobj.send(stream)
-			except (AttributeError, httplib.CannotSendRequest, socket.error, httplib.ResponseNotReady):
+			except httplib.CannotSendRequest as e:
+				srcobj.container.conn = srcconnpool.get()
+				dstobj.container.conn = dstconnpool.get()
+				continue
+			except (AttributeError, socket.error, httplib.ResponseNotReady, httplib.BadStatusLine) as e:
 				# httplib bug?
+				time.sleep(1)
 				continue
 			except cloudfiles.errors.ResponseError as e:
 				if e.status == 404:
-					print "Object", srcobj.name.encode("ascii", errors="ignore"), "doesn't exist at the source after all. Skipping."
-					break
+					# File was deleted
+					pass
 				else:
 					print "Error occurred, skipping"
 					print e
 					# FIXME
-					break
+				break
+			except Exception as e:
+				continue
 			else:
 				break
-	finally:
+		else:
+			print >> sys.stderr, "Repeated error in replicate_object"
+			raise e
 		srcconnpool.put(srcobj.container.conn)
-		dstconnpool.put(dstobj.container.conn)
+		dstconnpool.put(dstobj.container.conn)		
+	finally:
 		srcobj.container.conn, dstobj.container.conn = None, None
 
 def get_container_objects(container, limit, marker, connpool):
@@ -69,13 +79,13 @@ def get_container_objects(container, limit, marker, connpool):
 	container.conn = connpool.get()
 	try:
 		objects = None
-		while objects is None:
+		for i in range(3):
 			try:
 				objects = container.get_objects(limit=limit, marker=marker)
-			except AttributeError:
+			except AttributeError as e:
 				# httplib bug?
 				continue
-			except socket.timeout:
+			except socket.timeout as e:
 				continue
 			except socket.error as e:
 				if e.errno == errno.EAGAIN:
@@ -83,14 +93,17 @@ def get_container_objects(container, limit, marker, connpool):
 				else:
 					print >> sys.stderr, e, traceback.format_exc()
 					continue
-			except httplib.ResponseNotReady:
-				time.sleep(1000)
+			except httplib.ResponseNotReady as e:
+				time.sleep(1)
 				continue
 			except Exception as e:
 				print >> sys.stderr, e, traceback.format_exc()
 				continue
+			else:
+				return objects
 		else:
-			return objects
+			print >> sys.stderr, "Repeated error in get_container_objects"
+			raise e
 	finally:
 		connpool.put(container.conn)
 		container.conn = None
@@ -141,8 +154,8 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 						dstconnpool.put(dstcontainer.conn)
 						dstcontainer.conn = None
 			except (ValueError, cloudfiles.errors.NoSuchObject) as e:
-				print msg
-				print "Destination does not have %s, syncing" % objname
+				#print msg
+				#print "Destination does not have %s, syncing" % objname
 				object_record = dict.fromkeys(['content_type', 'bytes', 'last_modified', 'hash'], None)
 				object_record['name'] = srcobj.name
 				dstobj = cloudfiles.storage_object.Object(dstcontainer, object_record=object_record)
@@ -205,5 +218,5 @@ if __name__ == '__main__':
 		t.daemon = True
 		t.start()
 	
-	while(True):
-		time.sleep(1000)
+	while True:
+		time.sleep(10)
