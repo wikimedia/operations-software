@@ -1,0 +1,13 @@
+[pep8]
+filename = *.py,geturls,swiftcleaner*,profiler-to-carbon,udpprofile.init
+
+; Skip some specific checks we will eventually fix later on:
+;
+; W191: indentation contains tabs
+; E225 missing whitespace around operator
+; E231 missing whitespace after ',
+; E501 line too long (92 > 79 characters)
+; E301 expected 1 blank line, found 0
+; E302 expected 2 blank lines, found 1
+
+ignore = W191,E225,E231,E501,E301,E302
