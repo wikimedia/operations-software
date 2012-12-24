@@ -3,7 +3,10 @@
 # Written by Mark Bergsma <mark@wikimedia.org>
 
 import sys, re, collections, threading, time, traceback, httplib, socket, errno, random
+
 import cloudfiles, cloudfiles.errors
+from cloudfiles.utils import unicode_quote
+
 
 from Queue import Queue
 
@@ -64,8 +67,6 @@ def send_object(dstobj, iterable, headers={}):
 	to allow specifying custom headers
 	"""
 	assert dstobj.size is not None
-	
-	from cloudfiles.utils import unicode_quote
 
 	if not dstobj.content_type:
 		dstobj.content_type = 'application/octet-stream'
@@ -188,6 +189,15 @@ def get_container_objects(container, limit, marker, connpool):
 		connpool.put(container.conn)
 		container.conn = None
 
+def create_container(name):
+	try:
+		dstcontainer = dstconn.create_container(name)
+	except Exception as e:
+		print >> sys.stderr, "Could not create container", name
+		raise e
+	else:
+		print "Created container", name
+
 def sync_container(srccontainer, srcconnpool, dstconnpool):
 	global NOBJECT
 	
@@ -199,7 +209,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		try:
 			dstcontainer = dstconn.get_container(srccontainer.name)
 		except cloudfiles.errors.NoSuchContainer as e:
-			dstcontainer = dstconn.create_container(srccontainer.name)
+			create_container(srccontainer.name)
 	finally:
 		dstconnpool.put(dstconn)
 		dstconn = None
@@ -219,8 +229,8 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 
 		for srcobj in srcobjects:
 			processed += 1
-			last = srcobj.name.encode("utf-8")
-			objname = srcobj.name.encode("ascii", errors="ignore")
+			objname = unicode_quote(srcobj.name)
+			last = objname
 			msg = "%s\t%s\t%s\t%s\t%s" % (srccontainer.name, srcobj.etag, srcobj.size, objname, srcobj.last_modified)
 			try:
 				if dstobjects is not None:
