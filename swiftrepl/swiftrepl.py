@@ -8,7 +8,7 @@ import cloudfiles, cloudfiles.errors
 from Queue import Queue
 
 container_regexp = sys.argv[2] #"^wikipedia-en-local-thumb.[0-9a-f]{2}$"
-copy_headers = re.compile(r'^X-Content-Duration$')
+copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
 NOBJECT=100
 
@@ -52,8 +52,9 @@ def copy_metadata(response, dstobj, headers={}):
 
 	for hdr in response.getheaders():
 		if copy_headers.match(hdr[0]):
-			headers[hdr[0]] = hdr[1]
-			print "Copying custom header", hdr[0], hdr[1]
+			hdrname = "-".join([seg.capitalize() for seg in hdr[0].split("-")])
+			headers[hdrname] = hdr[1]
+			print "Copying custom header", hdrname, hdr[1]
 		elif hdr[0].lower().startswith('x-object-meta-'):
 			dstobj.metadata[hdr[0][14:]] = hdr[1]
 
