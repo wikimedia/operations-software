@@ -229,8 +229,8 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 
 		for srcobj in srcobjects:
 			processed += 1
-			objname = unicode_quote(srcobj.name)
-			last = objname
+			objname = srcobj.name.encode("ascii", errors="ignore")
+			last = srcobj.name.encode("utf-8")
 			msg = "%s\t%s\t%s\t%s\t%s" % (srccontainer.name, srcobj.etag, srcobj.size, objname, srcobj.last_modified)
 			try:
 				if dstobjects is not None:
