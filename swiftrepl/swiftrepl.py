@@ -261,10 +261,11 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		
 			replicate_object(srcobj, dstobj, srcconnpool, dstconnpool)
 
-		print "STATS: %s processed: %d/%d (%d%%), hit rate: %d%%, gets: %d" % (srccontainer.name,
+		pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0 
+		print "STATS: %s processed: %d/%d (%d%%), hit rate: %d%%" % (srccontainer.name,
 		                                                       processed, srccontainer.object_count,
-		                                                       int(float(processed)/srccontainer.object_count*100),
-		                                                       int(float(hits)/processed*100), gets)
+		                                                       pct(processed, srccontainer.object_count),
+		                                                       pct(hits, processed))
 
 		if len(srcobjects) < NOBJECT:
 			break
