@@ -189,7 +189,7 @@ def get_container_objects(container, limit, marker, connpool):
 		connpool.put(container.conn)
 		container.conn = None
 
-def create_container(name):
+def create_container(dstconn, name):
 	try:
 		dstcontainer = dstconn.create_container(name)
 	except Exception as e:
@@ -209,7 +209,8 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		try:
 			dstcontainer = dstconn.get_container(srccontainer.name)
 		except cloudfiles.errors.NoSuchContainer as e:
-			create_container(srccontainer.name)
+			create_container(dstconn, srccontainer.name)
+			dstcontainer = dstconn.get_container(srccontainer.name)
 	finally:
 		dstconnpool.put(dstconn)
 		dstconn = None
