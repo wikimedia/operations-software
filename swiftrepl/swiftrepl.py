@@ -272,11 +272,64 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		
 	print "FINISHED:", srccontainer.name
 
+def sync_deletes(srccontainer, srcconnpool, dstconnpool):
+	global NOBJECT
+
+	dstconn = dstconnpool.get()
+	try:
+		dstcontainer = dstconn.get_container(srccontainer.name)
+	except cloudfiles.errors.NoSuchContainer as e:
+		# Destination container doesn't exist; nothing to delete
+		return
+	finally:
+		dstconnpool.put(dstconn)
+
+	srccontainer.conn = srcconnpool.get()
+	try:
+		last = ''
+		deletes, processed = 0, 0
+		while True:
+			dstobjects = get_container_objects(dstcontainer, limit=NOBJECT, marker=last, connpool=dstconnpool)
+			for dstobj in dstobjects:
+				processed += 1
+				srccontainer.conn = srcconnpool.get()
+				try:
+					srcobj = srccontainer.get_object(dstobj.name)	# Does a HEAD
+				except cloudfiles.errors.NoSuchObject as e:
+					# File was deleted on the source
+					print "Deleting object", dstobj.name.encode("ascii", errors="ignore")
+
+					deletes += 1
+					dstcontainer.conn = dstconnpool.get()
+					try:
+						dstcontainer.delete_object(dstobj.name)
+					finally:
+						dstconnpool.put(dstcontainer.conn)
+						dstcontainer.conn = None
+
+			last = dstobj.name.encode("utf-8")
+
+			pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0 
+			print "STATS: %s processed: %d/%d (%d%%), deleted: %d" % (srccontainer.name,
+			                                                       processed, dstcontainer.object_count,
+			                                                       pct(processed, dstcontainer.object_count),
+			                                                       deletes)
+
+			if len(dstobjects) < NOBJECT:
+				break
+		print "FINISHED:", srccontainer.name
+	finally:
+		srcconnpool.put(srccontainer.conn)
+		srccontainer.conn = None
+
 def replicator_thread(*args, **kwargs):
 	while True:
 		try:
 			container = containers.popleft()
-			sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
+			if '-d' in sys.argv:
+				sync_deletes(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
+			else:
+				sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
 		except Exception as e:
 			print >> sys.stderr, e, traceback.format_exc()
 			print >> sys.stderr, "Abandoning container %s for now" % container
@@ -300,7 +353,7 @@ if __name__ == '__main__':
 	srcconn = srcconnpool.get()
 	containerlist = [container for container in srcconn.get_all_containers()
 	                           if re.match(container_regexp, container.name)]
-	random.shuffle(containerlist)
+	if '-r' in sys.argv: random.shuffle(containerlist)
 	containers = collections.deque(containerlist)
 	srcconnpool.put(srcconn)
 
