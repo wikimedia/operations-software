@@ -48,8 +48,9 @@ class ExtractProfile(xml.sax.handler.ContentHandler):
 			self.profile[self.db][self.host][self.eventname]={}
 			self.event=self.profile[self.db][self.host][self.eventname]
 		if name=="stats":
-			self.event["onereal"]=self.event["real"]/self.event["count"]
-			self.event["onecpu"]=self.event["cpu"]/self.event["count"]
+			if self.event["count"] > 0:
+				self.event["onereal"]=self.event["real"]/self.event["count"]
+				self.event["onecpu"]=self.event["cpu"]/self.event["count"]
 	def characters(self,chars):
 		if self.inContent:
 			self.contentData.append(chars)
