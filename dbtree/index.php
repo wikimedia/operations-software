@@ -73,11 +73,11 @@ function parse_ganglia_xml($db) {
 function parse_db_conf() {
 	$confdir = '/home/wikipedia/common/wmf-config/';
 	$s3file = '/home/w/common/s3.dblist';
-	$confs = array('db.php', 'db-secondary.php');
+	$confs = array('db-eqiad.php', 'db-pmtpa.php');
 	$dbs = array();
 
 	foreach ( $confs as $conf ) {
-		$type = ( $conf == "db.php" ) ? 'pri' : 'sec';
+		$type = ( $conf == "db-eqiad.php" ) ? 'pri' : 'sec';
 		include $confdir . $conf;
 		foreach( $wgLBFactoryConf['sectionLoads'] as $cluster => $sectionload) {
 			if ($cluster == "DEFAULT") {
