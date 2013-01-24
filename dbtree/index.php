@@ -2,7 +2,10 @@
 //
 // dbtree - provides a map of wmf's core db servers, pulling in mediawiki configs
 // and stats from ganglia, parsed directly from gmetad's xml output.
-// - asher feldman, <afeldman@wikimedia.org> 
+//
+// this is why i'm not a frontend developer.
+// love,
+// asher feldman, <afeldman@wikimedia.org>
 //
 error_reporting(E_ERROR);
 date_default_timezone_set("GMT");
@@ -146,6 +149,9 @@ if (file_exists($gangcache) && time() - $ttl < filemtime($gangcache)) {
 	$dbs = $data['clusters'];
 	$dbdata = $data['ganglia'];
 }
+
+# getting a ganglia xml dump and parse can be slow, attempt to cache
+# using the local fs
 if ((time() - $ttl > filemtime($gangcache)) || $_GET['recache'] == 'true') {
 	get_ganglia_xml();
 	if (!$xml) {
@@ -157,6 +163,7 @@ if ((time() - $ttl > filemtime($gangcache)) || $_GET['recache'] == 'true') {
 		fwrite($fp, serialize($data));
 	}
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -178,11 +185,22 @@ ksort($dbs);
 foreach ($dbs as $s => $cluster) {
 	$master = array_shift($cluster['pri']);
 	$second = array_shift($cluster['sec']);
+
+	# handle the case where the secondary datacenter is still active,
+	# using the write masters in the other dc.  in this case, skip
+	# those host the master slot and treat the next host as the
+	# secondary master.
+	if ($master === $second) {
+		$second = array_shift($cluster['sec']);
+	}
+
 	print '<ul class="org'.$s.'" style="display:none">
 		<li><div class="'.$s.'" title="wikis: ';
+
 	foreach ($cluster['wikis'] as $wiki) {
 		print "$wiki ";
 	}
+
 	($dbdata['latest'] - $dbdata[$master]['REPORTED'] > $stale || !$dbdata[$master]['REPORTED']) ?
 		$color = 'black' : $color = 'white';
 	print ' "><h2>' . $s . '</h2></div>
@@ -190,6 +208,7 @@ foreach ($dbs as $s => $cluster) {
 		<li><div style="background: ' . $color .'">
 		<a href="' . $ghost . $master . '" target=_new><h3>' . $master . '</h3></a><hr></div>';
 	print_dbdata($master, false);
+
 	print '<ul>';
 	foreach ($cluster['pri'] as $db) {
 		$color = get_db_color($db);
@@ -199,10 +218,12 @@ foreach ($dbs as $s => $cluster) {
 		print_dbdata($db);
 		print '</li>';
 	}
+
 	$second_color = get_db_color($second);
 	print '<li><div style="background: ' . $second_color .'"><a href="' . $ghost . $second . '" target=_new><h3>' .
 		$second . '</h3></a><hr></div>';
 	print_dbdata($second);
+
 	print '<ul>';
 	foreach ($cluster['sec'] as $db) {
 		if ($second_color == 'black' || $second_color == 'red') {
@@ -215,6 +236,7 @@ foreach ($dbs as $s => $cluster) {
 		print_dbdata($db);
 		print '</li>';
 	}
+
 	print '				</ul>
 				</li>
 			</ul>
@@ -223,6 +245,7 @@ foreach ($dbs as $s => $cluster) {
 		</li>
 	</ul>';
 }
+
 print '<div id=txt style="color:#000000; background:#aaaaaa; width:600px; position:relative; left:+40px">
 	Ganglia derived db data recent as of: ' . date("D M j G:i:s T Y", $dbdata['latest']);
 print '<div style="text-align:center;">
@@ -243,5 +266,7 @@ foreach ($dbs as $s => $cluster) {
 		print '$(".' . $s . '").bt({fill: "red", trigger: "click"}); ';
 	}
 }
-print '}); </script>
-</body></html>';
+print '});
+</script>
+</body>
+</html>';
