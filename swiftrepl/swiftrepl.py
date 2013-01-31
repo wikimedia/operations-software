@@ -11,6 +11,7 @@ from cloudfiles.utils import unicode_quote
 from Queue import Queue, LifoQueue, Empty, Full
 
 container_regexp = sys.argv[2] #"^wikipedia-en-local-thumb.[0-9a-f]{2}$"
+use_varnish = '-v' in sys.argv
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
 NOBJECT=100
@@ -148,6 +149,8 @@ def send_object(dstobj, iterable, headers={}):
 			dstobj._etag = hdr[1]
 
 def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
+	global use_varnish
+	
 	# Replace the connections
 	srcobj.container.conn = srcconnpool.get()
 	dstobj.container.conn = dstconnpool.get()
@@ -158,12 +161,14 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 		for i in range(3):
 			try:
 				self.count += 1
-				# Try Varnish first
-				try:
-					response, connection = varnish_object_stream_prepare(srcobj)
-					self.hits += 1
-				except:
-					connection = None
+				if use_varnish:
+					# Try Varnish first
+					try:
+						response, connection = varnish_object_stream_prepare(srcobj)
+						self.hits += 1
+					except:
+						connection = None
+				if not use_varnish or connection is None:
 					# Start source GET request
 					response = object_stream_prepare(srcobj)
 
