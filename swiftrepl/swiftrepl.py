@@ -31,7 +31,8 @@ def connect(params):
 		username=(params['username'] or None),
 		api_key=(params['api_key'] or None),
 		authurl=params['auth_url'],
-		timeout=60)
+		timeout=60,
+		poolsize=int(sys.argv[1])*4)
 
 def object_stream_prepare(obj, hdrs=None):
 	obj._name_check()
@@ -289,7 +290,7 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
 		last = ''
 		deletes, processed = 0, 0
 		while True:
-			dstobjects = get_container_objects(dstcontainer, limit=NOBJECT, marker=last, connpool=dstconnpool)
+			dstobjects = get_container_objects(dstcontainer, limit=10*NOBJECT, marker=last, connpool=dstconnpool)
 			for dstobj in dstobjects:
 				processed += 1
 				srccontainer.conn = srcconnpool.get()
