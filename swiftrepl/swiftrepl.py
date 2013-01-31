@@ -95,7 +95,7 @@ def send_object(dstobj, iterable, headers={}):
 			raise cloudfiles.errors.IncompleteSend()
 		response = http.getresponse()
 		buff = response.read()
-	except cloudfiles.errors.timeout, err:
+	except socket.timeout, err:
 		if response:
 			# pylint: disable-msg=E1101
 			response.read()
