@@ -8,7 +8,7 @@ import cloudfiles, cloudfiles.errors
 from cloudfiles.utils import unicode_quote
 
 
-from Queue import Queue
+from Queue import Queue, LifoQueue, Empty, Full
 
 container_regexp = sys.argv[2] #"^wikipedia-en-local-thumb.[0-9a-f]{2}$"
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
@@ -50,13 +50,28 @@ def varnish_object_stream_prepare(obj):
 		'User-Agent': "swiftrepl",
 		'If-Cached': obj.etag
 	}
-	connection = httplib.HTTPConnection(host, port=80, timeout=10)
+	
+	try:
+		varnish_object_stream_prepare.queue
+	except AttributeError:
+		varnish_object_stream_prepare.queue = LifoQueue(maxsize=256)
+	
+	try:
+		connection, t = varnish_object_stream_prepare.queue.get(False)
+		if time.time() - t > 3: raise Empty()
+	except Empty:
+		connection = httplib.HTTPConnection(host, port=80, timeout=10)
+
 	connection.request('GET', uri, None, headers)
 	response = connection.getresponse()
 	if response.status < 200 or response.status > 299:
+		buff = response.read()
+		try:
+			varnish_object_stream_prepare.queue.put((connection, time.time()), False)
+		except Full:
+			del connection
 		raise cloudfiles.errors.ResponseError(response.status, response.reason)
-	return response
-
+	return response, connection
 
 def object_stream_prepare(obj, hdrs=None):
 	obj._name_check()
@@ -145,9 +160,10 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 				self.count += 1
 				# Try Varnish first
 				try:
-					response = varnish_object_stream_prepare(srcobj)
+					response, connection = varnish_object_stream_prepare(srcobj)
 					self.hits += 1
 				except:
+					connection = None
 					# Start source GET request
 					response = object_stream_prepare(srcobj)
 
@@ -159,6 +175,13 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 				headers = {}
 				copy_metadata(response, dstobj, headers)
 				send_object(dstobj, object_stream(response, chunksize=65536), headers)
+				
+				if connection is not None:
+					try:
+						varnish_object_stream_prepare.queue.put((connection, time.time()), False)
+					except Full:
+						del connection
+				
 			except httplib.CannotSendRequest as e:
 				srcobj.container.conn = srcconnpool.get()
 				dstobj.container.conn = dstconnpool.get()
