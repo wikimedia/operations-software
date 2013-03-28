@@ -4,7 +4,8 @@
  and places them into BerkeleyDB file. \o/
 
  Author: Domas Mituzas ( http://dammit.lt/ )
-
+ Author: Asher Feldman ( afeldman@wikimedia.org )
+ Author: Tim Starling ( tstarling@wikimedia.org )
  License: public domain (as if there's something to protect ;-)
 
  $Id: collector.c 112227 2012-02-23 19:15:17Z midom $
@@ -38,7 +39,7 @@ int main(int ac, char **av) {
 	ssize_t l;
 	char buf[2000];
 	int r;
-
+	int n;
 
 	/* Socket variables */
 	int s, exp;
@@ -72,7 +73,7 @@ int main(int ac, char **av) {
 		fds[1].fd = exp, fds[1].events |= POLLIN;
 
 		db_create(&db,NULL,0);
-		db->set_cachesize(db, 0, 256*1024*1024, 0);
+		db->set_cachesize(db, 0, 512*1024*1024, 0);
 		db->open(db,NULL,"stats.db",NULL,DB_BTREE,DB_CREATE|DB_TRUNCATE,0);
 		
 		signal(SIGHUP,hup);
@@ -84,6 +85,7 @@ int main(int ac, char **av) {
 	}
 	/* Loop! loop! loop! */
 	for(;;) {
+		n=0;
 		r=poll(fds,2,-1);
 		
 		/* Process incoming UDP queue */
@@ -92,6 +94,10 @@ int main(int ac, char **av) {
 				if (l==EAGAIN)
 					break;
 				handleMessage((char *)&buf,l);
+				n++;
+				/*  Still handle export connections under high load */
+				if (n==5000)
+					break;
 			}
 				
 		/* Process incoming TCP queue */
