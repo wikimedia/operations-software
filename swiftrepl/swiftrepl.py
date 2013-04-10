@@ -34,6 +34,30 @@ def connect(params):
 		timeout=60,
 		poolsize=int(sys.argv[1])*4)
 
+def varnish_rewrite(obj):
+	match = re.match(r'^(?P<proj>[^\-]+)-(?P<lang>[^\-]+)-(?P<repo>[^\-]+)-(?P<zone>[^\-\.]+)(\..*)?$', obj.container.name)
+	if match:
+		host = 'upload.wikimedia.org'
+		uri = '/%s/%s/%s/%s' % (match.group('proj'), match.group('lang'), match.group('zone'), unicode_quote(obj.name))
+		return host, uri
+	else:
+		raise cloudfiles.errors.InvalidContainerName()
+
+def varnish_object_stream_prepare(obj):
+	obj._name_check()
+	host, uri = varnish_rewrite(obj)
+	headers = {
+		'User-Agent': "swiftrepl",
+		'If-Cached': obj.etag
+	}
+	connection = httplib.HTTPConnection(host, port=80, timeout=10)
+	connection.request('GET', uri, None, headers)
+	response = connection.getresponse()
+	if response.status < 200 or response.status > 299:
+		raise cloudfiles.errors.ResponseError(response.status, response.reason)
+	return response
+
+
 def object_stream_prepare(obj, hdrs=None):
 	obj._name_check()
 	response = obj.container.conn.make_request('GET',
@@ -113,11 +137,19 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 	srcobj.container.conn = srcconnpool.get()
 	dstobj.container.conn = dstconnpool.get()
 	
+	self = replicate_object
+	
 	try:
 		for i in range(3):
 			try:
-				# Start source GET request
-				response = object_stream_prepare(srcobj)
+				self.count += 1
+				# Try Varnish first
+				try:
+					response = varnish_object_stream_prepare(srcobj)
+					self.hits += 1
+				except:
+					# Start source GET request
+					response = object_stream_prepare(srcobj)
 
 				dstobj.content_type = srcobj.content_type
 				dstobj.etag = srcobj.etag
@@ -155,6 +187,10 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 		dstconnpool.put(dstobj.container.conn)		
 	finally:
 		srcobj.container.conn, dstobj.container.conn = None, None
+		
+		if self.count % 100 == 0:
+			pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0 
+			print "VARNISH: %d/%d (%d%%)" % (self.hits, self.count, pct(self.hits, self.count))
 
 def get_container_objects(container, limit, marker, connpool):
 
@@ -346,6 +382,9 @@ def parse_cli_params():
 	src['username'], src['api_key'], src['auth_url'], dst['username'], dst['api_key'], dst['auth_url'] = [l.strip() for l in file('swiftrepl.conf')]
 
 if __name__ == '__main__':
+	replicate_object.count = 0
+	replicate_object.hits = 0
+	
 	parse_cli_params()
 	
 	srcconnpool = connect(src)
