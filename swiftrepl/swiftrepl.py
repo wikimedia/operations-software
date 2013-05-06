@@ -337,7 +337,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 		
 	print "FINISHED:", srccontainer.name
 
-def sync_deletes(srccontainer, srcconnpool, dstconnpool):
+def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
 	global NOBJECT
 
 	dstconn = dstconnpool.get()
@@ -386,6 +386,71 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
 	finally:
 		srcconnpool.put(srccontainer.conn)
 		srccontainer.conn = None
+
+def sync_deletes(srccontainer, srcconnpool, dstconnpool):
+	global NOBJECT
+
+	dstconn = dstconnpool.get()
+	try:
+		dstcontainer = dstconn.get_container(srccontainer.name)
+	except cloudfiles.errors.NoSuchContainer as e:
+		# Destination container doesn't exist; nothing to delete
+		return
+	finally:
+		dstconnpool.put(dstconn)
+
+	srclimit = dstlimit = 50*NOBJECT
+	# fetch 20% more of source
+	srclimit = int(srclimit * 1.2)
+
+	last = ''
+	deletes, processed = 0, 0
+	while True:
+
+		dstobjects = get_container_objects(dstcontainer, limit=dstlimit, marker=last, connpool=dstconnpool)
+
+		# bail-out early on empty containers
+		if len(dstobjects) == 0:
+			break
+
+		srcobjects = get_container_objects(srccontainer, limit=srclimit, marker=last, connpool=srcconnpool)
+
+		dstset = set([ obj.name for obj in dstobjects ])
+		srcset = set([ obj.name for obj in srcobjects ])
+		diff = dstset - srcset
+
+		for dstname in diff:
+			# do a HEAD to make sure it's gone
+			srccontainer.conn = srcconnpool.get()
+			try:
+				srcobj = srccontainer.get_object(dstname)	# Does a HEAD
+			except cloudfiles.errors.NoSuchObject as e:
+				# File was deleted on the source
+				print "Deleting object", dstname.encode("ascii", errors="ignore")
+
+				deletes += 1
+				dstcontainer.conn = dstconnpool.get()
+				try:
+					dstcontainer.delete_object(dstname)
+				finally:
+					dstconnpool.put(dstcontainer.conn)
+					dstcontainer.conn = None
+			finally:
+				srcconnpool.put(srccontainer.conn)
+				srccontainer.conn = None
+
+		last = dstobjects[-1].name.encode("utf-8")
+		processed += len(dstobjects)
+
+		pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
+		print "STATS: %s processed: %d/%d (%d%%), deleted: %d" % (srccontainer.name,
+		                                                       processed, dstcontainer.object_count,
+		                                                       pct(processed, dstcontainer.object_count),
+		                                                       deletes)
+
+		if len(dstobjects) < dstlimit:
+			break
+	print "FINISHED:", srccontainer.name
 
 def replicator_thread(*args, **kwargs):
 	while True:
