@@ -390,16 +390,22 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
 def replicator_thread(*args, **kwargs):
 	while True:
 		try:
-			container = containers.popleft()
+			try:
+				container = containers.popleft()
+			except IndexError:
+				break
+
 			if '-d' in sys.argv:
 				sync_deletes(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
 			else:
 				sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
+
+			if '-o' not in sys.argv: # once
+				containers.append(container)
 		except Exception as e:
 			print >> sys.stderr, e, traceback.format_exc()
 			print >> sys.stderr, "Abandoning container %s for now" % container
 			time.sleep(10);
-		finally:
 			containers.append(container)
 
 
@@ -431,5 +437,7 @@ if __name__ == '__main__':
 		t.daemon = True
 		t.start()
 	
-	while True:
-		time.sleep(10)
+	for thread in threading.enumerate():
+		if thread is threading.currentThread():
+			continue
+		thread.join()
