@@ -161,6 +161,7 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 		for i in range(3):
 			try:
 				self.count += 1
+				connection = None
 				if use_varnish:
 					# Try Varnish first
 					try:
@@ -210,7 +211,7 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
 				break
 		else:
 			print >> sys.stderr, "Repeated error in replicate_object"
-			raise e
+			raise
 		srcconnpool.put(srcobj.container.conn)
 		dstconnpool.put(dstobj.container.conn)		
 	finally:
