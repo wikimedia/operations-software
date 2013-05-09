@@ -14,7 +14,7 @@ container_regexp = sys.argv[2] #"^wikipedia-en-local-thumb.[0-9a-f]{2}$"
 use_varnish = '-v' in sys.argv
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
-NOBJECT=100
+NOBJECT=1000
 
 src = {}
 dst = {}
@@ -288,7 +288,6 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 	while True:
 		srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
 
-		limit = 10*NOBJECT
 		while dstobjects is None or (len(dstobjects) >= limit and dstobjects[-1].name < srcobjects[-1].name):
 			dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last, connpool=dstconnpool)
 			if len(dstobjects) == limit:
@@ -357,7 +356,7 @@ def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
 		last = ''
 		deletes, processed = 0, 0
 		while True:
-			dstobjects = get_container_objects(dstcontainer, limit=10*NOBJECT, marker=last, connpool=dstconnpool)
+			dstobjects = get_container_objects(dstcontainer, limit=NOBJECT, marker=last, connpool=dstconnpool)
 			for dstobj in dstobjects:
 				processed += 1
 				srccontainer.conn = srcconnpool.get()
@@ -402,7 +401,7 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
 	finally:
 		dstconnpool.put(dstconn)
 
-	srclimit = dstlimit = 50*NOBJECT
+	srclimit = dstlimit = 5*NOBJECT
 	# fetch 20% more of source
 	srclimit = int(srclimit * 1.2)
 
