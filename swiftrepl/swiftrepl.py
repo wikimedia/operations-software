@@ -132,6 +132,9 @@ def send_object(dstobj, iterable, headers={}):
 			transferred += len(chunk)
 		# If the generator didn't yield enough data, stop, drop, and roll.
 		if transferred < dstobj.size:
+			# possible cause: source's container listing has different size than actual file
+			print >> sys.stderr, "%s %s incomplete send: transferred %d/%d" % \
+				(dstobj.container.name, dstobj.name, transferred, dstobj.size)
 			raise cloudfiles.errors.IncompleteSend()
 		response = http.getresponse()
 		buff = response.read()
@@ -318,7 +321,6 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
 				dstobj = cloudfiles.storage_object.Object(dstcontainer, object_record=object_record)
 			else:
 				if srcobj.etag != dstobj.etag:
-					print msg
 					print "%s\t%s\tE-Tag mismatch: %s/%s, syncing" % (srccontainer.name, objname, srcobj.etag, dstobj.etag)
 				else:
 					# Object already exists
