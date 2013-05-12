@@ -492,7 +492,20 @@ if __name__ == '__main__':
 	dstconnpool = connect(dst)
 	
 	srcconn = srcconnpool.get()
-	containerlist = [container for container in srcconn.get_all_containers()
+
+	containers=[]
+	limit=10000
+	last=''
+	while True:
+		page = srcconn.get_all_containers(limit=limit, marker=last)
+		if len(page) == 0:
+			break
+		last = page[-1].name.encode("utf-8")
+		containers.extend(page)
+		if len(page) < limit:
+			break
+
+	containerlist = [container for container in containers
 	                           if re.match(container_regexp, container.name)]
 	if '-r' in sys.argv: random.shuffle(containerlist)
 	containers = collections.deque(containerlist)
