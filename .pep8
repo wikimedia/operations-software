@@ -1,5 +1,7 @@
 [pep8]
+
 filename = *.py,geturls,swiftcleaner*,profiler-to-carbon
+exclude=swiftcleaner.conf
 
 ; Skip some specific checks we will eventually fix later on:
 ;

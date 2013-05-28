@@ -20,9 +20,9 @@ from eventlet.green import urllib, urllib2, subprocess
 ## get a listing from swift (list of all containers or list of specific container)
 def get_swift_listing(conf, container=None):
     swiftlist = []
-    expectedswiftlistlen = 1 #this will get reset by the response header
+    expectedswiftlistlen = 1  # this will get reset by the response header
     prevswiftlen = len(swiftlist)
-    trycounter = 0 #if we try to get more 3 times without getting any, bail even if we don't have all of them.
+    trycounter = 0  # if we try to get more 3 times without getting any, bail even if we don't have all of them.
     trycountermax = 3
     headers = {}
     headers['X-Auth-Token'] = Token.get_token()
@@ -76,7 +76,7 @@ def get_swift_listing(conf, container=None):
 
         # in case there are more still to come, prep the URL with the last seen item
         # http://docs.openstack.org/api/openstack-object-storage/1.0/content/list-large-number-of-objects.html
-        url = url.rsplit("?marker=", 1)[0]  #strip off the ?marker=.* if it exists
+        url = url.rsplit("?marker=", 1)[0]  # strip off the ?marker=.* if it exists
         try:
             url = "%s?marker=%s" % (url, urllib.pathname2url(swiftlist[-1]))
         except IndexError:
@@ -100,7 +100,7 @@ def clean_container_listing(conf, origcontlist):
             contlist.append(cont)
             continue
         # we should keep containers that end with -thumb.[0-9a-f]{2}
-        if(cont[-9:-3].endswith('-thumb')): #aka cut off the .a2 and then compare
+        if(cont[-9:-3].endswith('-thumb')):  # aka cut off the .a2 and then compare
             contlist.append(cont)
             continue
         # we didn't explicitly skip it, but we didn't include it either.
@@ -213,7 +213,7 @@ def am_i_alone(conf):
     # But wait!  there's a race condition!
     # so let's pause for 0-0.1 sec and then
     # let's check again and make sure that we actually put our own pid in that file and someone else didn't jump in the middle.
-    time.sleep(random()/10)
+    time.sleep(random() / 10)
     otherpid = int(open(pidfile).readline().strip())
     if(otherpid == pid):
         # hooray!  we're really the only one running.
@@ -223,8 +223,6 @@ def am_i_alone(conf):
     time.sleep(random())
     # recurse as many times as necessary to stop fighting.  probably only once.
     return am_i_alone(conf)
-
-
 
 
 def main():
@@ -298,4 +296,3 @@ if __name__ == '__main__':
     main()
 
 # vim: set nu list expandtab tabstop=4 shiftwidth=4 autoindent:
-

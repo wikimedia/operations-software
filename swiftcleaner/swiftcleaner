@@ -29,9 +29,16 @@
 ####   re-read live.
 ####
 
-import re, urllib2, urllib, threading, time, sys, subprocess
 from optparse import OptionParser
+import re
+import subprocess
+import sys
+import threading
+import time
+import urllib
+import urllib2
 import random
+
 from swiftcleaner_helper import Token, read_config
 
 class Stats():
@@ -61,8 +68,8 @@ class CheckObjects(threading.Thread):
         threading.Thread.__init__(self)
         self.objlist = objlist
         self.delay = delay
-        self.swift_obj_details = {} # hash for memorizing details
-        self.ms5_obj_details = {} # hash for memorizing details
+        self.swift_obj_details = {}  # hash for memorizing details
+        self.ms5_obj_details = {}  # hash for memorizing details
         #self.token = 'AUTH_abcd1234' #testing bad token exception catching
         self.token = None
         self.conf = conf
@@ -77,12 +84,12 @@ class CheckObjects(threading.Thread):
         for obj in self.objlist:
             res = self.check_object(obj)
             print "checked out %s for object %s" % (res, obj[1])
-            if(res == False):
+            if (res is False):
                 # we've found ourselves a bad object!
                 # go clean it up but don't slow us down.
                 threading.Thread(target=bad_object, args=(obj,self.conf)).start()
             # sleep for the delay time between checks
-            if(self.delay != 0):
+            if (self.delay != 0):
                 time.sleep(self.delay)
         return
 
@@ -138,7 +145,7 @@ class CheckObjects(threading.Thread):
         we shouldn't do any more checks but we also shouldn't try and delete
         it."""
         res = self.get_object_details_swift(obj)
-        if res == None:
+        if res is None:
             # no dice.
             return False
         return True
@@ -260,7 +267,7 @@ def bad_object(obj, conf):
         print "deleting from swift failed for obj %s with error %s" % (obj,e)
     purge_from_squid(obj)
     time.sleep(0.5)
-    purge_from_squid(obj) #purge a second time just for good measure
+    purge_from_squid(obj)  # purge a second time just for good measure
 
 def download_from_swift_and_ms5(obj, conf):
     print "downloading %s from both swift and ms5" % obj_to_url(obj)

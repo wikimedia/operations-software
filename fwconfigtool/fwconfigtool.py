@@ -40,7 +40,7 @@ def file_header():
 
 # The standard opening directives for the SLAX firewall configuraation:
 SLAX_DIRECTIVES = ('match configuration',
-              '<change>')
+                   '<change>')
 
 def slax_header():
     # Assumptions:
@@ -75,8 +75,8 @@ def main():
         source dir: str, directory to read inputs from.
         output file: str, filename to write the rules into.
     """
-    parser = argparse.ArgumentParser(
-             description='Converts puppet resources to junos SLAX')
+    parser = argparse.ArgumentParser(description=
+                                     'Converts puppet resources to junos SLAX')
     parser.add_argument('sourcedir', help='Source directory with files')
     parser.add_argument('outputfile', help='Output SLAX file')
 

@@ -23,7 +23,7 @@ class Token():
     @classmethod
     def get_token(cls):
         # if we already have the token, return it.
-        if(cls._token != None):
+        if(cls._token is not None):
             #print "  old token; returning token %s" % cls._token
             return cls._token
         # otherwise get a new token from Swift
@@ -74,7 +74,7 @@ def read_config(conffile, conf):
                 val = float(val)
             if opt in boolconfs:
                 # if it's set to anything but 'False', go ahead and enter testing mode.  safer that way.
-                val = (False if val == False or val == 'False' else True)
+                val = (False if val is False or val == 'False' else True)
             conf[opt] = val
         configfh.close()
     except (IOError, TypeError), e:
