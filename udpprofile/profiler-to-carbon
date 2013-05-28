@@ -29,130 +29,130 @@ skips = [re.compile('^Parser.braceSubstitution-title-')]
 prior={}
 
 class SocketSource(socket.socket):
-	def read(self,what):
-		enc = self.recv(what,0)
-		return enc.decode('latin-1').encode('utf-8')
+    def read(self,what):
+        enc = self.recv(what,0)
+        return enc.decode('latin-1').encode('utf-8')
 
 def BuildStats(db, fullprofile):
-	stats = {}
-	events=fullprofile[db]["-"].items()
-	bad = 0
+    stats = {}
+    events=fullprofile[db]["-"].items()
+    bad = 0
 
-	for event in events:
-		if "close" in event[0]:
-			continue
-		if "Profiling error" in event[0]:
-			continue
-		# . is the graphite path separator
-		# stats are sent as stats.$stat, regular functions with
-		# up to two path levels(i.e. API::Foo::Bar = API.Foo.Bar)
-		if(db.startswith('stats')):
-			name = 'stats.' + invalid.sub('_', str(event[0])).rstrip('_')
-		else:
-			try:
-				name = invalid.sub('_', str(event[0])).rstrip('_').replace('_', '.', 2)
-			except:
-				logging.debug("skipping on failed unicode conversion: %s", event[0])
-				continue
-		for skip in skips:
-			if skip.match(name):
-				bad = 1
-				break
-		if bad == 1:
-			bad = 0
-			continue
+    for event in events:
+        if "close" in event[0]:
+            continue
+        if "Profiling error" in event[0]:
+            continue
+        # . is the graphite path separator
+        # stats are sent as stats.$stat, regular functions with
+        # up to two path levels(i.e. API::Foo::Bar = API.Foo.Bar)
+        if(db.startswith('stats')):
+            name = 'stats.' + invalid.sub('_', str(event[0])).rstrip('_')
+        else:
+            try:
+                name = invalid.sub('_', str(event[0])).rstrip('_').replace('_', '.', 2)
+            except:
+                logging.debug("skipping on failed unicode conversion: %s", event[0])
+                continue
+        for skip in skips:
+            if skip.match(name):
+                bad = 1
+                break
+        if bad == 1:
+            bad = 0
+            continue
 
-		stats[name] = {}
-		stats[name]['count'] = event[1]['count']
-		# real = time in ms
-		stats[name]['real'] = event[1]['real'] * 1000
-		stats[name]['samples'] = event[1]['samples']
+        stats[name] = {}
+        stats[name]['count'] = event[1]['count']
+        # real = time in ms
+        stats[name]['real'] = event[1]['real'] * 1000
+        stats[name]['samples'] = event[1]['samples']
 
-	return stats
+    return stats
 
 def SendStats(db, current, graph):
-	now = int(time.time())
-	message = ""
-	for key in current.keys():
-		if key not in prior[db]:
-			continue
-		count = current[key]['count'] - prior[db][key]['count']
+    now = int(time.time())
+    message = ""
+    for key in current.keys():
+        if key not in prior[db]:
+            continue
+        count = current[key]['count'] - prior[db][key]['count']
 
-		if(count <= 0):
-			continue
+        if(count <= 0):
+            continue
 
-		message = "%s.count %d %d\n" %(key, count, now)
-		logging.debug("sending: %s", message)
-		graph.send(message)
+        message = "%s.count %d %d\n" %(key, count, now)
+        logging.debug("sending: %s", message)
+        graph.send(message)
 
-		if(db.startswith('stats')):
-			continue
+        if(db.startswith('stats')):
+            continue
 
-		real = current[key]['real'] - prior[db][key]['real']
-		message = "%s.tavg %.3f %d\n" % (key, real / count, now)
-		logging.debug("sending: %s", message)
-		graph.send(message)
+        real = current[key]['real'] - prior[db][key]['real']
+        message = "%s.tavg %.3f %d\n" % (key, real / count, now)
+        logging.debug("sending: %s", message)
+        graph.send(message)
 
-		# cast all elements of [key]['samples'] from str to float
-		samples = sorted(map(lambda i: float(i), current[key]['samples']))
-		tp50 = int(round(len(samples) * 0.5)) - 1
-		tp90 = int(round(len(samples) * 0.9)) - 1
-		tp99 = int(round(len(samples) * 0.99)) - 1
+        # cast all elements of [key]['samples'] from str to float
+        samples = sorted(map(lambda i: float(i), current[key]['samples']))
+        tp50 = int(round(len(samples) * 0.5)) - 1
+        tp90 = int(round(len(samples) * 0.9)) - 1
+        tp99 = int(round(len(samples) * 0.99)) - 1
 
-		message = "%s.tp50 %.3f %d\n" % (key, float(samples[tp50]) * 1000, now)
-		logging.debug("sending: %s", message)
-		graph.send(message)
+        message = "%s.tp50 %.3f %d\n" % (key, float(samples[tp50]) * 1000, now)
+        logging.debug("sending: %s", message)
+        graph.send(message)
 
-		message = "%s.tp90 %.3f %d\n" % (key, float(samples[tp90]) * 1000, now)
-		logging.debug("sending: %s", message)
-		graph.send(message)
+        message = "%s.tp90 %.3f %d\n" % (key, float(samples[tp90]) * 1000, now)
+        logging.debug("sending: %s", message)
+        graph.send(message)
 
-		message = "%s.tp99 %.3f %d\n" % (key, float(samples[tp99]) * 1000, now)
-		logging.debug("sending: %s", message)
-		graph.send(message)
+        message = "%s.tp99 %.3f %d\n" % (key, float(samples[tp99]) * 1000, now)
+        logging.debug("sending: %s", message)
+        graph.send(message)
 
 while True:
-	profsock=SocketSource()
-	try:
-		profsock.connect((profile_host,profile_port))
-	except:
-		logging.debug("Couldn't connect to %s on port %d, is collector running?",
-			profile_host, profile_port)
-		time.sleep(delay)
-		continue
+    profsock=SocketSource()
+    try:
+        profsock.connect((profile_host,profile_port))
+    except:
+        logging.debug("Couldn't connect to %s on port %d, is collector running?",
+                      profile_host, profile_port)
+        time.sleep(delay)
+        continue
 
-	graph = socket.socket()
-	try:
-		graph.connect((carbon_host,carbon_port))
-	except:
-		logging.debug("Couldn't connect to %s on port %d, is carbon-agent.py running?",
-			carbon_host, profile_port)
-		time.sleep(delay)
-		continue
+    graph = socket.socket()
+    try:
+        graph.connect((carbon_host,carbon_port))
+    except:
+        logging.debug("Couldn't connect to %s on port %d, is carbon-agent.py running?",
+                      carbon_host, profile_port)
+        time.sleep(delay)
+        continue
 
-	try:
-		fullprofile=ExtractProfile().extract(profsock)
-	except Exception as detail:
-		logging.debug("failed extracting data from collector: %s", detail)
-		time.sleep(delay)
-		continue
+    try:
+        fullprofile=ExtractProfile().extract(profsock)
+    except Exception as detail:
+        logging.debug("failed extracting data from collector: %s", detail)
+        time.sleep(delay)
+        continue
 
-	profsock.shutdown(socket.SHUT_RDWR)
-	profsock.close()
+    profsock.shutdown(socket.SHUT_RDWR)
+    profsock.close()
 
-	current={}
+    current={}
 
-	for db in dbs:
-		if db not in prior:
-			prior[db] = []
-		current[db] = BuildStats(db, fullprofile)
-		if(len(current[db]) > 1):
-			try:
-				SendStats(db, current[db], graph)
-			except:
-				logging.debug("error sending stats")
-				continue
-		else:
-			logging.debug("%s is empty", db)
-	prior = current
-	time.sleep(delay)
+    for db in dbs:
+        if db not in prior:
+            prior[db] = []
+        current[db] = BuildStats(db, fullprofile)
+        if(len(current[db]) > 1):
+            try:
+                SendStats(db, current[db], graph)
+            except:
+                logging.debug("error sending stats")
+                continue
+        else:
+            logging.debug("%s is empty", db)
+    prior = current
+    time.sleep(delay)
