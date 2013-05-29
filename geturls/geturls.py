@@ -24,7 +24,7 @@ import datetime
 import threading
 import os
 
-class UrlCaller( threading.Thread ):
+class UrlCaller(threading.Thread):
     '''a threaded object that will call URLs from the urllist'''
 
     # the filehandle of the open url list file
@@ -57,7 +57,6 @@ class UrlCaller( threading.Thread ):
 
         self.print_status_num = int(min(UrlCaller.total_lines / 10, 100000))
 
-
     # thread entry.
     # go through urllist, exit when done
     def run(self):
@@ -65,14 +64,13 @@ class UrlCaller( threading.Thread ):
         while url:
             # skip comments and empty lines
             url = url.strip()
-            if( len(url) <= 1 or url.startswith('#') ):
+            if(len(url) <= 1 or url.startswith('#')):
                 url = self.get_url()
                 continue
             self.call_url(url)
             url = self.get_url()
             if self.delay:
                 time.sleep(self.delay)
-
 
     # set the urllist globally
     @classmethod
@@ -87,7 +85,7 @@ class UrlCaller( threading.Thread ):
     def set_urlfh(cls, fh, chunk, position):
         UrlCaller.urlfh = fh
         UrlCaller.chunk = chunk
-        filesize = os.fstat(fh.fileno()).st_size #size in bytes
+        filesize = os.fstat(fh.fileno()).st_size  # size in bytes
         if position:
             # if we were suposed to start part way through the file, only count the remaining % of the file
             filesize = int((float(filesize) * position / 100))
@@ -130,7 +128,7 @@ class UrlCaller( threading.Thread ):
 
         #only print status every print_status_num requests, and skip 100%
         tried = UrlCaller.tried
-        if( tried > 0 and url and not tried % self.print_status_num ):
+        if(tried > 0 and url and not tried % self.print_status_num):
             # lock both counters so we get a consistent view
             # note that pos here is likely different from pos right above
             # so it may not be an even number
@@ -156,8 +154,8 @@ class UrlCaller( threading.Thread ):
         percent_done = 100 * tried / UrlCaller.total_lines
         curtime = datetime.datetime.now()
         exectime = curtime - UrlCaller.starttime
-        print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %\
-                (int(percent_done) + 1, tried, fail, exectime))
+        print("status report: progress: %s%%, %s URLs tried, %s URLs failed, execution time: %s" %
+              (int(percent_done) + 1, tried, fail, exectime))
 
     @classmethod
     def crunch_querydur_stats(cls):
@@ -246,12 +244,10 @@ class UrlCaller( threading.Thread ):
                 excval = dur_buckets['exceptions'][key]
             except KeyError:
                 excval = 0
-            print(" %9s: %5s  (%2s%%)  |  %5s  (%2s%%)  |  %5s  (%2s%%)" % \
-                    (key, sucval, int(float(sucval) / num_durs['success'] * 100), \
-                     failval, int(float(failval) / num_durs['failed'] * 100), \
-                     excval, int(float(excval) / num_durs['exceptions'] * 100)))
-
-
+            print(" %9s: %5s  (%2s%%)  |  %5s  (%2s%%)  |  %5s  (%2s%%)" %
+                  (key, sucval, int(float(sucval) / num_durs['success'] * 100),
+                  failval, int(float(failval) / num_durs['failed'] * 100),
+                  excval, int(float(excval) / num_durs['exceptions'] * 100)))
 
     # call out to the net and retrieve the URL
     # record failures, throw away success
@@ -286,7 +282,7 @@ class UrlCaller( threading.Thread ):
         else:
             self.queryduration_success.append(int((dur.seconds * 1000000) + dur.microseconds / 1000))
 
-class PrintStatus( threading.Thread ):
+class PrintStatus(threading.Thread):
     '''a class that prints current status when the user hits return'''
     timer_thread = None
     def __init__(self, timer_thread):
@@ -300,7 +296,7 @@ class PrintStatus( threading.Thread ):
             UrlCaller.crunch_querydur_stats()
             self.timer_thread.print_full_stats()
 
-class TimingCollector( threading.Thread ):
+class TimingCollector(threading.Thread):
     '''a class to collect per-second throughput data.
        maintains how many qps have gone by the previous second, the previous 5
        seconds and 30 seconds, and a hash of how many seconds have a specific
@@ -354,8 +350,8 @@ class TimingCollector( threading.Thread ):
         '''prints a one-liner with curren, 5s, and 30s throughput'''
         five_avg = sum(int(x) for x in self.last_five_sec) / 5
         thirty_avg = sum(int(x) for x in self.last_thirty_sec) / 30
-        print ("Current throughput: %s queries per second.  Last 5s avg: %sqps.  Last 30s avg: %sqps" % \
-                (self.cur_sec, five_avg, thirty_avg))
+        print ("Current throughput: %s queries per second.  Last 5s avg: %sqps.  Last 30s avg: %sqps" %
+               (self.cur_sec, five_avg, thirty_avg))
     def print_full_stats(self):
         '''Prints a few bucketted counts for throughput stats.'''
         tp_hash = self.throughput_frequency
@@ -368,7 +364,7 @@ class TimingCollector( threading.Thread ):
         #    new_perf = self.throughput_frequency
         # now for some fancy footwork.  To decrease the number of lines printed, combine nearby stats.
         # for each key, calculate 10%.  Sum all keys that show up between key and key+10%, then report as key + 5% +-5%
-        tp_keys.reverse() #work from small numbers up
+        tp_keys.reverse()  # work from small numbers up
         real_max = tp_keys[0]
         while len(tp_keys) > 0:
             key = tp_keys.pop()
@@ -407,7 +403,6 @@ class TimingCollector( threading.Thread ):
             print(" %9s: %5s   (%2s%%)" % (key, new_perf[key], int(float(new_perf[key]) / num_seconds * 100)))
 
 
-
 def main():
     # set up command line arguments
     usage="""usage: %prog [options] urllist
@@ -424,9 +419,8 @@ def main():
     options.delay = float(options.delay) / 1000
     # convert num_threads, chunk, and position to int so we can do MATHS
     num_threads = int(options.num_threads)
-    chunk = int(float(options.chunk) * 1048576) #convert from bytes to MB
+    chunk = int(float(options.chunk) * 1048576)  # convert from bytes to MB
     position = float(options.resume)
-
 
     # make sure we've got a urllist passed in
     if not args:
@@ -478,12 +472,11 @@ def main():
     # so that we can catch ctrl-c
     try:
         while len(UrlCaller.urllist) != 0:
-            time.sleep(0.5) #1/2 second is reasonably responsive
+            time.sleep(0.5)  # 1/2 second is reasonably responsive
     except KeyboardInterrupt:
         #set postition to the end so that all the threads think they're done
         urlfh.seek(0, os.SEEK_END)
         UrlCaller.position = len(urls)
-
 
     # pick up all the threads
     for num in threads.iterkeys():
@@ -498,4 +491,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
