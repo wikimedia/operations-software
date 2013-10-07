@@ -1,40 +1,4 @@
 #! /usr/bin/perl
-#
-#  Copyright © 2013 Marc-André Pelletier <mpelletier@wikimedia.org>
-# 
-#  Permission to use, copy, modify, and/or distribute this software for any
-#  purpose with or without fee is hereby granted, provided that the above
-#  copyright notice and this permission notice appear in all copies.
-# 
-#  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-#  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-#  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-#  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-#  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-#  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-#  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#
-##
-## maintain-replicas.pl
-##
-##  This script maintains the databases containing sanitized views to
-##  the replicated databases (in the form <db>_p for every <db>), and
-##  sets up tables of metainformation on each slice (in the meta_p
-##  database).
-##
-##  By default, it processes every shard but it accepts a list of
-##  slices to process (s[1-7]) or to exclude (-s[1-7]) on the command
-##  line.
-##
-##  The script excpects to be invoked in a fresh copy of
-##  operations/mediawiki-config where it will get most of its
-##  information, ##  and will connect to each wiki through the API to
-##  get the rest.
-##
-##  It connects to the slices with the credentials in the invoking
-##  user's .my.cnf, but is probably only useful if those credentials
-##  have full control over the slices to be processed.
-##
 
 use strict;
 use DBI();
@@ -48,7 +12,7 @@ my $defaultdo = 1;
 
 foreach my $arg (@ARGV) {
     $defaultdo = 0   if $arg =~ m/^s[1-7]/;
-    $doslice{$1} = 1 if $arg =~ m/^(s[1-7])/;
+    $doslice{$1} = 1 if $arg =~ m/^\+?(s[1-7])/;
     $doslice{$1} = 0 if $arg =~ m/^-(s[1-7])/;
 }
 
@@ -92,6 +56,8 @@ my @fullviews = (
     "povwatch_subscribers", "protected_titles", "redirect", "site_identifiers", "sites", "site_stats",
     "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user", "user_former_groups",
     "user_groups", "user_old", "valid_tag", "wikilove_image_log", "wikilove_log",
+    'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
+    'globalblocks', 'localuser', 'wikiset',
 );
 
 my %customviews = (
@@ -164,6 +130,10 @@ my %customviews = (
                     if(rev_deleted&1,null,rev_len) as rev_len, rev_parent_id,
                     if(rev_deleted&1,null,rev_sha1) as rev_sha1',
         'where' => '(rev_deleted&4)=0' },
+    'globaluser' => {
+        'source' => 'globaluser',
+        'view' => 'select *',
+        'where' => "gu_hidden=''" },
 );
 
 my $dbuser;
@@ -184,6 +154,10 @@ if(open MYCNF, "<$mycnf") {
     close MYCNF;
 }
 die "No credentials for connecting to databases.\n" unless defined $dbuser and defined $dbpassword;
+
+chdir "mediawiki-config";
+
+#system "/usr/bin/git pull -ff";
 
 my %db;
 
@@ -246,7 +220,7 @@ my $wua = LWP::UserAgent->new();
 $wua->agent("dbinfo.pl/1.0");
 
 my %cached;
-if(open CACHE, "<:encoding(UTF-8)", "/tmp/wiki.cache") {
+if(open CACHE, "<:encoding(UTF-8)", "wiki.cache") {
     while(<CACHE>) {
         $cached{$1} = { 'lang' => $2, 'name' => $3 } if m/^(\S+)\s+(\S+)\s+(.*)$/;
     }
@@ -271,7 +245,8 @@ foreach my $dbk (keys %db) {
     }
 
     if(defined $canon) {
-        $db->{'url'} = $canon if defined $canon;
+        $canon =~ s/_/-/g;
+        $db->{'url'} = $canon;
         if($cached{$canon}) {
             $db->{'lang'} = $cached{$canon}->{'lang'};
             $db->{'name'} = $cached{$canon}->{'name'};
@@ -290,7 +265,7 @@ foreach my $dbk (keys %db) {
     }
 }
 
-if(open CACHE, ">:encoding(UTF-8)", "/tmp/wiki.cache") {
+if(open CACHE, ">:encoding(UTF-8)", "wiki.cache") {
     foreach my $c (keys %cached) {
         print CACHE "$c $cached{$c}->{'lang'} $cached{$c}->{'name'}\n";
     }
@@ -316,7 +291,8 @@ sub twiddle() {
     $twiddlum = 0  if ++$twiddlum == 4;
 }
 
-foreach my $slice (sort keys %byslice) {
+
+foreach my $slice (keys %byslice) {
     next unless $doslice{$slice};
     my ($dbhost, $dbport) = @{$slices{$slice}};
     $dbh = DBI->connect("DBI:mysql:host=$dbhost;port=$dbport;mysql_enable_utf8=1", $dbuser, $dbpassword, {'RaiseError' => 0});
@@ -329,7 +305,7 @@ foreach my $slice (sort keys %byslice) {
         foreach my $view (@fullviews) {
             twiddle;
             my $q = "SELECT table_name FROM information_schema.tables "
-                  . "WHERE CONCAT(table_schema,'.',table_name)='$dbk.$view';";
+                  . "WHERE table_name='$view' and table_schema='$dbk';";
             if(sql($q) == 1) {
                 print "[$view] ";
                 $q = "CREATE OR REPLACE DEFINER=viewmaster VIEW ${dbk}_p.$view AS SELECT * FROM $dbk.$view;\n";
@@ -339,7 +315,7 @@ foreach my $slice (sort keys %byslice) {
         foreach my $view (keys %customviews) {
             twiddle;
             my $q = "SELECT table_name FROM information_schema.tables "
-                  . "WHERE CONCAT(table_schema,'.',table_name)='$dbk.".$customviews{$view}->{'source'}."';";
+                  . "WHERE table_name='".$customviews{$view}->{'source'}."' and table_schema='$dbk';";
             if(sql($q) == 1) {
                 print "[$view] ";
                 $q = "CREATE OR REPLACE DEFINER=viewmaster VIEW ${dbk}_p.$view AS "
