@@ -70,8 +70,8 @@ my %slices = (
 );
 
 my @fullviews = (
-    "abuse_filter_action", "abuse_filter_history", "abuse_filter_log",
-    "aft_article_answer", "aft_article_answer_text", "aft_article_feedback",
+    "abuse_filter_action", "abuse_filter_history",
+    "aft_article_answer", "aft_article_answer_text",
     "aft_article_feedback_properties", "aft_article_feedback_ratings_rollup",
     "aft_article_feedback_select_rollup", "aft_article_field", "aft_article_field_group",
     "aft_article_field_option", "aft_article_filter_count", "aft_article_revision_feedback_ratings_rollup",
@@ -86,23 +86,52 @@ my @fullviews = (
     "flaggedtemplates", "geo_killlist", "geo_tags", "geo_updates", "global_block_whitelist", "hashs",
     "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
     "l10n_cache", "langlinks", "links", "localisation", "localisation_file_hash",
-    "mark_as_helpful", "math", "module_deps", "msg_resource", "msg_resource_links", "namespaces",
-    "oldimage", "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
+    "math", "module_deps", "msg_resource", "msg_resource_links", "namespaces",
+    "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
     "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags", "pif_edits", "povwatch_log",
     "povwatch_subscribers", "protected_titles", "redirect", "site_identifiers", "sites", "site_stats",
-    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user", "user_former_groups",
-    "user_groups", "user_old", "valid_tag", "wikilove_image_log", "wikilove_log",
+    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_former_groups",
+    "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
     'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset',
 );
 
 my %customviews = (
+
     'abuse_filter' => {
         'source' => 'abuse_filter',
         'view' => 'select af_id, if(af_hidden,null,af_pattern) as af_pattern, af_user, af_user_text,
                     af_timestamp, af_enabled, if(af_hidden,null,af_comments) as af_comments,
                     af_public_comments, af_hidden, af_hit_count, af_throttled, af_deleted, af_actions,
                     af_global, af_group' },
+
+    'abuse_filter_log' => {
+        'source' => 'abuse_filter_log',
+        'view' => 'select afl_id, afl_filter, afl_user, afl_user_text, NULL as afl_ip, afl_action,
+                    afl_actions, afl_var_dump, afl_timestamp, afl_namespace, afl_title, afl_wiki,
+                    afl_deleted, afl_patrolled_by, afl_rev_id, afl_log_id', },
+
+    'aft_article_feedback' => {
+        'source' => 'aft_article_feedback',
+        'view' => 'select af_id, af_page_id, af_user_id, NULL as af_user_ip, af_user_anon_token,
+                    af_revision_id, af_bucket_id, af_cta_id, af_link_id, af_created, af_abuse_count,
+                    af_helpful_count, af_unhelpful_count, af_oversight_count, af_is_deleted,
+                    af_is_hidden, af_net_helpfulness, af_has_comment, af_is_unhidden, af_is_undeleted,
+                    af_is_declined, af_activity_count, af_form_id, af_experiment, af_suppress_count,
+                    af_last_status, af_last_status_user_id, af_last_status_timestamp, af_is_autohide,
+                    af_is_unrequested, af_is_featured, af_is_unfeatured, af_is_resolved,
+                    af_is_unresolved, af_relevance_score, af_relevance_sort, af_last_status_notes', },
+
+    'globaluser' => {
+        'source' => 'globaluser',
+        'view' => 'select gu_id, gu_name, gu_enabled, gu_enabled_method, gu_home_db,
+                    NULL as gu_email, NULL as gu_email_authenticated,
+                    NULL as gu_salt, NULL as gu_password,
+                    gu_locked, gu_hidden, gu_registration,
+                    NULL as gu_password_reset_key, NULL as gu_password_reset_expiration,
+                    NULL as gu_auth_token',
+        'where' => "gu_hidden=''" },
+
     'ipblocks' => {
         'source' => 'ipblocks',
         'view' => 'select ipb_id, if(ipb_auto=0,ipb_address,null) as ipb_address, ipb_user,
@@ -111,6 +140,7 @@ my %customviews = (
                     if(ipb_auto=0,ipb_range_end,null) as ipb_range_end, ipb_enable_autoblock,
                     0 as ipb_deleted, ipb_block_email, ipb_by_text, ipb_allow_usertalk, ipb_parent_block_id',
         'where' => 'ipb_deleted=0' },
+
     'ipblocks_ipindex' => {
         'source' => 'ipblocks',
         'view' => 'select ipb_id, ipb_address, ipb_user, ipb_by, ipb_reason, ipb_timestamp,
@@ -118,6 +148,7 @@ my %customviews = (
                     ipb_range_end, ipb_enable_autoblock, 0 as ipb_deleted, ipb_block_email,
                     ipb_by_text, ipb_allow_usertalk, ipb_parent_block_id',
         'where' => 'ipb_deleted=0 and ipb_auto=0' },
+
     'logging' => {
         'source' => 'logging',
         'view' => 'select log_id, log_type, if(log_deleted&1,null,log_action) as log_action,
@@ -128,6 +159,7 @@ my %customviews = (
                     if(log_deleted&4,null,log_user_text) as log_user_text,
                     if(log_deleted&1,null,log_page) as log_page',
         'where' => 'log_type<>\'suppress\'' },
+
     'logging_logindex' => {
         'source' => 'logging',
         'view' => 'select log_id, log_type, log_action, log_timestamp,
@@ -135,6 +167,7 @@ my %customviews = (
                     if(log_deleted&2,null,log_comment) as log_comment, log_params, log_deleted,
                     if(log_deleted&4,null,log_user_text) as log_user_text, log_page',
         'where' => '(log_deleted&1)=0 and log_type<>\'suppress\'' },
+
     'logging_userindex' => {
         'source' => 'logging',
         'view' => 'select log_id, log_type, if(log_deleted&1,null,log_action) as log_action,
@@ -143,6 +176,30 @@ my %customviews = (
                     if(log_deleted&2,null,log_comment) as log_comment, log_params, log_deleted,
                     log_user_text as log_user_text, if(log_deleted&1,null,log_page) as log_page',
         'where' => '(log_deleted&4)=0 and log_type<>\'suppress\'' },
+
+    'mark_as_helpful' => {
+        'source' => 'mark_as_helpful',
+        'view' => 'select mah_id, mah_type, mah_item, mah_user_id, mah_user_editcount,
+                    mah_namespace, mah_title, mah_timestamp,
+                    NULL as mah_system_type, NULL as mah_user_agent, NULL as mah_locale', },
+
+    'oldimage' => {
+        'source' => 'oldimage',
+        'view' => 'select oi_name, oi_archive_name, oi_size, oi_width, oi_height, oi_bits,
+                    if(oi_deleted&2,null,oi_description) as oi_description,
+                    if(oi_deleted&4,null,oi_user) as oi_user,
+                    if(oi_deleted&4,null,oi_user_text) as oi_user_text,
+                    oi_timestamp, oi_metadata, oi_media_type,
+                    oi_major_mime, oi_minor_mime, oi_deleted, oi_sha1', },
+
+    'oldimage_userindex' => {
+        'source' => 'oldimage',
+        'view' => 'select oi_name, oi_archive_name, oi_size, oi_width, oi_height, oi_bits,
+                    if(oi_deleted&2,null,oi_description) as oi_description,
+                    oi_user, oi_user_text, oi_timestamp, oi_metadata, oi_media_type,
+                    oi_major_mime, oi_minor_mime, oi_deleted, oi_sha1',
+        'where' => '(oi_deleted&4)==0' },
+
     'recentchanges' => {
         'source' => 'recentchanges',
         'view' => 'select rc_id, rc_timestamp, rc_cur_time, if(rc_deleted&4,null,rc_user) as rc_user,
@@ -150,6 +207,7 @@ my %customviews = (
                     if(rc_deleted&2,null,rc_comment) as rc_comment, rc_minor, rc_bot, rc_new, rc_cur_id,
                     rc_this_oldid, rc_last_oldid, rc_type, rc_patrolled, null as rc_ip, rc_old_len,
                     rc_new_len, rc_deleted, rc_logid, rc_log_type, rc_log_action, rc_params' },
+
     'revision' => {
         'source' => 'revision',
         'view' => 'select rev_id, rev_page, if(rev_deleted&1,null,rev_text_id) as rev_text_id,
@@ -158,6 +216,7 @@ my %customviews = (
                     if(rev_deleted&4,null,rev_user_text) as rev_user_text, rev_timestamp,
                     rev_minor_edit, rev_deleted, if(rev_deleted&1,null,rev_len) as rev_len,
                     rev_parent_id, if(rev_deleted&1,null,rev_sha1) as rev_sha1' },
+
     'revision_userindex' => {
         'source' => 'revision',
         'view' => 'select rev_id, rev_page, if(rev_deleted&1,null,rev_text_id) as rev_text_id,
@@ -166,10 +225,23 @@ my %customviews = (
                     if(rev_deleted&1,null,rev_len) as rev_len, rev_parent_id,
                     if(rev_deleted&1,null,rev_sha1) as rev_sha1',
         'where' => '(rev_deleted&4)=0' },
-    'globaluser' => {
-        'source' => 'globaluser',
-        'view' => 'select *',
-        'where' => "gu_hidden=''" },
+
+    'user' => {
+        'source' => 'user',
+        'view' => 'select user_id, user_name, user_real_name,
+                    NULL as user_password, NULL as user_newpassword, NULL as user_email,
+                    NULL as user_options, NULL as user_touched, NULL as user_token,
+                    NULL as user_email_authenticated, NULL as user_email_token,
+                    NULL as user_email_token_expires,
+                    user_registration, NULL as user_newpass_time, user_editcount', },
+
+    'user_old' => {
+        'source' => 'user_old',
+        'view' => 'select user_id, user_name,
+                    NULL as user_password, NULL as user_newpassword, NULL as user_email,
+                    NULL as user_options, NULL as user_newtalk, NULL as user_touched,
+                    user_real_name, NULL as user_token', },
+
 );
 
 my $dbuser;
