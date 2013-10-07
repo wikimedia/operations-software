@@ -1,4 +1,40 @@
 #! /usr/bin/perl
+#
+#  Copyright © 2013 Marc-André Pelletier <mpelletier@wikimedia.org>
+#
+#  Permission to use, copy, modify, and/or distribute this software for any
+#  purpose with or without fee is hereby granted, provided that the above
+#  copyright notice and this permission notice appear in all copies.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+#  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+#  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+#  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+#  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+#  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+##
+## maintain-replicas.pl
+##
+##  This script maintains the databases containing sanitized views to
+##  the replicated databases (in the form <db>_p for every <db>), and
+##  sets up tables of metainformation on each slice (in the meta_p
+##  database).
+##
+##  By default, it processes every shard but it accepts a list of
+##  slices to process (s[1-7]) or to exclude (-s[1-7]) on the command
+##  line.
+##
+##  The script excpects to be invoked in a fresh copy of
+##  operations/mediawiki-config where it will get most of its
+##  information, ##  and will connect to each wiki through the API to
+##  get the rest.
+##
+##  It connects to the slices with the credentials in the invoking
+##  user's .my.cnf, but is probably only useful if those credentials
+##  have full control over the slices to be processed.
+##
 
 use strict;
 use DBI();
