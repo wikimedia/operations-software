@@ -208,6 +208,15 @@ my %customviews = (
                     rc_this_oldid, rc_last_oldid, rc_type, rc_patrolled, null as rc_ip, rc_old_len,
                     rc_new_len, rc_deleted, rc_logid, rc_log_type, rc_log_action, rc_params' },
 
+    'recentchanges_userindex' => {
+        'source' => 'recentchanges',
+        'view' => 'select rc_id, rc_timestamp, rc_cur_time, rc_user,
+                    rc_user_text, rc_namespace, rc_title,
+                    if(rc_deleted&2,null,rc_comment) as rc_comment, rc_minor, rc_bot, rc_new, rc_cur_id,
+                    rc_this_oldid, rc_last_oldid, rc_type, rc_patrolled, null as rc_ip, rc_old_len,
+                    rc_new_len, rc_deleted, rc_logid, rc_log_type, rc_log_action, rc_params',
+        'where' => '(rc_deleted&4)==0' },
+
     'revision' => {
         'source' => 'revision',
         'view' => 'select rev_id, rev_page, if(rev_deleted&1,null,rev_text_id) as rev_text_id,
