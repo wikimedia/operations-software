@@ -246,8 +246,8 @@ class UrlCaller(threading.Thread):
                 excval = 0
             print(" %9s: %5s  (%2s%%)  |  %5s  (%2s%%)  |  %5s  (%2s%%)" %
                   (key, sucval, int(float(sucval) / num_durs['success'] * 100),
-                  failval, int(float(failval) / num_durs['failed'] * 100),
-                  excval, int(float(excval) / num_durs['exceptions'] * 100)))
+                   failval, int(float(failval) / num_durs['failed'] * 100),
+                   excval, int(float(excval) / num_durs['exceptions'] * 100)))
 
     # call out to the net and retrieve the URL
     # record failures, throw away success

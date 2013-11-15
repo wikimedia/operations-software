@@ -87,7 +87,7 @@ def object_stream_prepare(obj, hdrs=None):
     obj._name_check()
     response = obj.container.conn.make_request('GET',
                                                path=[obj.container.name,
-                                               obj.name], hdrs=hdrs)
+                                                     obj.name], hdrs=hdrs)
     if response.status < 200 or response.status > 299:
         buff = response.read()
         raise cloudfiles.errors.ResponseError(response.status, response.reason)
