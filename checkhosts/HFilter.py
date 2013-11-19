@@ -62,7 +62,7 @@ class HostFilter(object):
                     for h in possibleHosts.keys():
                         if h not in self.sources[s].hosts:
                             possibleHosts.pop(h, None)
-            return possibleHosts
+        return possibleHosts
 
     def mustHaveValue(self, possibleHosts):
         for s in self.filters:
