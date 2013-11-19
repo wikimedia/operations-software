@@ -36,4 +36,10 @@ class CheckHostsConfig(object):
         configInfo = {}
         for c in Source.__subclasses__():
             configInfo[c.getSourceName()] = c.getConfig(self.conf, "sources")
+
+        if not self.conf.has_section('globals'):
+            self.conf.add_section('globals')
+
+        configInfo['globals'] = c.getConfig(self.conf, "globals")
+
         return configInfo

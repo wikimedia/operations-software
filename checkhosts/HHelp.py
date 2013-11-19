@@ -164,6 +164,7 @@ Options:
                          filters, or a string with a glob (*) in it
 --config           (-c): path to configfile
                          default: checkhosts.conf
+--timeout          (-t): timeout in seconds for remote commands to complete
 --help             (-h): display a short usage message and exit
 --extendedhelp     (-e): display extended help and exit
 --verbose          (-v): display various progress messages
@@ -179,7 +180,7 @@ Usage: python check-hosts.py --filter filterstring|--cli|--report <sourcelist>
                  [--dns <host>,<path>] [--logpuppet <path>]
                  [--storedconfigs <host>,<db>,<user>,<password>]
                  [--puppetcerts <host>,<path>]
-                 [--config filename]
+                 [--config filename] [--timeout <numsecs>]
                  [--help] [--extendedhelp] [--verbose] [--version]
 
 This script retrieves lists of hosts known to e.g. dhcp, dsh, salt, puppet decommissioned

@@ -35,6 +35,7 @@ class Cli(object):
             print "verbose on"
         else:
             print "verbose off"
+        print "timeout:", self.hf.timeout
         if self.hf.hostExprs:
             print "hosts:", self.hf.hostExprs
         else:
@@ -133,6 +134,11 @@ class Cli(object):
             self.hf.hostExprs = None
             self.hr.hostExprs = None
             print "hosts expr unset"
+        elif command == "timeout":
+            timeout = command.split()[1]
+            self.hf.timeout = int(timeout)
+            self.hr.timeout = int(timeout)
+            print "timeout set to", timeout
         elif command == "verbose":
             self.hf.verbose = True
             self.hr.verbose = True
@@ -191,6 +197,8 @@ class Cli(object):
             print "   '' (you will be prompted for a settingname, enter one"
             print "   of host, path, db, user, password, depending on what"
             print "   settings are valid for that source),"
+            print "timeout <int> to set the timeout for remote commands to this"
+            print "   many seconds (applies to filters and reports),"
             print "help <topicname> for detailed help on a topic."
             print ""
             print "Known help topics:"

@@ -13,7 +13,7 @@ class HostReport(object):
     do not have the fqdn
     """
 
-    def __init__(self, hostOpts, hostExprs, verbose):
+    def __init__(self, hostOpts, hostExprs, timeout, verbose):
         self.sourcesClasses = {}
         for c in Source.__subclasses__():
             self.sourcesClasses[c.getSourceName()] = c
@@ -27,6 +27,7 @@ class HostReport(object):
             self.hostExprs = [hostExprs]
         else:
             self.hostExprs = None
+        self.timeout = timeout
         self.verbose = verbose
         self.toReport = []
         self.reportSourceNames = []
@@ -38,6 +39,7 @@ class HostReport(object):
             if s not in self.sources:
                 if s in self.sourcesClasses and s in self.hostOpts:
                     self.sources[s] = self.sourcesClasses[s](self.hostOpts[s],
+                                                             self.timeout,
                                                              self.verbose)
                 else:
                     sys.stderr.write("unknown source encountered: %s\n" % s)

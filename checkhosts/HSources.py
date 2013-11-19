@@ -37,7 +37,7 @@ class Source(object):
     # puppetmasters
     optionAllowsMultiple = ['host', 'pluginparams']
 
-    def __init__(self, params, verbose):
+    def __init__(self, params, timeout, verbose=False):
         """
         Args:
 
@@ -45,6 +45,7 @@ class Source(object):
         verbose -- whether or not to display extra processing info to the screen and how much
                    this is a numeric value
         """
+        self.timeout = timeout
         self.verbose = verbose
         self.params = params
         # this header will be shown in displayHosts()
@@ -189,7 +190,7 @@ class Source(object):
         if not self.client:
             self.client = salt.client.LocalClient()
         result = self.client.cmd(self.params['host'], "cmd.run_all",
-                                 ["cat " + f], expr_form='list', timeout=15)
+                                 ["cat " + f], expr_form='list', timeout=self.timeout)
         # choose the first host with contents
         for h in result:
             if (not result[h]['retcode']):
@@ -244,7 +245,7 @@ class Source(object):
         if not self.client:
             self.client = salt.client.LocalClient()
         result = self.client.cmd(self.params['host'], "cmd.run_all",
-                                 [command], expr_form='list', timeout=15)
+                                 [command], expr_form='list', timeout=self.timeout)
         return result  # don't attempt to parse, let the caller figure it out
 
     def _listDir(self, recent=False):
@@ -255,7 +256,7 @@ class Source(object):
         returns:  list of the basenames of the directory entries
                   which are files, or None on error
 
-        if self.params['host'] is a list of host, this will return
+        if self.params['host'] is a list of hosts, this will return
         the union of all files in the specified directory on all hosts
         """
 
@@ -497,8 +498,8 @@ class DecomPuppet(Source):
                'path': [1, 'decompuppet_path',
                         '/var/lib/puppet/decommissioning.pp']}
 
-    def __init__(self, params, verbose):
-        super(DecomPuppet, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(DecomPuppet, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Puppet decommissioned hosts:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -557,8 +558,8 @@ class DecomRackTables(Source):
                                 '$racktablespass',
                                 ';']}
 
-    def __init__(self, params, verbose):
-        super(DecomRackTables, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(DecomRackTables, self).__init__(params, timeout, verbose)
         if self.params['user'] and not self.params['password']:
             if self.params['plugin']:
                 hp = HPassPlugins.HPassPlugins()
@@ -599,8 +600,8 @@ class Salt(Source):
 
     # hosts in this list are initially retrieved with fqdn
 
-    def __init__(self, params, verbose):
-        super(Salt, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(Salt, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts known to salt"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -622,7 +623,7 @@ class Salt(Source):
         # now see which hosts ping
         if not self.client:
             self.client = salt.client.LocalClient()
-        result = self.client.cmd("*", "test.ping", timeout=15)
+        result = self.client.cmd("*", "test.ping", timeout=self.timeout)
         if not result:
             sys.stderr.write("failed to retrieve salt status of hosts\n")
             return
@@ -638,8 +639,8 @@ class Dsh(Source):
     options = {'host': [0, 'dsh_host', 'dshgroups.localdmain', ';'],
                'path': [1, 'dsh_path', '/etc/dsh/group']}
 
-    def __init__(self, params, verbose):
-        super(Dsh, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(Dsh, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts in dsh groups:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -680,8 +681,8 @@ class Dhcp(Source):
     options = {'host': [0, 'dhcp_host', 'dhcp.localdomain', ';'],
                'path': [1, 'dhcp_path', '/etc/dhcp3']}
 
-    def __init__(self, params, verbose):
-        super(Dhcp, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(Dhcp, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts in dhcp files:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -733,8 +734,8 @@ class Dns(Source):
     options = {'host': [0, 'dns_host', 'dnsserver.localdomain', ';'],
                'path': [1, 'dns_path', '/etc/gdnsd/zones']}
 
-    def __init__(self, params, verbose):
-        super(Dns, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(Dns, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts in dns:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -785,8 +786,8 @@ class Puppet(Source):
     options = {'host': [0, 'puppet_host', 'puppetserver.localdomain', ';'],
                'path': [1, 'puppet_path', '/var/lib/puppet/yaml/facts']}
 
-    def __init__(self, params, verbose):
-        super(Puppet, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(Puppet, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts with recent puppet runs:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -878,8 +879,8 @@ class PuppetCerts(Source):
                'path': [1, 'puppetcerts_path',
                         '/var/lib/puppet/server/ssl/ca/signed']}
 
-    def __init__(self, params, verbose):
-        super(PuppetCerts, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(PuppetCerts, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts with puppet certs:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -914,8 +915,8 @@ class LogPuppet(Source):
 
     options = {'path': [0, 'logpuppet_path', '/var/log/puppet.log']}
 
-    def __init__(self, params, verbose):
-        super(LogPuppet, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(LogPuppet, self).__init__(params, timeout, verbose)
         self.displayHostsHeader = "Hosts with various puppet log entries:"
         if self.verbose:
             print "retrieving host info from source", self.getSourceName()
@@ -985,7 +986,7 @@ class LogPuppet(Source):
         return self.client.cmd('*', "cmd.run_all",
                                ["egrep " + "'" + egrepExpr + "' " +
                                 self.params['path'] + '| tail -20'],
-                               timeout=15)
+                               timeout=self.timeout)
 
 class PuppetStoredConfigs(Source):
     """hosts with entries in hosts table of the puppet db
@@ -1004,8 +1005,8 @@ class PuppetStoredConfigs(Source):
                                 'puppetpassword',
                                 ';']}
 
-    def __init__(self, params, verbose):
-        super(PuppetStoredConfigs, self).__init__(params, verbose)
+    def __init__(self, params, timeout, verbose):
+        super(PuppetStoredConfigs, self).__init__(params, timeout, verbose)
         if self.params['user'] and not self.params['password']:
             if self.params['plugin']:
                 hp = HPassPlugins.HPassPlugins()

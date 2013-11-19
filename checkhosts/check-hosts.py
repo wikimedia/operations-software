@@ -29,6 +29,8 @@ if __name__ == '__main__':
                         # only attributes that match these
     hostExprs = None    # limit list or report to these hostnames
 
+    timeout = None      # timeout in seconds for remote commands
+
     verbose = 0
     cli = False         # enter command line mode (prompt for and process
                         # commands)
@@ -53,11 +55,11 @@ if __name__ == '__main__':
 
     try:
         (options, remainder) = getopt.gnu_getopt(
-            sys.argv[1:], "f:CR:d:D:r:p:P:n:l:Q:s:H:c:vVhe",
+            sys.argv[1:], "f:CR:d:D:r:p:P:n:l:Q:s:H:c:t:vVhe",
             ["filter=","report=","cli","dhcp=", "dsh=",
              "decomracktables=", "decompuppet=", "puppet=",
              "dns=", "logpuppet=", "puppetcerts=",
-             "storedconfigs=", "hosts=", "config=",
+             "storedconfigs=", "hosts=", "config=", "timeout=",
              "verbose","version","help", "extendedhelp",
              "debug"])
     except getopt.GetoptError as err:
@@ -77,6 +79,10 @@ if __name__ == '__main__':
             hostExprs = val
         elif opt in ["-c", "--config"]:
             configfile = val
+        elif opt in ["-t", "--timeout"]:
+            if not val.isdigit():
+                HHelp.usage("Timeout option requires a positive integer")
+            timeout = int(val)
         elif opt in ["-v", "--verbose"]:
             verbose = 1
         elif opt in ["--debug"]:
@@ -107,6 +113,7 @@ if __name__ == '__main__':
     hc = HConfig.CheckHostsConfig(configfile)
     hc.parseConfFile()
     configInfoFromFiles = hc.conf.options
+
     # merge in any config options we got from the command line
     for t in list(set(configInfoFromFiles.keys() + configInfo.keys())):
         if t in configInfo:
@@ -115,6 +122,9 @@ if __name__ == '__main__':
         else:
             configInfo[t] = HOptions.mergeDefaults(configInfoFromFiles[t],
                                                    None)
+    if timeout is None:
+        if hc.conf.has_option('globals', 'timeout'):
+            timeout = hc.conf.get('globals', 'timeout')
 
     if verbose:
         print "running with configuration:"
@@ -122,7 +132,7 @@ if __name__ == '__main__':
 
     # list of hosts in sources
     if filterExpr:
-        hf = HFilter.HostFilter(configInfo, hostExprs, verbose)
+        hf = HFilter.HostFilter(configInfo, hostExprs, timeout, verbose)
         hf.processFilterArg(filterExpr)
         if hf.filters:
             hf.filterHosts()
@@ -130,7 +140,7 @@ if __name__ == '__main__':
 
     # chart of hosts and attributes
     elif reportArg:
-        hr = HReport.HostReport(configInfo, hostExprs, verbose)
+        hr = HReport.HostReport(configInfo, hostExprs, timeout, verbose)
         hr.processReportArg(reportArg)
         if hr.reportSourceNames:
             hr.reportHosts()
@@ -138,7 +148,7 @@ if __name__ == '__main__':
 
     # cli
     else:
-        hf = HFilter.HostFilter(configInfo, hostExprs, verbose)
-        hr = HReport.HostReport(configInfo, hostExprs, verbose)
+        hf = HFilter.HostFilter(configInfo, hostExprs, timeout, verbose)
+        hr = HReport.HostReport(configInfo, hostExprs, timeout, verbose)
         c = HCli.Cli(hf, hr, Source.getKnownSources())
         c.runCli()

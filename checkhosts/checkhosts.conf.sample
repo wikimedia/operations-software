@@ -1,6 +1,9 @@
 # sample config file for hostgroups script
 # copy this into checkhosts.conf and edit to suit
 
+[globals]
+timeout=10
+
 [sources]
 # check the decommissioning.pp puppet file on this host
 decompuppet_host=sockpuppet.pmtpa.wmnet
