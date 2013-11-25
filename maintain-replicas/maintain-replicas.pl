@@ -122,6 +122,30 @@ my %customviews = (
                     af_is_unrequested, af_is_featured, af_is_unfeatured, af_is_resolved,
                     af_is_unresolved, af_relevance_score, af_relevance_sort, af_last_status_notes', },
 
+    'archive' => {
+        'source' => 'archive',
+        'view' => 'select ar_id, ar_namespace, ar_title, NULL as ar_text,
+                    NULL as ar_comment,
+                    if(ar_deleted&4,null,ar_user) as ar_user,
+                    if(ar_deleted&4,null,ar_user_text) as ar_user_text,
+                    ar_timestamp, ar_minor_edit, ar_flags, ar_rev_id,
+                    if(ar_deleted&1,null,ar_text_id) as ar_text_id,
+                    ar_deleted, if(ar_deleted&1,null,ar_len) as ar_len,
+                    ar_page_id, ar_parent_id,
+                    if(ar_deleted&1,null,ar_sha1) as ar_sha1' },
+
+    'archive_userindex' => {
+        'source' => 'archive',
+        'view' => 'select ar_id, ar_namespace, ar_title, NULL as ar_text,
+                    NULL as ar_comment,
+                    ar_user, ar_user_text,
+                    ar_timestamp, ar_minor_edit, ar_flags, ar_rev_id,
+                    if(ar_deleted&1,null,ar_text_id) as ar_text_id,
+                    ar_deleted, if(ar_deleted&1,null,ar_len) as ar_len,
+                    ar_page_id, ar_parent_id,
+                    if(ar_deleted&1,null,ar_sha1) as ar_sha1',
+        'where' => '(ar_deleted&1)==0' },
+
     'globaluser' => {
         'source' => 'globaluser',
         'view' => 'select gu_id, gu_name, gu_enabled, gu_enabled_method, gu_home_db,
@@ -198,7 +222,7 @@ my %customviews = (
                     if(oi_deleted&2,null,oi_description) as oi_description,
                     oi_user, oi_user_text, oi_timestamp, oi_metadata, oi_media_type,
                     oi_major_mime, oi_minor_mime, oi_deleted, oi_sha1',
-        'where' => '(oi_deleted&4)==0' },
+        'where' => '(oi_deleted&4)=0' },
 
     'recentchanges' => {
         'source' => 'recentchanges',
@@ -215,7 +239,7 @@ my %customviews = (
                     if(rc_deleted&2,null,rc_comment) as rc_comment, rc_minor, rc_bot, rc_new, rc_cur_id,
                     rc_this_oldid, rc_last_oldid, rc_type, rc_patrolled, null as rc_ip, rc_old_len,
                     rc_new_len, rc_deleted, rc_logid, rc_log_type, rc_log_action, rc_params',
-        'where' => '(rc_deleted&4)==0' },
+        'where' => '(rc_deleted&4)=0' },
 
     'revision' => {
         'source' => 'revision',
