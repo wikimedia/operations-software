@@ -582,7 +582,7 @@ class DecomRackTables(Source):
             return
 
         query = ("SELECT RackObject.name FROM RackObject,Rack,RackSpace,Row "
-                 "WHERE RackObject.id = RackSpace.object_id"
+                 "WHERE RackObject.id = RackSpace.object_id "
                  "AND RackSpace.rack_id = Rack.id "
                  "AND Row.id = Rack.row_id AND Row.name = \"decommissioned\" ;")
 
