@@ -617,8 +617,9 @@ class Salt(Source):
         key = salt.key.Key(opts)
         keys = key.list_keys()
         for minionGroup in keys.keys():
-            for h in keys[minionGroup]:
-                self.hosts[self._basename(h)] = [True]
+            if minionGroup != "minions_rejected":
+                for h in keys[minionGroup]:
+                    self.hosts[self._basename(h)] = [True]
 
         # now see which hosts ping
         if not self.client:
