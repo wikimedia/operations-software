@@ -144,7 +144,7 @@ my %customviews = (
                     ar_deleted, if(ar_deleted&1,null,ar_len) as ar_len,
                     ar_page_id, ar_parent_id,
                     if(ar_deleted&1,null,ar_sha1) as ar_sha1',
-        'where' => '(ar_deleted&1)==0' },
+        'where' => '(ar_deleted&1)=0' },
 
     'globaluser' => {
         'source' => 'globaluser',
@@ -432,7 +432,6 @@ sub twiddle() {
     $twiddlum = 0  if ++$twiddlum == 4;
 }
 
-
 foreach my $slice (keys %byslice) {
     next unless $doslice{$slice};
     my ($dbhost, $dbport) = @{$slices{$slice}};
@@ -515,6 +514,7 @@ foreach my $slice (keys %byslice) {
         $fields{'family'} = quote($db->{family}) if defined $db->{'family'};
         $fields{'lang'} = quote($db->{lang}) if defined $db->{'lang'};
         $fields{'name'} = quote($db->{name}) if defined $db->{'lang'};
+        $fields{'is_closed'} = quote($db->{'closed'}) if defined $db->{'closed'};
         my $q = "INSERT INTO meta_p.wiki(".join(',',keys %fields).") VALUES (".join(',',values %fields).");";
         sql($q);
     }
