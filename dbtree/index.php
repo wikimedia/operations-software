@@ -74,12 +74,16 @@ function parse_ganglia_xml($db) {
 }
 
 function parse_db_conf() {
-	$confdir = '/home/wikipedia/common/wmf-config/';
-	$s3file = '/home/w/common/s3.dblist';
+	$confdir = '/usr/local/apache/common/wmf-config/';
+	$s3file = '/usr/local/apache/common/s3.dblist';
 	$confs = array('db-eqiad.php', 'db-pmtpa.php');
 	$dbs = array();
 
 	foreach ( $confs as $conf ) {
+		if (!file_exists($confdir . $conf))
+		{
+			continue;
+		}
 		$type = ( $conf == "db-eqiad.php" ) ? 'pri' : 'sec';
 		include $confdir . $conf;
 		foreach( $wgLBFactoryConf['sectionLoads'] as $cluster => $sectionload) {
@@ -184,7 +188,7 @@ if ((time() - $ttl > filemtime($gangcache)) || $_GET['recache'] == 'true') {
 ksort($dbs);
 foreach ($dbs as $s => $cluster) {
 	$master = array_shift($cluster['pri']);
-	$second = array_shift($cluster['sec']);
+	$second = isset($cluster['sec']) ? array_shift($cluster['sec']): null;
 
 	# handle the case where the secondary datacenter is still active,
 	# using the write masters in the other dc.  in this case, skip
@@ -219,22 +223,26 @@ foreach ($dbs as $s => $cluster) {
 		print '</li>';
 	}
 
-	$second_color = get_db_color($second);
-	print '<li><div style="background: ' . $second_color .'"><a href="' . $ghost . $second . '" target=_new><h3>' .
-		$second . '</h3></a><hr></div>';
-	print_dbdata($second);
-
-	print '<ul>';
-	foreach ($cluster['sec'] as $db) {
-		if ($second_color == 'black' || $second_color == 'red') {
-			$color = $second_color;
-		} else {
-			$color = get_db_color($db);
+	if ($second) {
+		
+		$second_color = get_db_color($second);
+		print '<li><div style="background: ' . $second_color .'"><a href="' . $ghost . $second . '" target=_new><h3>' .
+			$second . '</h3></a><hr></div>';
+		print_dbdata($second);
+	
+		print '<ul>';
+		foreach ($cluster['sec'] as $db) {
+			if ($second_color == 'black' || $second_color == 'red') {
+				$color = $second_color;
+			} else {
+				$color = get_db_color($db);
+			}
+			print '<li><div style="background: ' . $color .'"><a href="' . $ghost . $db . '" target=_new>
+				<h4>' . $db . '</h4></a><hr></div>';
+			print_dbdata($db);
+			print '</li>';
 		}
-		print '<li><div style="background: ' . $color .'"><a href="' . $ghost . $db . '" target=_new>
-			<h4>' . $db . '</h4></a><hr></div>';
-		print_dbdata($db);
-		print '</li>';
+
 	}
 
 	print '				</ul>
