@@ -53,11 +53,9 @@ function parse_ganglia_xml($db) {
 
 	if (preg_match('/^db1\d{3}/', $db)) {
 		$fqdn = $db . '.eqiad.wmnet';
-	} else {
-		$fqdn = $db . '.pmtpa.wmnet';
 	}
 
-	$rootXmlXpath = "//GANGLIA_XML/GRID/CLUSTER/HOST[@NAME='{$fqdn}']"; 
+	$rootXmlXpath = "//GANGLIA_XML/GRID/CLUSTER/HOST[@NAME='{$fqdn}']";
 	$result = $xml->xpath( "{$rootXmlXpath}/@REPORTED | {$rootXmlXpath}/METRIC[{$metricAttributeXPath}']" );
 	foreach( $result as $item ) {
 		$attrib = $item->attributes();
@@ -76,12 +74,11 @@ function parse_ganglia_xml($db) {
 function parse_db_conf() {
 	$confdir = '/usr/local/apache/common/wmf-config/';
 	$s3file = '/usr/local/apache/common/s3.dblist';
-	$confs = array('db-eqiad.php', 'db-pmtpa.php');
+	$confs = array('db-eqiad.php');
 	$dbs = array();
 
 	foreach ( $confs as $conf ) {
-		if (!file_exists($confdir . $conf))
-		{
+		if (!file_exists($confdir . $conf)) {
 			continue;
 		}
 		$type = ( $conf == "db-eqiad.php" ) ? 'pri' : 'sec';
@@ -104,7 +101,7 @@ function parse_db_conf() {
 		$dbs['s3']['wikis'] = array('DEFAULT');
 		if ($type == 'pri') {
 			foreach ( $wgLBFactoryConf['sectionsByDB'] as $wiki => $cluster ) {
-				if (!isset($dbs[$cluster]['wikis'])) { 
+				if (!isset($dbs[$cluster]['wikis'])) {
 					$dbs[$cluster]['wikis'] = array();
 				}
 				$dbs[$cluster]['wikis'][] = $wiki;
@@ -121,11 +118,11 @@ function get_db_color($db) {
 
 	if ($dbdata['latest'] - $dbdata[$db]['REPORTED'] > $stale || !$dbdata[$db]['REPORTED']) {
 		$color = 'black';
-	} else if ($dbdata[$db]['mysql_slave_running'] != 1) {
+	} elseif ($dbdata[$db]['mysql_slave_running'] != 1) {
 		$color = 'black';
-	} else if ($dbdata[$db]['mysql_slave_lag'] > 10) {
+	} elseif ($dbdata[$db]['mysql_slave_lag'] > 10) {
 		$color = 'red';
-	} else if ($dbdata[$db]['mysql_slave_lag'] > 2) {
+	} elseif ($dbdata[$db]['mysql_slave_lag'] > 2) {
 		$color = 'yellow';
 	} else {
 		$color = 'white';
@@ -224,12 +221,11 @@ foreach ($dbs as $s => $cluster) {
 	}
 
 	if ($second) {
-		
 		$second_color = get_db_color($second);
 		print '<li><div style="background: ' . $second_color .'"><a href="' . $ghost . $second . '" target=_new><h3>' .
 			$second . '</h3></a><hr></div>';
 		print_dbdata($second);
-	
+
 		print '<ul>';
 		foreach ($cluster['sec'] as $db) {
 			if ($second_color == 'black' || $second_color == 'red') {
