@@ -174,8 +174,8 @@ if ((time() - $ttl > filemtime($gangcache)) || $_GET['recache'] == 'true') {
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<title>Core Databases</title>
 	<link type="text/css" href="css/jquery.jOrgChart.css" rel="stylesheet" />
-	<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.8.24.custom.min.js"></script>
 	<link rel="stylesheet" href="css/custom.css"/>
 	<script type="text/javascript" src="js/jquery.jOrgChart.js"></script>
 	<script type="text/javascript" src="js/jquery.bt.min.js"></script>
