@@ -22,13 +22,15 @@ $dbdata['latest'] = 0;
 
 function get_ganglia_xml() {
 	global $xml;
-	$buf = '';
-	//$xml = simplexml_load_file("ganglia.xml");
-	//return;
+	if ( file_exists( 'ganglia.xml' ) ) {
+		$xml = simplexml_load_file('ganglia.xml');
+		return;
+	}
 	$sock = fsockopen("ganglia.wikimedia.org", 8653, $errno, $errst, 30);
 	if (!$sock) {
 		echo "Failed reading from ganglia: $errno - $errstr<br />\n";
 	} else {
+		$buf = '';
 		while (!feof($sock)) {
 			$buf .= fgets($sock, 8192);
 		}
