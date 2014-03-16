@@ -6,8 +6,8 @@
 }
 
 .jOrgChart .down {
-  background-color 		: black;	
-  margin 				: 0px auto;
+  background-color      : black;
+  margin                : 0px auto;
 }
 
 .jOrgChart .top {
@@ -31,21 +31,21 @@
 
 /* The node */
 .jOrgChart .node {
-  background-color 		: #35363B;
+  background-color      : #35363B;
   display               : inline-block;
-  width                 : 96px;
-  height                : 60px;
-  z-index 				: 10;
-  margin:               : 0 2px;
+  width                 : 180px;
+  height                : 135px;
+  z-index               : 10;
+  margin                : 0 2px;
 }
 
 /* jQuery drag 'n drop */
 
 .drag-active {
-  border-style			: dotted !important;
+  border-style          : dotted !important;
 }
 
 .drop-hover {
-  border-style			: solid !important;
-  border-color 			: #E05E00 !important;
+  border-style          : solid !important;
+  border-color          : #E05E00 !important;
 }
