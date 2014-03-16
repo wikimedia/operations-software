@@ -26,6 +26,8 @@ function get_ganglia_xml() {
 		$xml = simplexml_load_file('ganglia.xml');
 		return;
 	}
+
+	$errst = '';
 	$sock = fsockopen("ganglia.wikimedia.org", 8653, $errno, $errst, 30);
 	if (!$sock) {
 		echo "Failed reading from ganglia: $errno - $errstr<br />\n";
