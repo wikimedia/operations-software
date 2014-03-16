@@ -142,8 +142,8 @@ function print_dbdata($db, $lag=true) {
 		Active Threads: ' . $dbdata[$db]['mysql_threads_running'] . '<br>
 		Slow Q (-1min): ' . $dbdata[$db]['mysql_slow_queries'] . '<br>
 		Analyze:
-		<a href="'. $ishmael . '?host=' . $db . '" target=_new>slow</a> |
-		<a href="'. $ishmael . 'sample/?host=' . $db . '" target=_new>sampled</a>';
+		<a href="'. $ishmael . '?host=' . $db . '" target="_blank">slow</a> |
+		<a href="'. $ishmael . 'sample/?host=' . $db . '" target="_blank">sampled</a>';
 }
 
 if (file_exists($gangcache) && time() - $ttl < filemtime($gangcache)) {
@@ -209,14 +209,14 @@ foreach ($dbs as $s => $cluster) {
 	print ' "><h2>' . $s . '</h2></div>
 		<ul>
 		<li><div style="background: ' . $color .'">
-		<a href="' . $ghost . $master . '" target=_new><h3>' . $master . '</h3></a><hr></div>';
+		<a href="' . $ghost . $master . '" target="_blank"><h3>' . $master . '</h3></a><hr></div>';
 	print_dbdata($master, false);
 
 	print '<ul>';
 	foreach ($cluster['pri'] as $db) {
 		$color = get_db_color($db);
 		print '<li><div style="background: ' . $color .'">
-			<a href="' . $ghost . $db . '" target=_new>
+			<a href="' . $ghost . $db . '" target="_blank">
 			<h4>' . $db . '</h4></a><hr></div>';
 		print_dbdata($db);
 		print '</li>';
@@ -224,7 +224,7 @@ foreach ($dbs as $s => $cluster) {
 
 	if ($second) {
 		$second_color = get_db_color($second);
-		print '<li><div style="background: ' . $second_color .'"><a href="' . $ghost . $second . '" target=_new><h3>' .
+		print '<li><div style="background: ' . $second_color .'"><a href="' . $ghost . $second . '" target="_blank"><h3>' .
 			$second . '</h3></a><hr></div>';
 		print_dbdata($second);
 
@@ -235,7 +235,7 @@ foreach ($dbs as $s => $cluster) {
 			} else {
 				$color = get_db_color($db);
 			}
-			print '<li><div style="background: ' . $color .'"><a href="' . $ghost . $db . '" target=_new>
+			print '<li><div style="background: ' . $color .'"><a href="' . $ghost . $db . '" target="_blank">
 				<h4>' . $db . '</h4></a><hr></div>';
 			print_dbdata($db);
 			print '</li>';
@@ -247,9 +247,7 @@ foreach ($dbs as $s => $cluster) {
 				</li>
 			</ul>
 			</li>
-		</ul>
-		</li>
-	</ul>';
+		</ul>';
 }
 
 print '<div id=txt style="color:#000000; background:#aaaaaa; width:600px; position:relative; left:+40px">
@@ -261,9 +259,9 @@ print '<div style="text-align:center;">
 	<div style="background-color:black;width:120px;border:1px solid #000;color:#ffffff">Not Reporting or Replicating</div></blockquote>
 	</div>
 	Click shard name for list of wikis.
-	<div id="wikis" style="font-weight:bold";> </div></div>';
+	<div id="wikis" style="font-weight:bold;"> </div></div>';
 
-print '<script>jQuery(document).ready(function() { jQuery.bt.defaults.closeWhenOthersOpen = true; ';
+print '<script>jQuery(document).ready(function() { jQuery.bt.defaults.closeWhenOthersOpen = true; }';
 foreach ($dbs as $s => $cluster) {
 	print '$(".org' . $s . '").jOrgChart(); ';
 	if ($s == "s3") {
