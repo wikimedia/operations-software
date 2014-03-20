@@ -261,16 +261,22 @@ print '<div style="text-align:center;">
 	Click shard name for list of wikis.
 	<div id="wikis" style="font-weight:bold;"> </div></div>';
 
-print '<script>jQuery(document).ready(function() { jQuery.bt.defaults.closeWhenOthersOpen = true; }';
+$charts = '';
 foreach ($dbs as $s => $cluster) {
-	print '$(".org' . $s . '").jOrgChart(); ';
+	$charts .= "\t$('.org{$s}').jOrgChart();\n";
 	if ($s == "s3") {
-		print '$(".' . $s . '").bt({fill: "red", trigger: "click", width: 600}); ';
+		$charts .= "\t$('.{$s}').bt({fill: 'red', trigger: 'click', width: 600});\n";
 	} else {
-		print '$(".' . $s . '").bt({fill: "red", trigger: "click"}); ';
+		$charts .= "\t$('.{$s}').bt({fill: 'red', trigger: 'click'});\n";
 	}
 }
-print '});
+
+print "<script>jQuery(document).ready(function() {
+	jQuery.bt.defaults.closeWhenOthersOpen = true;
+$charts
+})";
+
+print '
 </script>
 </body>
 </html>';
