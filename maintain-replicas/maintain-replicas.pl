@@ -93,7 +93,7 @@ my @fullviews = (
     "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_former_groups",
     "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
     'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
-    'globalblocks', 'localuser', 'wikiset',
+    'globalblocks', 'localuser', 'wikiset', 'wb_property_info',
 );
 
 my %customviews = (
