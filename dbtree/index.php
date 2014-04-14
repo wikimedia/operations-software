@@ -30,7 +30,7 @@ function get_ganglia_xml() {
 	$errst = '';
 	$sock = fsockopen("ganglia.wikimedia.org", 8653, $errno, $errst, 30);
 	if (!$sock) {
-		echo "Failed reading from ganglia: $errno - $errstr<br />\n";
+		echo "Failed reading from ganglia: $errno - $errst<br />\n";
 	} else {
 		$buf = '';
 		while ( !feof( $sock ) ) {
