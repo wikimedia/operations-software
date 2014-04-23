@@ -1,0 +1,77 @@
+#!/bin/bash -e
+
+
+# Common defs
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PARENT=$(readlink -f ${DIR}/../)
+EXTDIR=${PARENT}/external
+PUPPETDIR=${EXTDIR}/puppet
+PRIVATEDIR=${EXTDIR}/private
+FACTS_ARCHIVE=${PARENT}/puppet-facts.tar.xz
+
+function log () {
+    echo "$@"
+}
+
+function checkout() {
+    log "Checking out repositories"
+    pushd ${PARENT}/external/
+    git clone https://gerrit.wikimedia.org/r/operations/puppet
+    git clone https://gerrit.wikimedia.org/r/labs/private
+    pushd ${PRIVATEDIR}
+    for subdir in modules files; do
+        cp -ax ${subdir}/* ${PUPPETDIR}/${subdir}/;
+    done
+    popd
+    popd
+}
+
+function update() {
+    log "Updating repositories"
+    pushd ${PUPPETDIR}
+    git pull --rebase
+    popd
+    pushd ${PRIVATEDIR}
+    git pull --rebase
+    for subdir in modules files; do
+        cp -ax ${subdir}/* ${PUPPETDIR}/${subdir}/;
+    done
+    popd
+}
+
+function copy_facts() {
+    test -f ${FACTS_ARCHIVE} || ( log "Could not find ${FACTS_ARCHIVE}" && exit 1)
+    # This expects a file called puppet-facts.tar.xz in the parent of the installation
+    pushd ${EXTDIR}
+    tar -C var/ --strip-components=3 -xJvf ${FACTS_ARCHIVE}
+    popd
+}
+
+function purge() {
+    rm -rf ${PUPPETDIR}
+    rm -rf ${PRIVATEDIR}
+    rm -rf ${DIR}/var/yaml
+}
+
+
+if [ -z $1 ]; then
+    echo "Usage: $0 [install|cleanup]"
+fi;
+#start from the script dir, please
+pushd ${DIR}
+case $1 in
+    install)
+        if [ -d ${PUPPETDIR} ]; then
+            update
+        else
+            checkout
+        fi;
+
+        log "Putting the facts in place."
+        copy_facts
+        ;;
+    cleanup)
+        purge
+        ;;
+esac;
+popd
