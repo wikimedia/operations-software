@@ -23,6 +23,9 @@ function checkout() {
         cp -ax ${subdir}/* ${PUPPETDIR}/${subdir}/;
     done
     popd
+    pushd ${PUPPETDIR}
+    git submodule update --init
+    popd
     popd
 }
 
@@ -30,6 +33,7 @@ function update() {
     log "Updating repositories"
     pushd ${PUPPETDIR}
     git pull --rebase
+    git submodule update --init # use --init here in case something went wrong the first time.
     popd
     pushd ${PRIVATEDIR}
     git pull --rebase

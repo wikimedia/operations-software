@@ -33,6 +33,7 @@ sudo -u vagrant /usr/local/rvm/bin/rvm ${RUBYVER} do bundle exec puppet module i
 popd
 
 sudo pip install simplediff
+sudo pip install jinja2
 
 for dir in compiled diff html; do
     sudo -u vagrant mkdir -p /vagrant/output/${dir}

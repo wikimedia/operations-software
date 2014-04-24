@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="ltr"
+    xmlns:dc="http://purl.org/dc/terms/">
+<head>
+    <meta charset="{{ charset }}" />
+    <meta name="generator" content="diff2html.py (http://git.droids-corp.org/gitweb/?p=diff2html)" />
+    <!--meta name="author" content="Fill in" /-->
+    <title>Diff for node {{ fqdn }}</title>
+    <link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg==" type="image/png" />
+    <meta property="dc:language" content="{{ lang }}" />
+    <meta property="dc:modified" content="" />
+    <meta name="description" content="Diffs between puppet 2 and puppet 3 catalogs for {{ fqdn }}" />
+    <style>
+        table { border:0px; border-collapse:collapse; width: 100%; font-size:0.75em; font-family: Lucida Console, monospace }
+        td.line { color:#8080a0 }
+        th { background: black; color: white }
+        tr.diffunmodified td { background: #D0D0E0 }
+        tr.diffhunk td { background: #A0A0A0 }
+        tr.diffadded td { background: #CCFFCC }
+        tr.diffdeleted td { background: #FFCCCC }
+        tr.diffchanged td { background: #FFFFA0 }
+        span.diffchanged2 { background: #E0C880 }
+        span.diffponct { color: #B08080 }
+        tr.diffmisc td {}
+        tr.diffseparator td {}
+    </style>
+</head>
+<body>
+{% block summary %}
+<h1>Catalog compilation result for <span style="color: #EA3030">{{ fqdn }}</span>: <span style="color: #EA3030">NOT OK</span></h1>
+{% endblock %}
+<div class="hero-unit">
+<h2>Puppet 3</h2>
+<ul>
+    <li><a href="../compiled/puppet_catalogs_3/{{ fqdn }}.pson">Compiled catalog</a></li>
+    <li><a href="../compiled/puppet_catalogs_3/{{ fqdn }}.warnings">Compilation errors and warnings</a></li>
+</ul>
+</div>
+<div class="hero-unit">
+<h2>Puppet 2.7</h2>
+<ul>
+    <li><a href="../compiled/puppet_catalogs_2.7/{{ fqdn }}.pson">Compiled catalog</a></li>
+    <li><a href="../compiled/puppet_catalogs_2.7/{{ fqdn }}.warnings">Compilation errors and warnings</a></li>
+</ul>
+</div>
+
+{% block diffs %}
+<div id="diffs">
+<h2>Diffs</h2>
+<table class="diff">
+  {% for line in data %}
+    {% if line[0] == 'comment' %}
+      <tr class="diffmisc"><td colspan="4">{{ line[1] }}</td></tr>
+    {% endif %}
+    {% if line[0] == 'filename' %}
+      <tr><th colspan='2'>{{ line[1] }}</th><th colspan='2'>{{ line[2] }}</th></tr>
+    {% endif %}
+    {% if line[0] == 'hunk' %}
+      <tr class="diffhunk">
+        <td colspan="2">Offset {{ line[1][0] }}, {{ line[1][1] }} lines modified</td>
+        <td colspan="2">Offset {{ line[2][0] }}, {{ line[2][1] }} lines modified</td>
+      </tr>
+    {% endif %}
+    {% if line[0] == 'empty_hunk' %}
+      <tr class="diffhunk"><td colspan="2">&#8942;</td><td colspan="2">&#8942;</td></tr>
+    {% endif %}
+    {% if line[0] == 'diffline' %}
+      <tr class="diff{{ line[1].type }}">
+        {% if line[1].line1 != '' %}
+          <td class="diffline">{{ line[1].line1[0] }}</td>
+          <td class="diffpresent">{{ line[1].line1[1] }}</td>
+        {% else %}
+          <td colspan="2"> </td>
+        {% endif %}
+        {% if line[1].line2 != '' %}
+          <td class="diffline">{{ line[1].line2[0] }}</td>
+          <td class="diffpresent">{{ line[1].line2[1] }}</td>
+        {% else %}
+          <td colspan="2"> </td>
+        {% endif %}
+      </tr>
+    {% endif %}
+  {% endfor %}
+</table>
+</div>
+{% endblock %}
+<footer>
+  <p>HTML formatting studied to show my non-proficiency with CSS.</p>
+</footer>
+</table>
+</body>
+</html>

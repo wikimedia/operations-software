@@ -40,11 +40,10 @@
 import sys
 import re
 import htmlentitydefs
-import getopt
 import StringIO
-import codecs
 import datetime
 from functools import reduce
+
 try:
     from simplediff import diff, string_diff
 except ImportError:
@@ -66,70 +65,6 @@ desc = "File comparison"
 dtnow = datetime.datetime.now()
 modified_date = "%s+01:00" % dtnow.isoformat()
 
-html_hdr = """<!DOCTYPE html>
-<html lang="{5}" dir="ltr"
-    xmlns:dc="http://purl.org/dc/terms/">
-<head>
-    <meta charset="{1}" />
-    <meta name="generator" content="diff2html.py (http://git.droids-corp.org/gitweb/?p=diff2html)" />
-    <!--meta name="author" content="Fill in" /-->
-    <title>HTML Diff{0}</title>
-    <link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg==" type="image/png" />
-    <meta property="dc:language" content="{5}" />
-    <!--meta property="dc:date" content="{3}" /-->
-    <meta property="dc:modified" content="{4}" />
-    <meta name="description" content="Differences in catalogs for {2}" />
-    <meta property="dc:abstract" content="{2}" />
-    <style>
-        table {{ border:0px; border-collapse:collapse; width: 100%; font-size:0.75em; font-family: Lucida Console, monospace }}
-        td.line {{ color:#8080a0 }}
-        th {{ background: black; color: white }}
-        tr.diffunmodified td {{ background: #D0D0E0 }}
-        tr.diffhunk td {{ background: #A0A0A0 }}
-        tr.diffadded td {{ background: #CCFFCC }}
-        tr.diffdeleted td {{ background: #FFCCCC }}
-        tr.diffchanged td {{ background: #FFFFA0 }}
-        span.diffchanged2 {{ background: #E0C880 }}
-        span.diffponct {{ color: #B08080 }}
-        tr.diffmisc td {{}}
-        tr.diffseparator td {{}}
-    </style>
-</head>
-<body>
-<h1>Catalog compilation for <span style="color: #EA3030">{2}</span></h1>
-
-<div class="hero-unit">
-<h2>Puppet 3</h2>
-<ul>
-    <li><a href="../compiled/puppet_catalogs_3/{2}.pson">Compiled catalog</a></li>
-    <li><a href="../compiled/puppet_catalogs_3/{2}.warnings">Compilation errors and warnings</a></li>
-</ul>
-</div>
-<div class="hero-unit">
-<h2>Puppet 2.7</h2>
-<ul>
-    <li><a href="../compiled/puppet_catalogs_2.7/{2}.pson">Compiled catalog</a></li>
-    <li><a href="../compiled/puppet_catalogs_2.7/{2}.warnings">Compilation errors and warnings</a></li>
-</ul>
-</div>
-<h2>Diffs</h2>
-
-"""
-
-html_footer = """
-<footer>
-    <p>Modified at {1}. HTML formatting created by <a href="http://git.droids-corp.org/gitweb/?p=diff2html;a=summary">diff2html</a>.    </p>
-</footer>
-</body></html>
-"""
-
-table_hdr = """
-        <table class="diff">
-"""
-
-table_footer = """
-</table>
-"""
 
 DIFFON = "\x01"
 DIFFOFF = "\x02"
@@ -142,6 +77,8 @@ hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
 
 # Characters we're willing to word wrap on
 WORDBREAK = " \t;.,/):-"
+
+output = []
 
 
 def sane(x):
@@ -318,31 +255,20 @@ def convert(s, linesize=0, ponct=0):
     return t
 
 
-def add_comment(s, output_file):
-    output_file.write(
-        ('<tr class="diffmisc"><td colspan="4">%s</td></tr>\n' % convert(s)).encode(encoding))
+def add_comment(s):
+    return ('comment', convert(s))
 
 
-def add_filename(f1, f2, output_file):
-    output_file.write(("<tr><th colspan='2'>%s</th>" %
-                      convert(f1, linesize=linesize)).encode(encoding))
-    output_file.write(("<th colspan='2'>%s</th></tr>\n" %
-                      convert(f2, linesize=linesize)).encode(encoding))
+def add_filename(f1, f2):
+    return ('filename', convert(f1,linesize=linesize), convert(f2,linesize=linesize))
 
-
-def add_hunk(output_file, show_hunk_infos):
+def add_hunk(show_hunk_infos):
     if show_hunk_infos:
-        output_file.write(
-            '<tr class="diffhunk"><td colspan="2">Offset %d, %d lines modified</td>' % (hunk_off1, hunk_size1))
-        output_file.write(
-            '<td colspan="2">Offset %d, %d lines modified</td></tr>\n' % (hunk_off2, hunk_size2))
+        return ('hunk', (hunk_off1, hunk_size1), (hunk_off2, hunk_size2))
     else:
-        # &#8942; - vertical ellipsis
-        output_file.write(
-            '<tr class="diffhunk"><td colspan="2">&#8942;</td><td colspan="2">&#8942;</td></tr>')
+        return ('empty_hunk')
 
-
-def add_line(s1, s2, output_file):
+def add_line(s1, s2):
     global line1
     global line2
 
@@ -366,45 +292,41 @@ def add_line(s1, s2, output_file):
         else:  # default
             s1, s2 = linediff(orig1, orig2)
 
-    output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
+    res = {'type': type_name}
+
     if s1 is not None and s1 != "":
-        output_file.write(
-            ('<td class="diffline">%d </td>' % line1).encode(encoding))
-        output_file.write('<td class="diffpresent">'.encode(encoding))
-        output_file.write(
-            convert(s1, linesize=linesize, ponct=1).encode(encoding))
-        output_file.write('</td>')
+        res['line1'] = (
+            line1,
+            convert(s1, linesize=linesize, ponct=1).encode(encoding)
+        )
     else:
+        res['line1'] = ''
         s1 = ""
-        output_file.write('<td colspan="2"> </td>')
 
     if s2 is not None and s2 != "":
-        output_file.write(
-            ('<td class="diffline">%d </td>' % line2).encode(encoding))
-        output_file.write('<td class="diffpresent">')
-        output_file.write(
-            convert(s2, linesize=linesize, ponct=1).encode(encoding))
-        output_file.write('</td>')
+        res['line2'] = (
+            line2,
+            convert(s2, linesize=linesize, ponct=1).encode(encoding)
+        )
     else:
+        res['line2'] = ''
         s2 = ""
-        output_file.write('<td colspan="2"></td>')
 
-    output_file.write('</tr>\n')
-
+    return ('diffline', res)
     if s1 != "":
         line1 += 1
     if s2 != "":
         line2 += 1
 
 
-def empty_buffer(output_file):
+def empty_buffer(output):
     global buf
     global add_cpt
     global del_cpt
 
     if del_cpt == 0 or add_cpt == 0:
         for l in buf:
-            add_line(l[0], l[1], output_file)
+            output.append(add_line(l[0], l[1]))
 
     elif del_cpt != 0 and add_cpt != 0:
         l0, l1 = [], []
@@ -420,23 +342,19 @@ def empty_buffer(output_file):
                 s0 = l0[i]
             if i < len(l1):
                 s1 = l1[i]
-            add_line(s0, s1, output_file)
+            output.append(add_line(s0, s1))
 
     add_cpt, del_cpt = 0, 0
     buf = []
 
 
-def parse_input(input_file, output_file, input_file_name, output_file_name,
-                exclude_headers, show_hunk_infos, desc):
+def parse_input(txt, output_file_name,
+                show_hunk_infos):
     global add_cpt, del_cpt
     global line1, line2
     global hunk_off1, hunk_size1, hunk_off2, hunk_size2
-
-    if not exclude_headers:
-        title_suffix = ' ' + input_file_name
-        output_file.write(html_hdr.format(
-            title_suffix, encoding, desc, "", modified_date, lang).encode(encoding))
-    output_file.write(table_hdr.encode(encoding))
+    output = []
+    input_file = StringIO.StringIO(txt)
 
     while True:
         l = input_file.readline()
@@ -445,7 +363,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
         m = re.match('^--- ([^\s]*)', l)
         if m:
-            empty_buffer(output_file)
+            empty_buffer(output)
             file1 = m.groups()[0]
             while True:
                 l = input_file.readline()
@@ -453,22 +371,22 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
                 if m:
                     file2 = m.groups()[0]
                     break
-            add_filename(file1, file2, output_file)
+            output.append(add_filename(file1, file2))
             hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
             continue
 
         m = re.match("@@ -(\d+),?(\d*) \+(\d+),?(\d*)", l)
         if m:
-            empty_buffer(output_file)
+            empty_buffer(output)
             hunk_data = map(lambda x: x == "" and 1 or int(x), m.groups())
             hunk_off1, hunk_size1, hunk_off2, hunk_size2 = hunk_data
             line1, line2 = hunk_off1, hunk_off2
-            add_hunk(output_file, show_hunk_infos)
+            output.append(add_hunk(show_hunk_infos))
             continue
 
         if hunk_size1 == 0 and hunk_size2 == 0:
-            empty_buffer(output_file)
-            add_comment(l, output_file)
+            empty_buffer(output)
+            output.append(add_comment(l))
             continue
 
         if re.match("^\+", l):
@@ -484,48 +402,14 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
             continue
 
         if re.match("^\ ", l) and hunk_size1 and hunk_size2:
-            empty_buffer(output_file)
+            empty_buffer(output)
             hunk_size1 -= 1
             hunk_size2 -= 1
             buf.append((l[1:], l[1:]))
             continue
 
-        empty_buffer(output_file)
-        add_comment(l, output_file)
+        empty_buffer(output)
+        output.append(add_comment(l))
 
-    empty_buffer(output_file)
-    output_file.write(table_footer.encode(encoding))
-    if not exclude_headers:
-        output_file.write(
-            html_footer.format("", dtnow.strftime("%d.%m.%Y")).encode(encoding))
-
-
-def stream_parse(txt=None, output_file_name='', enc=None,
-                 show_cr=False, show_hunk_infos=True, verbose=False, fqdn=None):
-    global linesize, tabsize
-    global show_CR
-    global encoding
-    global algorithm
-
-    exclude_headers = False
-
-    if enc is not None:
-        encoding = enc
-
-    if show_cr is not None:
-        show_CR = show_cr
-
-    input_file = StringIO.StringIO(txt)
-
-    if output_file_name:
-        output_file = codecs.open(output_file_name, "w")
-    else:
-        output_file = codecs.getwriter(encoding)(sys.stdout)
-
-    if fqdn:
-        desc = fqdn
-    else:
-        desc = 'Catalog differences'
-
-    parse_input(input_file, output_file, '', output_file_name,
-                exclude_headers, show_hunk_infos, desc)
+    empty_buffer(output)
+    return output

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" xmlns:dc="http://purl.org/dc/terms/">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg==" type="image/png" />
+    <meta name="description" content="Diffs between puppet 2 and puppet 3 catalogs" />
+    <style>
+      a { font-weight: bold; text-decoration: none;}
+    </style>
+  </head>
+  <body>
+    <div class="hostgroup">
+      <h2>Hosts where compilation is failing:</h2>
+      <ul>
+        {% for host in nodes.ERROR %}
+          <li><a href="{{ host }}.html"><span style="color: #EA3030">{{ host }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="hostgroup">
+      <h2>Hosts where compilation differs:</h2>
+      <ul>
+        {% for host in nodes.DIFF %}
+          <li><a href="{{ host }}.html"><span style="color: #3030EA">{{ host }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="hostgroup">
+      <h2>Hosts where compilation is identical:</h2>
+      <ul>
+        {% for host in nodes.OK %}
+          <li><a href="{{ host }}.html"><span style="color: #30EA30">{{ host }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </body>
+</html>
