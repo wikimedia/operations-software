@@ -1,7 +1,7 @@
 #!/bin/bash
 RUBYVER="1.8.7"
 apt-get update
-apt-get -y install curl git-core vim python-pip
+apt-get -y install curl git-core vim python-pip python-dev
 # Install rvm (I know, this is horrible, curling and executing in a shell should be prohibited)
 if [ ! -f /usr/local/rvm/scripts/rvm ]; then
    curl -sSL https://get.rvm.io | bash -s stable --ruby
