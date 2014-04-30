@@ -2,7 +2,9 @@ import os
 import subprocess
 import shlex
 from tempfile import NamedTemporaryFile
+import logging
 
+log = logging.getLogger('puppet_compare')
 
 def contains(haystack, needle):
     return (haystack.find(needle) >= 0)
@@ -37,7 +39,7 @@ class DiffParser(object):
         except subprocess.CalledProcessError as e:
             # TODO: logging!
             diff_resources = ''
-            print e.output
+            log.error('Could not create the diffs; command was %s', cmd)
 
         self.diffs.append((diff_resources, self.diffdata))
         for state, fh in self.tmpfile.items():
@@ -75,6 +77,8 @@ class DiffParser(object):
         state = None
 
         for line in filehandle:
+            log.debug('State is: %s' % state)
+            log.debug('Parsing line %s', line.rstrip())
             if not line.rstrip() and state != self.IN_DIFF:
                 # skip empty lines
                 continue
@@ -96,7 +100,14 @@ class DiffParser(object):
                 self.end_resource(state)
                 state = None
             else:
+                log.debug('Adding line to %s', state)
                 self.add_line(state, line)
+
+        if state in self.tmpfile \
+           and self.tmpfile[state] is not None:
+            self.end_resource(state)
+            # We still have a last diff to compile, meh.
+            self.generate_diff()
 
     def run(self):
         with open(self.fname, 'r') as f:
@@ -107,6 +118,7 @@ class DiffParser(object):
 if __name__ == '__main__':
     # Ugly, just to do a quick test
     import sys
+    logging.basicConfig(level=logging.DEBUG)
     filename = sys.argv[1]
     p = DiffParser(filename)
     for (resource_diff, content_diff) in p.run():

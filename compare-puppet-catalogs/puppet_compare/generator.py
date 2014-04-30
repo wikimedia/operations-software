@@ -5,6 +5,9 @@ import shlex
 from collections import defaultdict
 from subprocess import CalledProcessError
 from jinja2 import Environment, PackageLoader
+import logging
+
+log = logging.getLogger('puppet_compare')
 
 env = Environment(loader=PackageLoader('puppet_compare', 'templates'))
 
@@ -34,7 +37,7 @@ def ruby(cmd, **kwdargs):
 
 
 def get_nodes():
-    print "Walking dir %s" % app.config.get('NODE_DIR')
+    log.info("Walking dir %s", app.config.get('NODE_DIR'))
     for subdir in os.walk(app.config.get('NODE_DIR')):
         nodelist = subdir[2]
         for node in nodelist:
@@ -48,7 +51,7 @@ def compile_and_diff_node(nodename):
 
 def node_compile(nodename):
     for puppet_version in app.config.get('PUPPET_VERSIONS'):
-        print "Compiling node %s under puppet %s" % (nodename, puppet_version)
+        log.info("Compiling node %s under puppet %s" % (nodename, puppet_version))
         # Compile
         cmd = '{} {} {} {}'.format(
             app.config.get('COMPILE_SCRIPT'),
@@ -59,7 +62,7 @@ def node_compile(nodename):
         ruby(cmd)
 
 def node_diff(nodename):
-    print "Building diffs for node %s" % nodename
+    log.info("Building diffs for node %s" % nodename)
     diff_cmd = '{} {} {} {}'.format(
         app.config.get('DIFF_SCRIPT'),
         nodename,
@@ -111,6 +114,11 @@ def diff_save(fname, diff):
 
 
 def main(nodes=None):
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)s: %(message)s',
+        level=logging.INFO,
+        datefmt='[ %m/%d/%Y %H:%M:%S ]')
+
     count = 0
     if nodes is not None:
         gen = lambda: [n for n in nodes.split(',')]
@@ -121,7 +129,7 @@ def main(nodes=None):
         count += 1
         if not count % 10:
             update_index(nodelist)
-        print "Doing node {}".format(node)
+        log.info("Doing node %s", node)
         # If compilation or diff fails, build a report page
         # for a node with errors.
         try:
@@ -130,14 +138,14 @@ def main(nodes=None):
             p = parser.DiffParser(filename)
             diff = p.run()
         except CalledProcessError:
-            print "Error in compilation on node %s" % node
+            log.error("Error in compilation on node %s", node)
             write_node_page(node, '', is_error=True)
             nodelist['ERROR'].append(node)
             continue
 
         # If compilation is successful and no diffs, go on.
         if not diff:
-            print "No differences for node %s" % node
+            log.info("No differences for node %s", node)
             write_node_page(node, '', is_ok=True)
             nodelist['OK'].append(node)
             continue
@@ -150,7 +158,7 @@ def main(nodes=None):
         write_node_page(node, text_diff)
 
     print "###\nRUN RESULTS:"
-    for (k,v) in nodelist.items():
+    for (k, v) in nodelist.items():
         print "%s => %d" % (k, len(v))
     update_index(nodelist)
 
