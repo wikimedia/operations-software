@@ -28,18 +28,28 @@ done
 
 # Install puppet catalog diff Face
 pushd /vagrant/shell
-sudo -u vagrant mkdir -p /home/vagrant/.puppet/modules
-sudo -u vagrant /usr/local/rvm/bin/rvm ${RUBYVER} do bundle exec puppet module install ripienaar-catalog_diff
+/usr/local/rvm/bin/rvm ${RUBYVER} do bundle exec puppet module install ripienaar-catalog_diff
 popd
 
 sudo pip install simplediff
-sudo pip install jinja2
+sudo pip install jinja2 requests
 
 for dir in compiled diff html; do
-    sudo -u vagrant mkdir -p /vagrant/output/${dir}
+    mkdir -p /vagrant/output/${dir}
 done
+
+# Show results in a browser.
+apt-get -y install nginx
+cp /vagrant/nginx.vhost /etc/nginx/sites-available/default
+# And this is horrible and hackish, but still...
+perl -i"" -pe 's/^(\s*text\/plain\s*txt);$/$1 warnings pson;/' /etc/nginx/mime.types
+
+/etc/init.d/nginx restart
+
+
 
 echo "Now you just need to:"
 echo " - create an archive with facts named puppet-facts.xz from a puppet master"
 echo "   and copy it here"
 echo " - run the './shell/helper install' script"
+echo "SEE THE README FOR DETAILS"

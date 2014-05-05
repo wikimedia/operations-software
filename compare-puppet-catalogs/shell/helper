@@ -1,23 +1,48 @@
 #!/bin/bash -e
 
-
 # Common defs
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PARENT=$(readlink -f ${DIR}/../)
-EXTDIR=${PARENT}/external
+if [ -z $1 ]; then
+    echo "Usage: $0 [install|cleanup] [<CHANGE_ID>] [<REVISION_ID>]"
+fi;
+echo $@
+if [ ! -z $2 ]; then
+    CHANGE=$2
+    REVISION=$3
+    EXTDIR=${PARENT}/external/change/${CHANGE}
+    PROD_DIR=${PARENT}/external
+else
+    EXTDIR=${PARENT}/external
+fi;
+mkdir -p ${EXTDIR}
+
 PUPPETDIR=${EXTDIR}/puppet
-PRIVATEDIR=${EXTDIR}/private
+PRIVATEDIR=${PARENT}/external/private
 FACTS_ARCHIVE=${PARENT}/puppet-facts.tar.xz
 
 function log () {
     echo "$@"
 }
 
+function update_change() {
+    log git pull -q https://gerrit.wikimedia.org/r/operations/puppet refs/changes/${CHANGE: -2:2}/$CHANGE/$REVISION
+    git pull -q https://gerrit.wikimedia.org/r/operations/puppet refs/changes/${CHANGE: -2:2}/$CHANGE/$REVISION
+}
+
 function checkout() {
     log "Checking out repositories"
-    pushd ${PARENT}/external/
-    git clone https://gerrit.wikimedia.org/r/operations/puppet
-    git clone https://gerrit.wikimedia.org/r/labs/private
+    pushd ${EXTDIR}
+    if [ ! -z ${CHANGE} ]; then
+        test -d ${PROD_DIR}/puppet || ( echo "Could not find the original install" && exit 1)
+        rsync -avz --delete ${PROD_DIR}/puppet .
+        for link in etc var; do
+            ln -s ${PROD_DIR}/$link $link
+        done;
+    else
+        git clone https://gerrit.wikimedia.org/r/operations/puppet
+        git clone https://gerrit.wikimedia.org/r/labs/private
+    fi;
     pushd ${PRIVATEDIR}
     for subdir in modules files; do
         cp -ax ${subdir}/* ${PUPPETDIR}/${subdir}/;
@@ -25,14 +50,23 @@ function checkout() {
     popd
     pushd ${PUPPETDIR}
     git submodule update --init
+    if [ ! -z ${CHANGE} ]; then
+        update_change
+    fi;
     popd
     popd
 }
 
+
+
 function update() {
     log "Updating repositories"
     pushd ${PUPPETDIR}
-    git pull --rebase
+    if [ ! -z ${CHANGE} ]; then
+        update_change
+    else
+        git pull --rebase
+    fi;
     git submodule update --init # use --init here in case something went wrong the first time.
     popd
     pushd ${PRIVATEDIR}
@@ -58,9 +92,7 @@ function purge() {
 }
 
 
-if [ -z $1 ]; then
-    echo "Usage: $0 [install|cleanup]"
-fi;
+
 #start from the script dir, please
 pushd ${DIR}
 case $1 in

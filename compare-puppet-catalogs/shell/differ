@@ -1,10 +1,12 @@
 #!/bin/bash
+if [ -z $1 ] || [ -z $2 ] || [ -z $3 ] || [ -z $4 ]; then
+    echo "USAGE: $0 <FQDN> <OUTPUT_DIR> <OLD_CATALOG_DIR> <NEW_CATALOG_DIR> "
+    exit 1
+fi;
+
+
 ETCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 pushd $ETCDIR
-if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
-   echo "USAGE: $0 <FQDN> <CATALOG_DIR> <OUTPUT_DIR>"
-   exit 1
-fi;
 test -f Gemfile && (diff -Naur Gemfile.3 Gemfile > /dev/null)
 if [ $? -gt 0 ]; then
   [ -f Gemfile.lock ] && rm Gemfile.lock
@@ -13,10 +15,12 @@ fi
 test -f Gemfile.lock ||  bundle > /dev/null
 
 
-OLD_CATALOG_DIR=${2}/puppet_catalogs_2.7
-NEW_CATALOG_DIR=${2}/puppet_catalogs_3
+OLD_CATALOG_DIR=${3}
+NEW_CATALOG_DIR=${4}
+
+
 PARENT=$(readlink -f ${ETCDIR}/../)
-OUT_DIR=${3}
+OUT_DIR=${2}
 OUTPUT_FILE=${OUT_DIR}/${1}.diff
 
 test -d ${OUT_DIR} || mkdir -p ${OUT_DIR}

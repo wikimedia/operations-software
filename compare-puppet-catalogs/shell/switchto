@@ -1,0 +1,17 @@
+#!/bin/bash
+if [ -z $1 ]; then
+  echo "USAGE: $0 <PUPPET_VERSION>"
+fi;
+ETCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# We need to ensure we're working from here I guess given we need the
+# Gemfile to be local to the CWD
+pushd ${ETCDIR}
+
+
+test -f Gemfile && (diff -Naur Gemfile.$1 Gemfile > /dev/null)
+if [ $? -gt 0 ]; then
+    [ -f Gemfile.lock ] && rm Gemfile.lock
+    cp Gemfile.$1 Gemfile
+fi
+test -f Gemfile.lock ||  bundle > /dev/null
+#popd

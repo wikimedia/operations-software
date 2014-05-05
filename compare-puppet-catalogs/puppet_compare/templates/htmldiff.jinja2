@@ -30,17 +30,29 @@
 <h1>Catalog compilation result for <span style="color: #EA3030">{{ fqdn }}</span>: <span style="color: #EA3030">NOT OK</span></h1>
 {% endblock %}
 <div class="hero-unit">
-<h2>Puppet 3</h2>
+{% if mode == 'diffchanges' %}
+    {% set base_label = "Production" %}
+    {% set new_label = "Change {}".format(change)  %}
+    {% set new_dir = "puppet_catalogs_2.7_{}".format(change)  %}
+    {% set old_dir = "puppet_catalogs_2.7_production" %}
+{% else %}
+   {% set base_label = "Puppet 2.7"  %}
+   {%  set new_label = "Puppet 3" %}
+   {%  set new_dir = "puppet_catalogs_3_{}".format(change)  %}
+   {%  set old_dir = "puppet_catalogs_2.7_{}".format(change)  %}
+{% endif %}
+
+<h2>{{ new_label }}</h2>
 <ul>
-    <li><a href="../compiled/puppet_catalogs_3/{{ fqdn }}.pson">Compiled catalog</a></li>
-    <li><a href="../compiled/puppet_catalogs_3/{{ fqdn }}.warnings">Compilation errors and warnings</a></li>
+    <li><a href="../compiled/{{ new_dir }}/{{ fqdn }}.pson">Compiled catalog</a></li>
+    <li><a href="../compiled/{{ new_dir }}/{{ fqdn }}.warnings">Compilation errors and warnings</a></li>
 </ul>
 </div>
 <div class="hero-unit">
-<h2>Puppet 2.7</h2>
+<h2>{{ base_label }}</h2>
 <ul>
-    <li><a href="../compiled/puppet_catalogs_2.7/{{ fqdn }}.pson">Compiled catalog</a></li>
-    <li><a href="../compiled/puppet_catalogs_2.7/{{ fqdn }}.warnings">Compilation errors and warnings</a></li>
+    <li><a href="../compiled/{{ old_dir }}/{{ fqdn }}.pson">Compiled catalog</a></li>
+    <li><a href="../compiled/{{ old_dir }}/{{ fqdn }}.warnings">Compilation errors and warnings</a></li>
 </ul>
 </div>
 

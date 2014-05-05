@@ -1,10 +1,42 @@
 #!/usr/bin/env python
 from puppet_compare import generator
 import sys
+import argparse
+import logging
 
+
+parser = argparse.ArgumentParser(
+    description="Puppet Catalog comparator - works either between puppet versions or between changes"
+)
+
+parser.add_argument('--nodes', dest='nodes', help="comma-separated list of hosts to check")
+parser.add_argument('--change', dest='change', type=int, help="Gerrit ID of the change we need to download.")
+parser.add_argument('--debug', action='store_true', default=False, help="Print debug output")
+parser.add_argument('--numthreads', default=4, type=int, help="Number of parallel thread for compilation of nodes catalogs.")
+parser.add_argument('--transition', default=False, action='store_true', help="Compile catalogs for different puppet versions under the same Gerrit change")
 try:
-    arg = sys.argv[1]
-except IndexError:
-    arg = None
+    opts = parser.parse_args()
+    if opts.debug:
+        lvl = logging.DEBUG
+    else:
+        lvl = logging.INFO
 
-generator.main(nodes=arg)
+    logging.basicConfig(
+    format='%(asctime)s %(levelname)s: %(message)s',
+    level=lvl,
+    datefmt='[ %m/%d/%Y %H:%M:%S ]')
+
+
+    if opts.change:
+        if opts.transition:
+            cls = generator.NodeVersionsChange
+        else:
+            cls = generator.NodeDiffChange
+    else:
+        cls = generator.NodeDiffPuppetVersions
+
+    orchestrator = cls(opts)
+    orchestrator.run()
+
+except Exception as e:
+    raise
