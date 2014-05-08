@@ -6,7 +6,7 @@ PARENT=$(readlink -f ${DIR}/../)
 if [ -z $1 ]; then
     echo "Usage: $0 [install|cleanup] [<CHANGE_ID>] [<REVISION_ID>]"
 fi;
-echo $@
+
 if [ ! -z $2 ]; then
     CHANGE=$2
     REVISION=$3
@@ -26,19 +26,45 @@ function log () {
 }
 
 function update_change() {
+    log "fetching the change"
+    pushd ${EXTDIR}/puppet
     log git pull -q https://gerrit.wikimedia.org/r/operations/puppet refs/changes/${CHANGE: -2:2}/$CHANGE/$REVISION
     git pull -q https://gerrit.wikimedia.org/r/operations/puppet refs/changes/${CHANGE: -2:2}/$CHANGE/$REVISION
+    popd
+}
+
+function purge_change() {
+    test -z ${EXTDIR} && return
+    (
+        echo ${EXTDIR} | grep 'change' > /dev/null;
+        if [ $? -eq 0 ]; then
+            rm -rf ${PUPPETDIR}
+        fi
+    )
+}
+
+function setup_change() {
+    test -d ${PROD_DIR}/puppet || ( echo "Could not find the original install" && exit 1)
+    pushd ${PROD_DIR}/puppet
+    #ensure the prod branch is up to date
+    log "Updating the production repository"
+    git pull --rebase
+    popd
+    pushd ${EXTDIR}
+    rsync -avz --delete ${PROD_DIR}/puppet .
+    for link in etc var; do
+        test -d $link || \
+            ln -s ${PROD_DIR}/$link $link
+    done;
+    popd
+    update_change
 }
 
 function checkout() {
     log "Checking out repositories"
     pushd ${EXTDIR}
     if [ ! -z ${CHANGE} ]; then
-        test -d ${PROD_DIR}/puppet || ( echo "Could not find the original install" && exit 1)
-        rsync -avz --delete ${PROD_DIR}/puppet .
-        for link in etc var; do
-            ln -s ${PROD_DIR}/$link $link
-        done;
+        setup_change
     else
         git clone https://gerrit.wikimedia.org/r/operations/puppet
         git clone https://gerrit.wikimedia.org/r/labs/private
@@ -50,9 +76,6 @@ function checkout() {
     popd
     pushd ${PUPPETDIR}
     git submodule update --init
-    if [ ! -z ${CHANGE} ]; then
-        update_change
-    fi;
     popd
     popd
 }
@@ -61,12 +84,15 @@ function checkout() {
 
 function update() {
     log "Updating repositories"
-    pushd ${PUPPETDIR}
     if [ ! -z ${CHANGE} ]; then
-        update_change
+        purge_change
+        setup_change
     else
+        pushd ${PUPPETDIR}
         git pull --rebase
+        popd
     fi;
+    pushd ${PUPPETDIR}
     git submodule update --init # use --init here in case something went wrong the first time.
     popd
     pushd ${PRIVATEDIR}
@@ -81,7 +107,8 @@ function copy_facts() {
     test -f ${FACTS_ARCHIVE} || ( log "Could not find ${FACTS_ARCHIVE}" && exit 1)
     # This expects a file called puppet-facts.tar.xz in the parent of the installation
     pushd ${EXTDIR}
-    tar -C var/ --strip-components=3 -xJvf ${FACTS_ARCHIVE}
+    log "Extracting the facts archive"
+    tar -C var/ --strip-components=3 -xJf ${FACTS_ARCHIVE}
     popd
 }
 

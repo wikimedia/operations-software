@@ -31,8 +31,7 @@ def run(cmd, sudo=False, sudo_user='root', capture=True):
 
 
 def ruby(cmd, **kwdargs):
-    return run(
-        '/usr/local/rvm/bin/rvm {} do {}'.format(app.config.get('RUBY_VERSION', '1.8.7'), cmd), **kwdargs)
+    return run(cmd, **kwdargs)
 
 
 def get_nodes():
@@ -144,25 +143,21 @@ class NodeDiffPuppetVersions(object):
                 n = nodegen.NodeFinder(f)
                 return n.match_physical_nodes(get_nodes())
 
-    def on_node_error(self, msg):
+    def on_node_compiled(self, msg):
         node = msg['data'][0][0]
-        log.error("Error in compilation on node %s", node)
-        log.error("Exception was: %s", str(msg['value']))
-        self.nodelist['ERROR'].add(node)
-
-    def nodes_compiler(self, version, branch):
-        threadpool = threads.ThreadOrchestrator(self.tp_size)
-
-        for node in self.node_generator():
-            threadpool.add(self.node_compile, node, version, branch)
-        threadpool.fetch(self.on_node_error)
+        self.count += 1
+        if not self.count % 5:
+            log.info('Updating index.html')
+            self.update_index()
+        log.info("Nodes: %s OK %s DIFF %s FAIL" % (
+            len(self.nodelist['OK']),
+            len(self.nodelist['DIFF']),
+            len(self.nodelist['ERROR'])
+        ))
 
     def node_output(self, node):
-        self.count += 1
-        if not self.count % 10:
-            self.update_index()
-
         if node in self.nodelist['ERROR']:
+            log.info('Node %s had compilation problems', node)
             self._write_node_page(node, '', is_error=True,)
             return
 
@@ -184,12 +179,22 @@ class NodeDiffPuppetVersions(object):
         text_diff = "\n".join([a + b for (a, b) in diff])
         self._write_node_page(node, text_diff)
 
-    def run(self):
+    def _run_node(self, node):
         for (puppet_version, branch) in self.compile_versions:
-            self.nodes_compiler(puppet_version, branch)
+            try:
+                self.node_compile(node, puppet_version, branch)
+            except Exception as e:
+                log.error("Error in compilation on node %s", node)
+                log.error("Exception was: %s", str(e))
+                self.nodelist['ERROR'].add(node)
+        self.node_output(node)
 
+    def run(self):
+        threadpool = threads.ThreadOrchestrator(self.tp_size)
         for node in self.node_generator():
-            self.node_output(node)
+            threadpool.add(self._run_node, node)
+
+        threadpool.fetch(self.on_node_compiled)
         self.update_index()
 
 
@@ -234,6 +239,8 @@ class NodeDiffChange(NodeDiffPuppetVersions):
         revision = res["revisions"].values()[0]["_number"]
         cmd = "{} {} {}".format(
             app.config.get('FETCH_CHANGE'), self.change, int(revision))
+        log.info(
+            'Downloading patch for change %s, revision %s', self.change, revision)
         run(cmd)
 
 

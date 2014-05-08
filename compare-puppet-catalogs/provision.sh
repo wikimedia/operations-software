@@ -2,48 +2,35 @@
 RUBYVER="1.8.7"
 apt-get update
 apt-get -y install curl git-core vim python-pip python-dev
-# Install rvm (I know, this is horrible, curling and executing in a shell should be prohibited)
-if [ ! -f /usr/local/rvm/scripts/rvm ]; then
-   curl -sSL https://get.rvm.io | bash -s stable --ruby
-   gpasswd -a vagrant rvm
-fi;
+apt-get -y install ruby1.8 rubygems ruby-bundler libsqlite3-dev
+echo mysql-server-5.5 mysql-server/root_password password cucciolo | debconf-set-selections
+echo mysql-server-5.5 mysql-server/root_password_again password cucciolo | debconf-set-selections
+apt-get install -y mysql-common mysql-server mysql-client
+apt-get -y install ruby-mysql nginx
 
-. /usr/local/rvm/scripts/rvm
-
-#This is already idempotent, no need for checks here
-rvm install ${RUBYVER}
-rvm use ${RUBYVER}
-
-
-
-gem list | fgrep bundler > /dev/null
-
-if [ $? -ne 0 ]; then
-    gem install bundler
-fi;
+mysql -pcucciolo -NBe 'CREATE DATABASE puppet'
+mysql -pcucciolo -NBe "GRANT ALL PRIVILEGES ON puppet.* TO 'puppet' IDENTIFIED BY 'puppet'"
 
 for puppet in 2.7 3; do
-    /vagrant/shell/installer ${puppet} ${RUBYVER}
+    /vagrant/shell/installer ${puppet}
 done
 
-# Install puppet catalog diff Face
-pushd /vagrant/shell
-/usr/local/rvm/bin/rvm ${RUBYVER} do bundle exec puppet module install ripienaar-catalog_diff
+# Install puppet catalog diff Face, under puppet 3
+pushd /vagrant/shell/env_puppet_3
+test -f Gemfile.lock || bundle > /dev/null
+bundle exec puppet module install ripienaar-catalog_diff
 popd
 
-sudo pip install simplediff
-sudo pip install jinja2 requests
+pip install simplediff jinja2 requests
 
 for dir in compiled diff html; do
     mkdir -p /vagrant/output/${dir}
 done
 
 # Show results in a browser.
-apt-get -y install nginx
 cp /vagrant/nginx.vhost /etc/nginx/sites-available/default
 # And this is horrible and hackish, but still...
 perl -i"" -pe 's/^(\s*text\/plain\s*txt);$/$1 warnings pson;/' /etc/nginx/mime.types
-
 /etc/init.d/nginx restart
 
 

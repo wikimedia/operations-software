@@ -57,20 +57,29 @@ class ThreadOrchestrator(object):
     def add(self, payload, *args, **kwdargs):
         self._payload_queue.put((payload, args, kwdargs))
 
-    def fetch(self, on_error):
-        # wait for all executions to terminate.
-        self._payload_queue.join()
+    def _process_result(self, callback):
+        res = self._incoming_queue.get(True)
+        try:
+            callback(res)
+        except:
+            log.warn('post-exec callback failed.')
+        self._incoming_queue.task_done()
+
+    def fetch(self, callback):
 
         count = ok = errors = 0
+        while not self._payload_queue.empty():
+            if self._incoming_queue.empty():
+                time.sleep(5)
+                continue
+            self._process_result(callback)
+
+        # Wait for all queued jobs to terminate
+        self._payload_queue.join()
         while not self._incoming_queue.empty():
-            count += 1
-            res = self._incoming_queue.get(True)
-            if res['is_error']:
-                errors += 1
-                on_error(res)
-            else:
-                ok += 1
-            self._incoming_queue.task_done()
+            self._process_result(callback)
+
+        # Now send a death signal to all slaves.
         for i in xrange(len(self._TP)):
             self._payload_queue.put(('__exit__', None, None))
         self._TP = []

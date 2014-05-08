@@ -1,12 +1,11 @@
 # From https://github.com/duritong/puppet_catalog_test
 source 'https://rubygems.org'
-gem 'puppet', '2.7.21'
+gem 'puppet', '3.4.3'
 gem 'hiera'
-gem 'hiera-puppet'
 
-
+gem 'rails', '2.3.14'
 # for simple exported resources
-gem 'activerecord', '3.0.1'
+gem 'activerecord', '2.3.14'
 gem 'sqlite3'
 
 # additional gems you need

@@ -4,7 +4,7 @@
 #
 # modifications (c) 2014 Wikimedia Foundation
 #
-
+#set -x
 if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
   echo "USAGE: $0 <PUPPET_VERSION> <FQDN> <OUTPUT_DIR> [CHANGE_ID]"
   exit 1
@@ -17,10 +17,15 @@ else
 fi;
 
 ETCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PUPPET_VERSION=${1}
+MY_GEMDIR=${ETCDIR}/env_puppet_${PUPPET_VERSION}
+PARENT=$(readlink -f ${ETCDIR}/../)
+
 # We need to ensure we're working from here I guess given we need the
 # Gemfile to be local to the CWD
-pushd ${ETCDIR}
-PARENT=$(readlink -f ${ETCDIR}/../)
+pushd ${MY_GEMDIR}
+
+
 
 PUPPET_VERSION=${1}
 if [ "${CHANGE}" == "production" ]; then
@@ -28,9 +33,6 @@ if [ "${CHANGE}" == "production" ]; then
 else
     EXTDIR=${PARENT}/external/change/${CHANGE}
 fi;
-echo
-#detect if we need to run bundle.
-./switchto ${PUPPET_VERSION};
 
 PUPPETDIR=${EXTDIR}/puppet
 CATALOG_DIR=${3}/puppet_catalogs_${1}_${CHANGE}
@@ -43,13 +45,14 @@ TIME_FILE=$CATALOG_DIR/$2.time
 WARNINGS_FILE=$CATALOG_DIR/$2.warnings
 
 if [ "$PUPPET_VERSION" == "3" ]; then
-    COMPILE_OPTIONS="--storeconfigs true --thin_storeconfigs true"
+    COMPILE_OPTIONS="--storeconfigs true --thin_storeconfigs true --dbadapter mysql --dbserver localhost --dbuser puppet --dbpassword puppet"
 else
-    #storeconfigs gets you issues with compiling 2.7 catalogs
+    # storeconfigs gets you issues with compiling 2.7 catalogs
+    # Verified on palladium, with storeconfigs the format of compiled catalogs changes in 2.7
     COMPILE_OPTIONS="--factsync true"
 fi
 
-puppet master \
+bundle exec puppet master \
   --modulepath=$PUPPETDIR/modules/:$PUPPETDIR/modules/site \
   --manifestdir $PUPPETDIR/manifests \
   --yamldir $EXTDIR/var/yaml \

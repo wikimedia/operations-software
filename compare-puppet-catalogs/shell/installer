@@ -1,15 +1,11 @@
 #!/bin/bash
-if [ -z $1 ] || [ -z $2 ]; then
-    echo "USAGE: $0 <PUPPET_VERSION> <RUBY_VERSION>"
+if [ -z $1 ]; then
+    echo "USAGE: $0 <PUPPET_VERSION>"
 fi
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-pushd ${MYDIR}
-test -f Gemfile && (diff -Naur Gemfile.$1 Gemfile > /dev/null)
-if [ $? -gt 0 ]; then
-  [ -f Gemfile.lock ] && rm Gemfile.lock
-  cp Gemfile.$1 Gemfile
-fi
+MY_GEMDIR=${MYDIR}/env_puppet_${1}
+pushd ${MY_GEMDIR}
 test -f Gemfile.lock ||  bundle > /dev/null
-rvm $2 do bundle install
+bundle install
 popd
