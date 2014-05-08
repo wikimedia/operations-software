@@ -23,17 +23,17 @@ pushd ${ETCDIR}
 PARENT=$(readlink -f ${ETCDIR}/../)
 
 PUPPET_VERSION=${1}
-if [ "${4}" == "production" ]; then
+if [ "${CHANGE}" == "production" ]; then
     EXTDIR=${PARENT}/external
 else
-    EXTDIR=${PARENT}/external/change/${4}
+    EXTDIR=${PARENT}/external/change/${CHANGE}
 fi;
 echo
 #detect if we need to run bundle.
 ./switchto ${PUPPET_VERSION};
 
 PUPPETDIR=${EXTDIR}/puppet
-CATALOG_DIR=${3}/puppet_catalogs_${1}_${4}
+CATALOG_DIR=${3}/puppet_catalogs_${1}_${CHANGE}
 
 test -d $CATALOG_DIR || mkdir -p $CATALOG_DIR
 
