@@ -6,6 +6,5 @@ fi
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MY_GEMDIR=${MYDIR}/env_puppet_${1}
 pushd ${MY_GEMDIR}
-test -f Gemfile.lock ||  bundle > /dev/null
-bundle install
+bundle --deployment install
 popd

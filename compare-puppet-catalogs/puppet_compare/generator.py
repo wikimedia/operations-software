@@ -69,7 +69,8 @@ class NodeDiffPuppetVersions(object):
         self.nodelist = defaultdict(set)
         self.count = 0
         self.change = None
-        self.site_pp = '/vagrant/external/puppet/manifests/site.pp'
+        self.site_pp = os.path.join(app.config.get('BASEDIR'),
+                                    'external/puppet/manifests/site.pp')
         self.tp_size = args.numthreads
         self.mode = 'versions'
 
@@ -214,7 +215,9 @@ class NodeDiffChange(NodeDiffPuppetVersions):
         self.html_dir = os.path.join(basedir, 'html')
         self.diff_dir = os.path.join(basedir, 'diff')
         self.compile_versions = [('2.7', 'production'), ('2.7', self.change)]
-        self.site_pp = '/vagrant/external/change/%d/puppet/manifests/site.pp' % self.change
+        self.site_pp = os.path.join(
+            app.config.get('BASEDIR'),
+            'external/change/%d/puppet/manifests/site.pp' % self.change)
         self.mode = 'diffchanges'
 
     def run(self):

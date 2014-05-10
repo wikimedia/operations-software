@@ -117,6 +117,11 @@ function purge() {
     rm -rf ${PRIVATEDIR}
     rm -rf ${DIR}/var/yaml
 }
+function setup_naggen() {
+    if [ ! -f /usr/local/bin/naggen ];  then
+        cp ${PUPPETDIR}/modules/puppetmaster/files/naggen /usr/local/bin/naggen
+    fi;
+}
 
 
 
@@ -132,6 +137,7 @@ case $1 in
 
         log "Putting the facts in place."
         copy_facts
+        setup_naggen
         ;;
     cleanup)
         purge

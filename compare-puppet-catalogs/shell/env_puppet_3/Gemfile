@@ -6,7 +6,6 @@ gem 'hiera'
 gem 'rails', '2.3.14'
 # for simple exported resources
 gem 'activerecord', '2.3.14'
-gem 'sqlite3'
 
 # additional gems you need
 gem 'trocla'

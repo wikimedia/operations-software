@@ -1,11 +1,14 @@
 import os
-COMPILE_SCRIPT = '/vagrant/shell/compile'
-FETCH_CHANGE = '/vagrant/shell/prepare_change'
-DIFF_SCRIPT = '/vagrant/shell/differ'
-NODE_DIR = '/vagrant/external/var/yaml/node'
-RUBY_VERSION = '1.8.7-p374'
+MYDIR=os.path.dirname(os.path.realpath(__file__))
+PARENT=os.path.realpath(os.path.join(MYDIR,'..'))
+BASEDIR = os.environ.get('PUPPET_DIFFER_BASEDIR', '/vagrant')
+get_path = lambda x: os.path.join(BASEDIR, x)
+COMPILE_SCRIPT = get_path('shell/compile')
+FETCH_CHANGE = get_path('shell/prepare_change')
+DIFF_SCRIPT = get_path('shell/differ')
+NODE_DIR = get_path('external/var/yaml/node')
 PUPPET_VERSIONS = [('2.7', 'production'), ('3', 'production')]
-OUTPUT_DIR = '/vagrant/output'
+OUTPUT_DIR = get_path('output')
 COMPILE_OUTPUT_DIR = os.path.join(OUTPUT_DIR, 'compiled')
 DIFF_DIR = os.path.join(OUTPUT_DIR, 'diff')
 HTML_DIR = os.path.join(OUTPUT_DIR, 'html')
