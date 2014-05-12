@@ -19,6 +19,9 @@ my $parent_port = "3306";
 my $child_host  = "";
 my $child_port  = "3306";
 
+my @pvars = ();
+my @cvars = ();
+
 foreach my $arg (@ARGV)
 {
 	if ($arg eq "--switch-sibling-to-child")
@@ -53,6 +56,14 @@ foreach my $arg (@ARGV)
 	{
 		$child_host = $1;
 	}
+	elsif ($arg =~ /^--parent-set=(.+)$/)
+	{
+		push(@pvars, $1);
+	}
+	elsif ($arg =~ /^--child-set=(.+)$/)
+	{
+		push(@cvars, $1);
+	}
 }
 
 unless ($mode ne "") { die("require mode"); }
@@ -77,6 +88,14 @@ my $child  = DBI->connect("DBI:mysql:;host=${child_host};port=${child_port};mysq
 
 $parent->do("SET NAMES 'utf8';");
 $child->do("SET NAMES 'utf8';");
+
+foreach (@pvars) {
+	$parent->do("set $_");
+}
+
+foreach (@cvars) {
+	$child->do("set $_");
+}
 
 my $pstatus = $parent->prepare("show slave status");
 my $cstatus = $child->prepare("show slave status");
