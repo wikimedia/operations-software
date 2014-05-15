@@ -2,7 +2,7 @@
 
 apt-get update
 apt-get -y install curl git-core vim python-pip python-dev
-apt-get -y install ruby1.8 rubygems ruby-bundler ruby1.8-dev
+apt-get -y install ruby1.8 rubygems ruby-bundler ruby1.8-dev ruby-bcrypt
 echo mysql-server-5.5 mysql-server/root_password password cucciolo | debconf-set-selections
 echo mysql-server-5.5 mysql-server/root_password_again password cucciolo | debconf-set-selections
 apt-get install -y mysql-common mysql-server mysql-client

@@ -104,7 +104,11 @@ function update() {
 }
 
 function copy_facts() {
-    test -f ${FACTS_ARCHIVE} || ( log "Could not find ${FACTS_ARCHIVE}" && exit 1)
+    # there is no need to block run if facts are not in place.
+    if [ ! -f ${FACTS_ARCHIVE} ]; then
+        log "Could not find ${FACTS_ARCHIVE}"
+        return
+    fi;
     # This expects a file called puppet-facts.tar.xz in the parent of the installation
     pushd ${EXTDIR}
     log "Extracting the facts archive"
@@ -117,6 +121,7 @@ function purge() {
     rm -rf ${PRIVATEDIR}
     rm -rf ${DIR}/var/yaml
 }
+
 function setup_naggen() {
     if [ ! -f /usr/local/bin/naggen ];  then
         cp ${PUPPETDIR}/modules/puppetmaster/files/naggen /usr/local/bin/naggen

@@ -16,8 +16,9 @@ env = Environment(loader=PackageLoader('puppet_compare', 'templates'))
 
 
 def run(cmd, sudo=False, sudo_user='root', capture=True):
+    env = os.environ.copy()
     if sudo:
-        cmd = "sudo -u %s '%s'" % (sudo_user, cmd)
+        cmd = "sudo -E -u %s '%s'" % (sudo_user, cmd)
 
     cmdlist = shlex.split(cmd)
 
@@ -27,7 +28,7 @@ def run(cmd, sudo=False, sudo_user='root', capture=True):
         # This just works in python 2.7. Wrap this again?
         method = subprocess.check_call
 
-    return method(cmdlist)
+    return method(cmdlist, env=env)
 
 
 def ruby(cmd, **kwdargs):

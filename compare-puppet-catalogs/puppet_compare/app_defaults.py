@@ -1,7 +1,7 @@
 import os
 MYDIR=os.path.dirname(os.path.realpath(__file__))
 PARENT=os.path.realpath(os.path.join(MYDIR,'..'))
-BASEDIR = os.environ.get('PUPPET_DIFFER_BASEDIR', '/vagrant')
+BASEDIR = os.environ.get('PUPPET_COMPILER_BASEDIR', PARENT)
 get_path = lambda x: os.path.join(BASEDIR, x)
 COMPILE_SCRIPT = get_path('shell/compile')
 FETCH_CHANGE = get_path('shell/prepare_change')

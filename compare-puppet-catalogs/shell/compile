@@ -16,6 +16,14 @@ else
     CHANGE=${4}
 fi;
 
+# Get the password externally, or use the default
+if [ -z ${PUPPET_DIFFER_MYSQL_PWD} ]; then
+    DBPASSWORD='puppet'
+else
+    DBPASSWORD=${PUPPET_COMPILER_MYSQL_PWD}
+fi;
+
+
 ETCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PUPPET_VERSION=${1}
 MY_GEMDIR=${ETCDIR}/env_puppet_${PUPPET_VERSION}
@@ -45,7 +53,7 @@ TIME_FILE=$CATALOG_DIR/$2.time
 WARNINGS_FILE=$CATALOG_DIR/$2.warnings
 
 if [ "$PUPPET_VERSION" == "3" ]; then
-    COMPILE_OPTIONS="--storeconfigs true --thin_storeconfigs true --dbadapter mysql --dbserver localhost --dbuser puppet --dbpassword puppet"
+    COMPILE_OPTIONS="--storeconfigs true --thin_storeconfigs true --dbadapter mysql --dbserver localhost --dbuser puppet --dbpassword $DBPASSWORD"
 else
     # storeconfigs gets you issues with compiling 2.7 catalogs
     # Verified on palladium, with storeconfigs the format of compiled catalogs changes in 2.7
