@@ -18,10 +18,6 @@ for puppet in 2.7 3; do
     /vagrant/shell/installer ${puppet}
 done
 
-# Install puppet catalog diff Face, under puppet 3
-pushd /vagrant/shell/env_puppet_3
-bundle exec puppet module install ripienaar-catalog_diff
-popd
 
 pip install simplediff jinja2 requests
 
@@ -45,3 +41,7 @@ if [ ! -f /vagrant/puppet-facts.tar.xz ]; then
     exit
 fi;
 /vagrant/shell/helper install
+# Install puppet catalog diff Face, under puppet 3
+pushd /vagrant/shell/env_puppet_3
+bundle exec puppet module install zack-catalog_diff --modulepath=/vagrant/external/puppet/modules/
+popd

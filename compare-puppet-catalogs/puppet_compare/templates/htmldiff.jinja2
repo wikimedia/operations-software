@@ -59,8 +59,11 @@
 {% block diffs %}
 <div id="diffs">
 <h2>Diffs</h2>
+{% for diff in data %}
+<h3>{{ diff[0] }}</h3>
 <table class="diff">
-  {% for line in data %}
+    {% set lines = diff[1] -%}
+    {% for line in lines %}
     {% if line[0] == 'comment' %}
       <tr class="diffmisc"><td colspan="4">{{ line[1] }}</td></tr>
     {% endif %}
@@ -92,8 +95,9 @@
         {% endif %}
       </tr>
     {% endif %}
-  {% endfor %}
+    {% endfor %}
 </table>
+{% endfor %}
 </div>
 {% endblock %}
 <footer>

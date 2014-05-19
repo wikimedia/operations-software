@@ -46,7 +46,7 @@ def get_nodes():
 
 def diff_save(fname, diff):
     with open(fname + '.formatted', 'w') as f:
-        for (resource_diff, content_diff) in diff:
+        for (_, resource_diff, content_diff) in diff:
             f.write("-- \n\n")
             f.write(resource_diff)
             if content_diff != '':
@@ -111,9 +111,9 @@ class NodeDiffPuppetVersions(object):
         with open(os.path.join(self.html_dir, 'index.html'), 'w') as f:
             f.write(t.render(nodes=self.nodelist))
 
-    def _write_node_page(self, nodename, txt, is_error=False, is_ok=False):
+    def _write_node_page(self, nodename, diffs, is_error=False, is_ok=False):
         template = 'htmldiff.jinja2'
-        output = None
+        output = []
         html = os.path.join(self.html_dir, nodename + '.html')
 
         if is_error:
@@ -121,7 +121,9 @@ class NodeDiffPuppetVersions(object):
         elif is_ok:
             template = 'node_ok.jinja2'
         else:
-            output = diff2html.parse_input(txt, html, True)
+            for name, res, content in diffs:
+                txt = "%s\n%s" % (res, content)
+                output.append((name, diff2html.parse_input(txt, html, True)))
 
         t = env.get_template(template)
         change = self.change and self.change or 'production'
@@ -164,7 +166,7 @@ class NodeDiffPuppetVersions(object):
             return
 
         filename = self.node_diff(node)
-        p = parser.DiffParser(filename)
+        p = parser.DiffParser(filename, node)
         diff = p.run()
 
         # If compilation is successful and no diffs, go on.
@@ -178,8 +180,7 @@ class NodeDiffPuppetVersions(object):
         self.nodelist['DIFF'].add(node)
         diff_save(filename, diff)
         # Also save the html rendering
-        text_diff = "\n".join([a + b for (a, b) in diff])
-        self._write_node_page(node, text_diff)
+        self._write_node_page(node, diff)
 
     def _run_node(self, node):
         for (puppet_version, branch) in self.compile_versions:

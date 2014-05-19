@@ -31,6 +31,7 @@ class ThreadExecutor(threading.Thread):
                     'is_error': False, 'value': retval, 'data': (args, kwdargs)}
                 self.out_queue.put(msg)
             except Exception as e:
+                raise
                 # TODO: log correctly
                 logging.error("Error in payload")
                 logging.debug(str(e))

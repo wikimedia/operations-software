@@ -18,5 +18,5 @@ OUT_DIR=${2}
 OUTPUT_FILE=${OUT_DIR}/${1}.diff
 
 test -d ${OUT_DIR} || mkdir -p ${OUT_DIR}
-bundle exec puppet catalog diff --modulepath=${PARENT}/external/puppet/modules --content_diff ${OLD_CATALOG_DIR}/${1}.pson ${NEW_CATALOG_DIR}/${1}.pson > ${OUTPUT_FILE}
+bundle exec puppet catalog diff --render-as json --modulepath=${PARENT}/external/puppet/modules --content_diff ${OLD_CATALOG_DIR}/${1}.pson ${NEW_CATALOG_DIR}/${1}.pson > ${OUTPUT_FILE}
 popd

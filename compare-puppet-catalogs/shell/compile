@@ -17,7 +17,7 @@ else
 fi;
 
 # Get the password externally, or use the default
-if [ -z ${PUPPET_DIFFER_MYSQL_PWD} ]; then
+if [ -z ${PUPPET_COMPILER_MYSQL_PWD} ]; then
     DBPASSWORD='puppet'
 else
     DBPASSWORD=${PUPPET_COMPILER_MYSQL_PWD}

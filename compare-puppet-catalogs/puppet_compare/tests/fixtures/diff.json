@@ -1,0 +1,87 @@
+{
+    "testnode": {
+        "added_and_removed_resources": "+5 / 0",
+        "catalag_percentage_added": "1.25",
+        "catalog_percentage_changed": "0.25",
+        "catalog_percentage_removed": "0.00",
+        "content_differences": {
+            "file[/etc/udp2log/erbium]": "--- /tmp/puppet-diffing20140519-28733-1xctk9n-0\t2014-05-19 10:33:41.171955753 +0000\n+++ /tmp/puppet-diffing20140519-28733-19wj4bc-0\t2014-05-19 10:33:41.171955753 +0000\n@@ -21,7 +21,7 @@\n pipe 1 /usr/local/bin/filter | /usr/bin/log2udp -h gadolinium.wikimedia.org -p 3815\n \n ### API Usage\n-pipe 100 /usr/bin/udp-filter -F '\\t' -p /w/api.php >> /a/log/webrequest/api-usage.tsv.log\n+pipe 100 /usr/bin/udp-filter -F '\\t' -p /w/api.php >> undefined/api-usage.tsv.log\n \n ### GLAM NARA / National Archives - RT 2212\n pipe 10 /usr/bin/udp-filter -F '\\t' -p _NARA_ -g -b country >> /a/log/webrequest/glam_nara.tsv.log\n"
+        },
+        "differences_as_diff": {},
+        "differences_in_new": {
+            "file[/etc/udp2log/erbium]": {
+                "parameters": {
+                    "content": {
+                        "checksum": "88175537af3f13edddd4fcd1f5b6ffc0",
+                        "content": "###\n####    This file managed by puppet.\n###\n\n### udp2log packet loss monitoring\npipe 10 /usr/bin/packet-loss 10 '\\t' >> /var/log/udp2log/packet-loss.log\n\n### Fundraising\n## Landing pages\npipe 1 /usr/bin/udp-filter -F '\\t' -d wikimediafoundation.org,donate.wikimedia.org >> /a/log/fundraising/logs/landingpages.tsv.log\n\n## Banner Impressions\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:RecordImpression\\?banner=,Special:RecordImpression\\?result= >> /a/log/fundraising/logs/bannerImpressions-sampled100.tsv.log\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:BannerRandom >> /a/log/fundraising/logs/bannerRequests-sampled100.tsv.log\n\n### webstatscollector -- domas\n# NOTE!  The files that filter and collector (on gadolinium) generates\n# are rsynced over to dataset2 by a cron maintained by\n# apergos running on snapshot1.\n# gadolinium.wikimedia.org:3815 should be the webstats collector process.\npipe 1 /usr/local/bin/filter | /usr/bin/log2udp -h gadolinium.wikimedia.org -p 3815\n\n### API Usage\npipe 100 /usr/bin/udp-filter -F '\\t' -p /w/api.php >> undefined/api-usage.tsv.log\n\n### GLAM NARA / National Archives - RT 2212\npipe 10 /usr/bin/udp-filter -F '\\t' -p _NARA_ -g -b country >> /a/log/webrequest/glam_nara.tsv.log\n\n### 0.0001 of all udp2log messages\n## This log file is also on gadolinium for redundancy\nfile 1000 /a/log/webrequest/sampled-1000.tsv.log\n"
+                    },
+                    "group": "root",
+                    "mode": "0744",
+                    "owner": "root",
+                    "require": "Package[udplog]"
+                },
+                "resource_id": "file[/etc/udp2log/erbium]",
+                "title": "/etc/udp2log/erbium",
+                "type": "File"
+            }
+        },
+        "differences_in_old": {
+            "file[/etc/udp2log/erbium]": {
+                "parameters": {
+                    "content": {
+                        "checksum": "59b8a9368331c43cbf059ae6045f524d",
+                        "content": "###\n####    This file managed by puppet.\n###\n\n### udp2log packet loss monitoring\npipe 10 /usr/bin/packet-loss 10 '\\t' >> /var/log/udp2log/packet-loss.log\n\n### Fundraising\n## Landing pages\npipe 1 /usr/bin/udp-filter -F '\\t' -d wikimediafoundation.org,donate.wikimedia.org >> /a/log/fundraising/logs/landingpages.tsv.log\n\n## Banner Impressions\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:RecordImpression\\?banner=,Special:RecordImpression\\?result= >> /a/log/fundraising/logs/bannerImpressions-sampled100.tsv.log\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:BannerRandom >> /a/log/fundraising/logs/bannerRequests-sampled100.tsv.log\n\n### webstatscollector -- domas\n# NOTE!  The files that filter and collector (on gadolinium) generates\n# are rsynced over to dataset2 by a cron maintained by\n# apergos running on snapshot1.\n# gadolinium.wikimedia.org:3815 should be the webstats collector process.\npipe 1 /usr/local/bin/filter | /usr/bin/log2udp -h gadolinium.wikimedia.org -p 3815\n\n### API Usage\npipe 100 /usr/bin/udp-filter -F '\\t' -p /w/api.php >> /a/log/webrequest/api-usage.tsv.log\n\n### GLAM NARA / National Archives - RT 2212\npipe 10 /usr/bin/udp-filter -F '\\t' -p _NARA_ -g -b country >> /a/log/webrequest/glam_nara.tsv.log\n\n### 0.0001 of all udp2log messages\n## This log file is also on gadolinium for redundancy\nfile 1000 /a/log/webrequest/sampled-1000.tsv.log\n"
+                    },
+                    "group": "root",
+                    "mode": "0744",
+                    "owner": "root",
+                    "require": "Package[udplog]"
+                },
+                "resource_id": "file[/etc/udp2log/erbium]",
+                "title": "/etc/udp2log/erbium",
+                "type": "File"
+            }
+        },
+        "node_differences": 6,
+        "node_percentage": 0.753469969339593,
+        "only_in_new": [
+            "class[Exim::Config]",
+            "file[/etc/default/exim4]",
+            "package[exim4-config]",
+            "file[/etc/exim4/aliases/]",
+            "package[exim4-daemon-light]"
+        ],
+        "only_in_old": [],
+        "params_in_new": {
+            "file[/etc/udp2log/erbium]": {
+                "content": {
+                    "checksum": "88175537af3f13edddd4fcd1f5b6ffc0",
+                    "content": "###\n####    This file managed by puppet.\n###\n\n### udp2log packet loss monitoring\npipe 10 /usr/bin/packet-loss 10 '\\t' >> /var/log/udp2log/packet-loss.log\n\n### Fundraising\n## Landing pages\npipe 1 /usr/bin/udp-filter -F '\\t' -d wikimediafoundation.org,donate.wikimedia.org >> /a/log/fundraising/logs/landingpages.tsv.log\n\n## Banner Impressions\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:RecordImpression\\?banner=,Special:RecordImpression\\?result= >> /a/log/fundraising/logs/bannerImpressions-sampled100.tsv.log\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:BannerRandom >> /a/log/fundraising/logs/bannerRequests-sampled100.tsv.log\n\n### webstatscollector -- domas\n# NOTE!  The files that filter and collector (on gadolinium) generates\n# are rsynced over to dataset2 by a cron maintained by\n# apergos running on snapshot1.\n# gadolinium.wikimedia.org:3815 should be the webstats collector process.\npipe 1 /usr/local/bin/filter | /usr/bin/log2udp -h gadolinium.wikimedia.org -p 3815\n\n### API Usage\npipe 100 /usr/bin/udp-filter -F '\\t' -p /w/api.php >> undefined/api-usage.tsv.log\n\n### GLAM NARA / National Archives - RT 2212\npipe 10 /usr/bin/udp-filter -F '\\t' -p _NARA_ -g -b country >> /a/log/webrequest/glam_nara.tsv.log\n\n### 0.0001 of all udp2log messages\n## This log file is also on gadolinium for redundancy\nfile 1000 /a/log/webrequest/sampled-1000.tsv.log\n"
+                }
+            }
+        },
+        "params_in_old": {
+            "file[/etc/udp2log/erbium]": {
+                "content": {
+                    "checksum": "59b8a9368331c43cbf059ae6045f524d",
+                    "content": "###\n####    This file managed by puppet.\n###\n\n### udp2log packet loss monitoring\npipe 10 /usr/bin/packet-loss 10 '\\t' >> /var/log/udp2log/packet-loss.log\n\n### Fundraising\n## Landing pages\npipe 1 /usr/bin/udp-filter -F '\\t' -d wikimediafoundation.org,donate.wikimedia.org >> /a/log/fundraising/logs/landingpages.tsv.log\n\n## Banner Impressions\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:RecordImpression\\?banner=,Special:RecordImpression\\?result= >> /a/log/fundraising/logs/bannerImpressions-sampled100.tsv.log\npipe 100 /usr/bin/udp-filter -F '\\t' -p Special:BannerRandom >> /a/log/fundraising/logs/bannerRequests-sampled100.tsv.log\n\n### webstatscollector -- domas\n# NOTE!  The files that filter and collector (on gadolinium) generates\n# are rsynced over to dataset2 by a cron maintained by\n# apergos running on snapshot1.\n# gadolinium.wikimedia.org:3815 should be the webstats collector process.\npipe 1 /usr/local/bin/filter | /usr/bin/log2udp -h gadolinium.wikimedia.org -p 3815\n\n### API Usage\npipe 100 /usr/bin/udp-filter -F '\\t' -p /w/api.php >> /a/log/webrequest/api-usage.tsv.log\n\n### GLAM NARA / National Archives - RT 2212\npipe 10 /usr/bin/udp-filter -F '\\t' -p _NARA_ -g -b country >> /a/log/webrequest/glam_nara.tsv.log\n\n### 0.0001 of all udp2log messages\n## This log file is also on gadolinium for redundancy\nfile 1000 /a/log/webrequest/sampled-1000.tsv.log\n"
+                }
+            }
+        },
+        "total_resources_in_new": 399,
+        "total_resources_in_old": 394
+    },
+    "most_changed": [
+        {
+            "erbium.eqiad.wmnet": 0.753469969339593
+        }
+    ],
+    "most_differences": [
+        {
+            "erbium.eqiad.wmnet": 6
+        }
+    ],
+    "total_nodes": 1,
+    "total_percentage": 0.753469969339593,
+    "with_changes": 1
+}
