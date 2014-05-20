@@ -66,7 +66,10 @@ class NodeDiffPuppetVersions(object):
         self.html_dir = app.config.get('HTML_DIR')
         self.diff_dir = app.config.get('DIFF_DIR')
         self.compile_versions = app.config.get('PUPPET_VERSIONS')
-        self.nodes = args.nodes
+        if args.nodes != '':
+            self.nodes = args.nodes
+        else:
+            self.nodes = None
         self.nodelist = defaultdict(set)
         self.count = 0
         self.change = None
@@ -210,20 +213,32 @@ class NodeDiffChange(NodeDiffPuppetVersions):
 
     def __init__(self, args):
         super(NodeDiffChange, self).__init__(args)
-        self.change = args.change
+        self.change = int(args.change)
         basedir = os.path.join(
             app.config.get('OUTPUT_DIR'), 'change', str(self.change))
         self.compiled_dir = os.path.join(basedir, 'compiled')
         self.html_dir = os.path.join(basedir, 'html')
         self.diff_dir = os.path.join(basedir, 'diff')
         self.compile_versions = [('2.7', 'production'), ('2.7', self.change)]
-        self.site_pp = os.path.join(
+        self.puppet_dir = os.path.join(
             app.config.get('BASEDIR'),
-            'external/change/%d/puppet/manifests/site.pp' % self.change)
+            'external/change/%d/puppet' % self.change)
+        self.site_pp = os.path.join(
+            self.puppet_dir,
+            'manifests/site.pp')
         self.mode = 'diffchanges'
+        self._avoid_prepare_change = args.no_code_refresh
 
     def run(self):
-        self.prepare_change()
+        if not self._avoid_prepare_change:
+            self.prepare_change()
+        else:
+            if not os.path.exists(self.puppet_dir):
+                log.warn(
+                    'Directory %s not found, running prepare_change anyways.',
+                    self.puppet_dir
+                )
+                self.prepare_change()
         super(NodeDiffChange, self).run()
 
     def prepare_change(self):

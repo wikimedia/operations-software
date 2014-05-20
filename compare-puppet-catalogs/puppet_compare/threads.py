@@ -31,7 +31,6 @@ class ThreadExecutor(threading.Thread):
                     'is_error': False, 'value': retval, 'data': (args, kwdargs)}
                 self.out_queue.put(msg)
             except Exception as e:
-                raise
                 # TODO: log correctly
                 logging.error("Error in payload")
                 logging.debug(str(e))
@@ -63,7 +62,7 @@ class ThreadOrchestrator(object):
         try:
             callback(res)
         except:
-            log.warn('post-exec callback failed.')
+            logging.warn('post-exec callback failed.')
         self._incoming_queue.task_done()
 
     def fetch(self, callback):

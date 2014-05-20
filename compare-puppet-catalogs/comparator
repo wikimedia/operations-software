@@ -10,10 +10,11 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('--nodes', dest='nodes', help="comma-separated list of hosts to check")
-parser.add_argument('--change', dest='change', type=int, help="Gerrit ID of the change we need to download.")
+parser.add_argument('--change', dest='change', help="Gerrit ID of the change we need to download.")
 parser.add_argument('--debug', action='store_true', default=False, help="Print debug output")
 parser.add_argument('--numthreads', default=4, type=int, help="Number of parallel thread for compilation of nodes catalogs.")
 parser.add_argument('--transition', default=False, action='store_true', help="Compile catalogs for different puppet versions under the same Gerrit change")
+parser.add_argument('--no-code-refresh', dest="no_code_refresh", default=False, action='store_true', help="do not reprovision change code from ")
 try:
     opts = parser.parse_args()
     if opts.debug:
@@ -27,7 +28,7 @@ try:
     datefmt='[ %m/%d/%Y %H:%M:%S ]')
 
 
-    if opts.change:
+    if opts.change and opts.change != '':
         if opts.transition:
             cls = generator.NodeVersionsChange
         else:

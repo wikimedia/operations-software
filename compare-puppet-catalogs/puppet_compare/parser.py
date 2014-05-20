@@ -41,8 +41,8 @@ class DiffParser(object):
         try:
             # Ugly hack to workaround subprocess.check_output limitations
             cmd = 'diff -ar -U 1000 {} {} || (if [ "x$?" = "x1" ]; then exit 0; else exit $?; fi;)'.format(
-                oldfile.name,
-                newfile.name,
+                oldfile,
+                newfile,
             )
             log.debug(cmd)
             return subprocess.check_output(cmd, shell=True)
@@ -51,27 +51,31 @@ class DiffParser(object):
             log.error('Could not create the diffs; command was %s', cmd)
             return ''
 
+    def _write_to_tmp(self, sfx, content):
+        f = NamedTemporaryFile(
+            suffix=sfx,
+            delete=False
+        )
+        f.write(json.dumps(content, indent=4))
+        # Avoid the 'no newline at the end of file' error from diff
+        f.write("\n")
+        f.close()
+        return f.name
+
     def _get_diffs(self, name, old, new):
         sfx = re.sub('[\/]', '-', name)
-        oldf = NamedTemporaryFile(
-            suffix=sfx + '.old',
-            delete=False)
-        if 'content' in old['parameters']:
-            log.debug('remoove ')
-            del(old['parameters']['content']['content'])
-        oldf.write(json.dumps(old, sort_keys=True, indent=4))
-        oldf.write("\n")
-        oldf.close()
-        newf = NamedTemporaryFile(
-            suffix=sfx + '.new',
-            delete=False)
-        if 'content' in new['parameters']:
-            del(new['parameters']['content']['content'])
-        newf.write(json.dumps(new, sort_keys=True, indent=4))
-        newf.write("\n")
-        newf.close()
-        diffres = self._generate_diff(oldf, newf)
+
+        if isinstance(old, dict) and 'content' in old['parameters']:
+            del old['parameters']['content']['content']
+        old_file = self._write_to_tmp(sfx + '.old', old)
+
+        if isinstance(new, dict) and 'content' in new['parameters']:
+            del new['parameters']['content']['content']
+        new_file = self._write_to_tmp(sfx + '.old', new)
+
+        diffres = self._generate_diff(old_file, new_file)
+        # If there are content differences...
         content = self._diffs['content_differences'].get(name, '')
         self.results.append((name, diffres, content))
-        os.unlink(oldf.name)
-        os.unlink(newf.name)
+        os.unlink(old_file)
+        os.unlink(new_file)
