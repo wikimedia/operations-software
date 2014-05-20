@@ -32,14 +32,6 @@ perl -i"" -pe 's/^(\s*text\/plain\s*txt);$/$1 warnings pson;/' /etc/nginx/mime.t
 /etc/init.d/nginx restart
 
 
-if [ ! -f /vagrant/puppet-facts.tar.xz ]; then
-    echo "Now you just need to:"
-    echo " - create an archive with facts named puppet-facts.xz from a puppet master"
-    echo "   and copy it here"
-    echo " - run the './shell/helper install' script"
-    echo "SEE THE README FOR DETAILS"
-    exit
-fi;
 /vagrant/shell/helper install
 # Install puppet catalog diff Face, under puppet 3
 pushd /vagrant/shell/env_puppet_3

@@ -9,6 +9,7 @@ import requests
 import logging
 import json
 import sys
+import socket
 
 log = logging.getLogger('puppet_compare')
 
@@ -77,6 +78,16 @@ class NodeDiffPuppetVersions(object):
                                     'external/puppet/manifests/site.pp')
         self.tp_size = args.numthreads
         self.mode = 'versions'
+        self.get_host()
+        self.html_path = 'html'
+
+    def get_host(self):
+        hostname = socket.gethostname()
+        if hostname == 'precise64':
+            self.host = 'http://localhost:8080'
+        else:
+            # Not in vagrant, for now it is fixed.
+            self.host = 'http://puppet-compiler.wmflabs.org'
 
     def node_compile(self, nodename, version, branch):
         log.info("Compiling node %s under puppet %s branch %s",
@@ -202,10 +213,9 @@ class NodeDiffPuppetVersions(object):
 
         threadpool.fetch(self.on_node_compiled)
         self.update_index()
-
+        log.info('Run completed, you can see detailed results for your work at %s/%s', self.host, self.html_path)
 
 class NodeDiffChange(NodeDiffPuppetVersions):
-
     """
     Computes the catalog diff between the production branch and a changeset
     in puppet 2.7
@@ -228,6 +238,7 @@ class NodeDiffChange(NodeDiffPuppetVersions):
             'manifests/site.pp')
         self.mode = 'diffchanges'
         self._avoid_prepare_change = args.no_code_refresh
+        self.html_path = 'change/%d/html' % self.change
 
     def run(self):
         if not self._avoid_prepare_change:
