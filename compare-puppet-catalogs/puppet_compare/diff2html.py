@@ -312,12 +312,12 @@ def add_line(s1, s2):
         res['line2'] = ''
         s2 = ""
 
-    return ('diffline', res)
     if s1 != "":
         line1 += 1
     if s2 != "":
         line2 += 1
 
+    return ('diffline', res)
 
 def empty_buffer(output):
     global buf

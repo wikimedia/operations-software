@@ -165,13 +165,14 @@ class NodeDiffPuppetVersions(object):
         node = msg['data'][0][0]
         self.count += 1
         if not self.count % 5:
-            log.info('Updating index.html')
             self.update_index()
-        log.info("Nodes: %s OK %s DIFF %s FAIL" % (
+            log.info('Index updated, you can see detailed progress for your work at %s/%s', self.host, self.html_path)
+        log.info(
+            "Nodes: %s OK %s DIFF %s FAIL",
             len(self.nodelist['OK']),
             len(self.nodelist['DIFF']),
             len(self.nodelist['ERROR'])
-        ))
+        )
 
     def node_output(self, node):
         if node in self.nodelist['ERROR']:

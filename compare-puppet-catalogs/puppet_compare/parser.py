@@ -7,11 +7,6 @@ import re
 
 log = logging.getLogger('puppet_compare')
 
-
-def contains(haystack, needle):
-    return (haystack.find(needle) >= 0)
-
-
 class DiffParser(object):
 
     def __init__(self, filename, nodename):
@@ -31,9 +26,9 @@ class DiffParser(object):
                 new_content)
 
         if self._diffs['only_in_old']:
-            self._get_diffs('old_missing', [], self._diffs['only_in_old'])
+            self._get_diffs('missing_in_new', self._diffs['only_in_old'], [])
         if self._diffs['only_in_new']:
-            self._get_diffs('new_missing', self._diffs['only_in_new'], [])
+            self._get_diffs('missing_in_old', [], self._diffs['only_in_new'])
 
         return self.results
 
