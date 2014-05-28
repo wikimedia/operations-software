@@ -1,0 +1,7 @@
+Package: wmf-mariadb10
+Version: 10.0.11-1
+Section: misc
+Priority: optional
+Architecture: amd64
+Maintainer: Sean Pringle <springle@wikimedia.org>
+Description: MariaDB plus patches.

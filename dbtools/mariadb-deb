@@ -1,0 +1,71 @@
+#!/bin/bash
+# This turns an upstream MariaDB static tarball into a deb.
+
+control=$1
+
+if [ ! -e $control ]; then
+	echo "missing control" 1>&2
+	exit 1
+fi
+
+confirm() {
+	read -p "continue? yes/no " yn
+	if [[ ! "$yn" =~ ^y ]]; then
+		echo "abort"
+		exit 1
+	fi
+}
+
+package=$(grep 'Package:' $control | awk '{print $2}')
+release=$(grep 'Version:' $control | awk '{print $2}')
+version=$(echo $release | sed 's/-[0-9]*//')
+debname="${package}_${release}_amd64"
+tarball="mariadb-${version}-linux-x86_64.tar.gz"
+optname="${package}"
+tarname=$(echo $tarball | sed 's/\.tar\.gz$//')
+makedir="$debname"
+basedir="/opt/$optname"
+
+echo "control: $control"
+echo "package: $package"
+echo "release: $release"
+echo "version: $version"
+echo "tarname: $tarname"
+echo "makedir: $makedir"
+echo "basedir: $basedir"
+
+confirm
+
+if [ ! -e $tarball ]; then
+	echo "missing tarball" 1>&2
+	exit 1
+fi
+
+echo "creating directory structure..."
+
+rm -rf $makedir
+mkdir $makedir
+
+mkdir $makedir/DEBIAN
+cp $control $makedir/DEBIAN/control
+
+mkdir $makedir/opt
+
+echo "extracting tarball..."
+
+tar zxpf $tarball -C $makedir/opt
+mv $makedir/opt/$tarname $makedir/opt/$optname
+
+echo "adding WMF stuff..."
+
+setup="$makedir/opt/$optname/install"
+cat mariadb-deb-install.tpl.sh | sed "s:BASEDIR:$basedir:g" > $setup
+chmod 755 $setup
+
+service="$makedir/opt/$optname/service"
+cat mariadb-deb-service.tpl.sh | sed "s:BASEDIR:$basedir:g" > $service
+chmod 755 $service
+
+dpkg-deb --build $makedir
+
+echo "done."
