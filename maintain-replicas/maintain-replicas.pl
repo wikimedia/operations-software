@@ -267,7 +267,8 @@ my %customviews = (
                     NULL as user_options, NULL as user_touched, NULL as user_token,
                     NULL as user_email_authenticated, NULL as user_email_token,
                     NULL as user_email_token_expires,
-                    user_registration, NULL as user_newpass_time, user_editcount', },
+                    user_registration, NULL as user_newpass_time, user_editcount,
+                    NULL as user_password_expires', },
 
     'user_old' => {
         'source' => 'user_old',
