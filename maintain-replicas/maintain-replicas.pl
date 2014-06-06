@@ -46,6 +46,16 @@ use Encode;
 my %doslice;
 my $defaultdo = 1;
 
+my %update;
+
+if($ARGV[0] eq '-u') {
+    shift;
+    my $views = shift;
+    foreach my $view (split /,/, $views) {
+        $update{$view} = 1;
+    }
+}
+
 foreach my $arg (@ARGV) {
     $defaultdo = 0   if $arg =~ m/^s[1-7]/;
     $doslice{$1} = 1 if $arg =~ m/^\+?(s[1-7])/;
@@ -449,6 +459,9 @@ foreach my $slice (keys %byslice) {
             my $q = "SELECT table_name FROM information_schema.tables "
                   . "WHERE table_name='$view' and table_schema='$dbk';";
             if(sql($q) == 1) {
+                $q = "SELECT table_name FROM information_schema.views "
+                   . "WHERE table_name='$view' and table_schema='${dbk}_p';";
+                next if sql($q) == 1 and not defined $update{$view};
                 print "[$view] ";
                 $q = "CREATE OR REPLACE DEFINER=viewmaster VIEW ${dbk}_p.$view AS SELECT * FROM $dbk.$view;\n";
                 sql($q);
@@ -459,6 +472,9 @@ foreach my $slice (keys %byslice) {
             my $q = "SELECT table_name FROM information_schema.tables "
                   . "WHERE table_name='".$customviews{$view}->{'source'}."' and table_schema='$dbk';";
             if(sql($q) == 1) {
+                $q = "SELECT table_name FROM information_schema.views "
+                   . "WHERE table_name='$view' and table_schema='${dbk}_p';";
+                next if sql($q) == 1 and not defined $update{$view};
                 print "[$view] ";
                 $q = "CREATE OR REPLACE DEFINER=viewmaster VIEW ${dbk}_p.$view AS "
                    . $customviews{$view}->{'view'}
