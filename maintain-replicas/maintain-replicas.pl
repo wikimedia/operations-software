@@ -100,8 +100,8 @@ my @fullviews = (
     "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
     "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags", "pif_edits", "povwatch_log",
     "povwatch_subscribers", "protected_titles", "redirect", "site_identifiers", "sites", "site_stats",
-    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_former_groups",
-    "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
+    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_daily_contribs",
+    "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
     'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wb_entity_per_page',
     'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
@@ -155,7 +155,36 @@ my %customviews = (
                     ar_deleted, if(ar_deleted&1,null,ar_len) as ar_len,
                     ar_page_id, ar_parent_id,
                     if(ar_deleted&1,null,ar_sha1) as ar_sha1',
-        'where' => '(ar_deleted&1)=0' },
+        'where' => '(ar_deleted&4)=0' },
+
+    'filearchive' => {
+        'source' => 'filearchive',
+        'view' => 'select
+                    fa_id, fa_name, fa_archive_name,
+                    fa_storage_group, NULL as fa_storage_key,
+                    fa_deleted_user, fa_deleted_timestamp, fa_deleted_reason,
+                    if(fa_deleted&1,null,fa_size) as fa_size, if(fa_deleted&1,null,fa_width) as fa_width,
+                    if(fa_deleted&1,null,fa_height) as fa_height, if(fa_deleted&1,null,fa_metadata) as fa_metadata,
+                    if(fa_deleted&1,null,fa_bits) as fa_bits, if(fa_deleted&1,null,fa_media_type) as fa_media_type,
+                    if(fa_deleted&1,null,fa_minor_mime) as fa_minor_mime,
+                    if(fa_deleted&2,null,fa_description) as fa_description,
+                    if(fa_deleted&4,null,fa_user)as fa_user, if(fa_deleted&4,null,fa_user_text) as fa_user_text,
+                    fa_timestamp, fa_deleted, if(fa_deleted&1,null,fa_sha1) as fa_sha1', },
+
+    'filearchive_userindex' => {
+        'source' => 'filearchive',
+        'view' => 'select
+                    fa_id, fa_name, fa_archive_name,
+                    fa_storage_group, NULL as fa_storage_key,
+                    fa_deleted_user, fa_deleted_timestamp, fa_deleted_reason,
+                    if(fa_deleted&1,null,fa_size) as fa_size, if(fa_deleted&1,null,fa_width) as fa_width,
+                    if(fa_deleted&1,null,fa_height) as fa_height, if(fa_deleted&1,null,fa_metadata) as fa_metadata,
+                    if(fa_deleted&1,null,fa_bits) as fa_bits, if(fa_deleted&1,null,fa_media_type) as fa_media_type,
+                    if(fa_deleted&1,null,fa_minor_mime) as fa_minor_mime,
+                    if(fa_deleted&2,null,fa_description) as fa_description,
+                    fa_user, fa_user_text,
+                    fa_timestamp, fa_deleted, if(fa_deleted&1,null,fa_sha1) as fa_sha1',
+        'where' =>  '(fa_deleted&4)=0' },
 
     'globaluser' => {
         'source' => 'globaluser',
@@ -286,6 +315,13 @@ my %customviews = (
                     NULL as user_password, NULL as user_newpassword, NULL as user_email,
                     NULL as user_options, NULL as user_newtalk, NULL as user_touched,
                     user_real_name, NULL as user_token', },
+
+    'user_properties' => {
+        'source' => 'user_properties',
+        'view' => 'select up_user, up_property, up_value',
+        'where' => "up_property in ( 'disablemail', 'fancysig', 'gender',
+                        'language', 'nickname', 'skin', 'timecorrection',
+                        'variant' )", }
 
 );
 
