@@ -123,8 +123,9 @@ function purge() {
 }
 
 function setup_naggen() {
-    if [ ! -f /usr/local/bin/naggen ];  then
-        cp ${PUPPETDIR}/modules/puppetmaster/files/naggen /usr/local/bin/naggen
+    if [ ! -f /usr/local/bin/naggen2 -a $UID -eq 0 ];  then
+        # do this on vagrant only, where we run as root.
+        cp ${PUPPETDIR}/modules/puppetmaster/files/naggen2 /usr/local/bin/naggen2
     fi;
 }
 

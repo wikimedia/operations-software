@@ -14,4 +14,3 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Preparing the dir for change ${CHANGE}"
 ${DIR}/helper install ${CHANGE} ${REVISION}
 PARENT=$(readlink -f ${DIR}/../)
-mkdir -p ${PARENT}/output/change/${CHANGE}/{html,compiled,diff}

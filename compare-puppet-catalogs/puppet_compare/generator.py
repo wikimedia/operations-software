@@ -79,7 +79,7 @@ class NodeDiffPuppetVersions(object):
         self.tp_size = args.numthreads
         self.mode = 'versions'
         self.get_host()
-        self.html_path = 'html'
+        self.html_path = self.html_dir.replace(app.config.get('BASE_OUTPUT_DIR'),'')
 
     def get_host(self):
         hostname = socket.gethostname()
@@ -207,7 +207,19 @@ class NodeDiffPuppetVersions(object):
                 self.nodelist['ERROR'].add(node)
         self.node_output(node)
 
+    def _refresh_main(self):
+        cmd = "{} {}".format(app.config.get('HELPER_SCRIPT'), 'install')
+        log.info('Refreshing the base installation')
+        run(cmd)
+        for d in [self.compiled_dir, self.html_dir, self.diff_dir]:
+            try:
+                os.makedirs(d)
+            except:
+                pass
+
     def run(self):
+        if self.change is None:
+            self._refresh_main()
         threadpool = threads.ThreadOrchestrator(self.tp_size)
         for node in self.node_generator():
             threadpool.add(self._run_node, node)
@@ -239,7 +251,7 @@ class NodeDiffChange(NodeDiffPuppetVersions):
             'manifests/site.pp')
         self.mode = 'diffchanges'
         self._avoid_prepare_change = args.no_code_refresh
-        self.html_path = 'change/%d/html' % self.change
+        self.html_path = self.html_dir.replace(app.config.get('BASE_OUTPUT_DIR'),'')
 
     def run(self):
         if not self._avoid_prepare_change:
@@ -274,6 +286,11 @@ class NodeDiffChange(NodeDiffPuppetVersions):
         log.info(
             'Downloading patch for change %s, revision %s', self.change, revision)
         run(cmd)
+        for d in [self.compiled_dir, self.html_dir, self.diff_dir]:
+            try:
+                os.makedirs(d)
+            except:
+                pass
 
 
 class NodeVersionsChange(NodeDiffChange):
