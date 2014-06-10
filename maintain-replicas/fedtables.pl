@@ -57,6 +57,8 @@ my @fullviews = (
     "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
     'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset', 'wb_property_info',
+    'wb_changes', 'wb_changes_dispatch', 'wb_entity_per_page',
+    'wb_id_counters', 'wb_items_per_site', 'wb_terms',
 );
 
 my %customviews = (
