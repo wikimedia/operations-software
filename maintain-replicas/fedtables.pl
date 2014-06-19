@@ -53,8 +53,8 @@ my @fullviews = (
     "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
     "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags", "pif_edits", "povwatch_log",
     "povwatch_subscribers", "protected_titles", "redirect", "site_identifiers", "sites", "site_stats",
-    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_former_groups",
-    "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
+    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_daily_contribs",
+    "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
     'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset', 'wb_property_info',
     'wb_changes', 'wb_changes_dispatch', 'wb_entity_per_page',
@@ -67,6 +67,8 @@ my %customviews = (
     'aft_article_feedback' => 'aft_article_feedback',
     'archive' => 'archive',
     'archive_userindex' => 'archive',
+    'filearchive' => 'filearchive',
+    'filearchive_userindex' => 'filearchive',
     'globaluser' => 'globaluser',
     'ipblocks' => 'ipblocks',
     'ipblocks_ipindex' => 'ipblocks',
@@ -82,6 +84,7 @@ my %customviews = (
     'revision_userindex' => 'revision',
     'user' => 'user',
     'user_old' => 'user_old',
+    'user_properties' => 'user_properties',
 );
 
 $| = 1;
