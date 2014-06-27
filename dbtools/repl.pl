@@ -157,6 +157,8 @@ sub stop_sibs_in_sync()
 {
 	print "Checking relationship...\n";
 
+	&check_both_running;
+
 	if ($parent_status->{Relay_Master_Log_File} eq $child_status->{Relay_Master_Log_File}
 		and $parent_status->{Exec_Master_Log_Pos} eq $child_status->{Exec_Master_Log_Pos}
 		and $parent_status->{Slave_SQL_Running} eq "No"
@@ -299,6 +301,8 @@ elsif ($mode eq "--switch-child-to-sibling")
 	unless (<STDIN> =~ /^y/) { die("abort"); }
 
 	print "Checking relationship...\n";
+
+	&check_both_running;
 
 	unless ($child_status->{Master_Host} eq $parent_host and $child_status->{Master_Port} eq $parent_port) {
 		die("${child_host}:${child_port} is not a slave of ${parent_host}:${parent_port}");
