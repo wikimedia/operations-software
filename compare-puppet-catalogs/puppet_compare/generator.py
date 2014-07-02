@@ -242,7 +242,7 @@ class NodeDiffChange(NodeDiffPuppetVersions):
         self.compiled_dir = os.path.join(basedir, 'compiled')
         self.html_dir = os.path.join(basedir, 'html')
         self.diff_dir = os.path.join(basedir, 'diff')
-        self.compile_versions = [('2.7', 'production'), ('2.7', self.change)]
+        self.compile_versions = [('3', 'production'), ('3', self.change)]
         self.puppet_dir = os.path.join(
             app.config.get('BASEDIR'),
             'external/change/%d/puppet' % self.change)

@@ -33,8 +33,8 @@
 {% if mode == 'diffchanges' %}
     {% set base_label = "Production" %}
     {% set new_label = "Change {}".format(change)  %}
-    {% set new_dir = "puppet_catalogs_2.7_{}".format(change)  %}
-    {% set old_dir = "puppet_catalogs_2.7_production" %}
+    {% set new_dir = "puppet_catalogs_3_{}".format(change)  %}
+    {% set old_dir = "puppet_catalogs_3_production" %}
 {% else %}
    {% set base_label = "Puppet 2.7"  %}
    {%  set new_label = "Puppet 3" %}
