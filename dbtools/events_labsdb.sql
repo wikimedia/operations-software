@@ -3,6 +3,9 @@
 set @cache_sql_log_bin := @@session.sql_log_bin;
 set @@session.sql_log_bin = 1;
 
+set @cache_event_scheduler := @@global.event_scheduler;
+set @@global.event_scheduler = 0;
+
 create database if not exists ops;
 
 use ops;
@@ -10,8 +13,7 @@ use ops;
 -- Remember, table is replicated!
 -- https://wikitech.wikimedia.org/wiki/MariaDB#Schema_Changes
 
-drop table if exists event_log;
-create table event_log (
+create table if not exists event_log (
   server_id int unsigned  not null,
   stamp     datetime      not null,
   event     varchar(100)  not null,
@@ -36,10 +38,11 @@ create event wmf_labs_purge
 
     do begin
 
-        delete from event_log
-        where stamp < now() - interval 1 day
-            and server_id = @@server_id
-        limit 1000;
+        declare sid int;
+
+        set sid := @@server_id;
+
+        delete from event_log where stamp < now() - interval 1 day and server_id = sid;
 
     end ;;
 
@@ -56,6 +59,7 @@ create event wmf_labs_sleepers_txn
 
     do begin
 
+        declare sid int;
         declare thread_id bigint;
 
         set thread_id := ( select ps.id
@@ -70,11 +74,13 @@ create event wmf_labs_sleepers_txn
             limit 1
         );
 
+        set sid := @@server_id;
+
         if (thread_id is not null) then
 
             kill thread_id;
 
-            insert into event_log values (@@server_id, now(), 'wmf_labs_sleepers_txn',
+            insert into event_log values (sid, now(), 'wmf_labs_sleepers_txn',
                 concat('kill ',thread_id)
             );
 
@@ -85,3 +91,4 @@ create event wmf_labs_sleepers_txn
 delimiter ;
 
 set @@session.sql_log_bin = @cache_sql_log_bin;
+set @@global.event_scheduler = @cache_event_scheduler;

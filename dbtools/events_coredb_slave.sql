@@ -13,8 +13,7 @@ use ops;
 -- Remember, table is replicated!
 -- https://wikitech.wikimedia.org/wiki/MariaDB#Schema_Changes
 
-drop table if exists event_log;
-create table event_log (
+create table if not exists event_log (
   server_id int unsigned  not null,
   stamp     datetime      not null,
   event     varchar(100)  not null,
@@ -39,12 +38,11 @@ create event wmf_slave_purge
 
     do begin
 
-        -- If using statement based replication the @@server_id is unsafe. Convert it to a constant.
-        set @sql := concat(
-            'delete from event_log where stamp < now() - interval 1 day and server_id = ', @@server_id
-        );
+        declare sid int;
 
-        prepare stmt from @sql; execute stmt; deallocate prepare stmt;
+        set sid := @@server_id;
+
+        delete from event_log where stamp < now() - interval 1 day and server_id = sid;
 
     end ;;
 
@@ -64,6 +62,7 @@ create event wmf_slave_wikiuser_slow
 
     do begin
 
+        declare sid int;
         declare all_done int default 0;
         declare thread_id bigint default null;
         declare thread_query varchar(100);
@@ -82,6 +81,8 @@ create event wmf_slave_wikiuser_slow
 
         declare continue handler for not found set all_done = 1;
 
+        set sid := @@server_id;
+
         if (get_lock('wmf_slave_wikiuser_slow', 1) = 0) then
             signal sqlstate value '45000' set message_text = 'get_lock';
         end if;
@@ -95,7 +96,7 @@ create event wmf_slave_wikiuser_slow
 
                 kill thread_id;
 
-                insert into event_log values (@@server_id, now(), 'wmf_slave_wikiuser_slow',
+                insert into event_log values (sid, now(), 'wmf_slave_wikiuser_slow',
                     concat('kill ',thread_id, '; ',thread_query)
                 );
 
@@ -124,6 +125,7 @@ create event wmf_slave_wikiuser_sleep
 
     do begin
 
+        declare sid int;
         declare all_done int default 0;
         declare thread_id bigint default null;
 
@@ -142,6 +144,8 @@ create event wmf_slave_wikiuser_sleep
             signal sqlstate value '45000' set message_text = 'get_lock';
         end if;
 
+        set sid := @@server_id;
+
         set all_done = 0;
         open threads_sleeping;
 
@@ -151,7 +155,7 @@ create event wmf_slave_wikiuser_sleep
 
                 kill thread_id;
 
-                insert into event_log values (@@server_id, now(), 'wmf_slave_wikiuser_sleep',
+                insert into event_log values (sid, now(), 'wmf_slave_wikiuser_sleep',
                     concat('kill ',thread_id)
                 );
 
@@ -179,6 +183,7 @@ create event wmf_slave_overload
 
     do begin
 
+        declare sid int;
         declare all_done int default 0;
         declare thread_id bigint default null;
         declare thread_query varchar(100);
@@ -203,6 +208,8 @@ create event wmf_slave_overload
             signal sqlstate value '45000' set message_text = 'get_lock';
         end if;
 
+        set sid := @@server_id;
+
         set active_count := (
             select count(ps.id)
             from information_schema.processlist ps
@@ -225,7 +232,7 @@ create event wmf_slave_overload
 
                     kill thread_id;
 
-                    insert into event_log values (@@server_id, now(), 'wmf_slave_overload (300)',
+                    insert into event_log values (sid, now(), 'wmf_slave_overload (300)',
                         concat('kill ',thread_id,'; ',thread_query)
                     );
 
