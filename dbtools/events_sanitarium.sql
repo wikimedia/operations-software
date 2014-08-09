@@ -117,7 +117,7 @@ create event wmf_information_schema_p
 
       repeat fetch schema_list into schema_string;
 
-        if (schema_string is not null) then
+        if (all_done = 0 and schema_string is not null) then
 
           set session binlog_format = statement;
 

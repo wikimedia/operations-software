@@ -104,7 +104,7 @@ create event wmf_dbstore_delay
 
         repeat fetch sql_threads into con_name, io_state, sql_state, sql_error, lag_secs, sd_stamp, sd_lag;
 
-            if (con_name is not null and io_state = 'Yes' and sql_error = 0) then
+            if (all_done = 0 and con_name is not null and io_state = 'Yes' and sql_error = 0) then
 
                 if (sql_state = 'Yes' and lag_secs is not null) then
 
