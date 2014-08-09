@@ -88,6 +88,49 @@ create event wmf_labs_sleepers_txn
 
     end ;;
 
+drop event if exists wmf_labs_slow_duplicates;;
+
+create event wmf_labs_slow_duplicates
+
+    on schedule every 10 second starts date(now()) + interval 5 second
+
+    do begin
+
+        declare sid int;
+        declare thread_id bigint;
+
+        set thread_id := ( select ps.id
+            from information_schema.processlist ps
+            inner join (
+                select count(id) as n, info
+                from information_schema.processlist ps
+                where ps.command in ('Query')
+                    and ps.time between 60 and 1000000
+                    and ps.user regexp '^[usp][0-9]+'
+                    and ps.user not regexp '^(system|root|dbmanager|watchdog)'
+                group by if(right(info,12) regexp '/[*][a-z0-9]*[*]/',substring(info,1,length(info)-12),info), user
+                having n > 1
+                order by n desc
+            ) t
+            on ps.info = t.info
+            order by ps.time desc
+            limit 1
+        );
+
+        set sid := @@server_id;
+
+        if (thread_id is not null) then
+
+            kill thread_id;
+
+            insert into event_log values (sid, now(), 'wmf_labs_slow_duplicates',
+                concat('kill ',thread_id)
+            );
+
+        end if;
+
+    end ;;
+
 delimiter ;
 
 set @@session.sql_log_bin = @cache_sql_log_bin;
