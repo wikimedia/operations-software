@@ -38,6 +38,7 @@ db=""
 table=""
 altersql=""
 method="percona"
+cleanup=0
 
 for var in "$@"; do
 
@@ -65,6 +66,7 @@ for var in "$@"; do
 		table="${BASH_REMATCH[1]}"
 	fi
 
+	# percona toolkit or straight DDL
 	if [[ "$var" =~ ^--method=(.+) ]]; then
 		method="${BASH_REMATCH[1]}"
 	fi
@@ -107,6 +109,7 @@ if ! $mysql -e "status"; then
 	exit
 fi
 
+ptdryargs=""
 ptargs=""
 ddlargs=""
 ptrep="--recurse=0"
@@ -124,8 +127,19 @@ for var in "$@"; do
 		ddlrep="set session sql_log_bin=1;"
 	fi
 
+	# pt-online-schema-change will try to panic when altering a primary key. Tell it that we
+	# know about the risks and have decided to go for gold...
 	if [[ "$var" =~ ^--primary-key ]]; then
+		ptdryargs="$ptdryargs --no-check-alter"
 		ptargs="$ptargs --no-check-alter"
+	fi
+
+	# Don't actually switch the new and old tables on completion, but await a sanity check
+	# This is handy for checking data consistency and/or avoiding metadata locking pile-ups
+	if [[ "$var" =~ ^--no-cleanup ]]; then
+		# not in ptdryargs because --dry-run does not create triggers
+		ptargs="$ptargs --no-swap-tables --no-drop-new-table --no-drop-old-table --no-drop-triggers"
+		cleanup=1
 	fi
 
 done
@@ -136,17 +150,19 @@ if [ $slave -gt 0 ]; then
 	ptrep="$ptrep --check-slave-lag=$host"
 fi
 
+ptdryargs="$ptdryargs $ptrep"
 ptargs="$ptargs $ptrep"
 ddlargs="$ddlargs $ddlrep"
 
-echo "Host      : $host"
-echo "Port      : $port"
-echo "Databases : ${dblist[@]}"
-echo "Table     : $table"
-echo "Alter     : $altersql"
-echo "method    : $method"
-echo "pt args   : $ptargs"
-echo "ddl args  : $ddlargs"
+echo "Host        : $host"
+echo "Port        : $port"
+echo "Databases   : ${dblist[@]}"
+echo "Table       : $table"
+echo "Alter       : $altersql"
+echo "method      : $method"
+echo "pt dry args : $ptdryargs"
+echo "pt args     : $ptargs"
+echo "ddl args    : $ddlargs"
 
 confirm
 
@@ -156,14 +172,21 @@ for db in "${dblist[@]}"; do
 	echo
 	echo "host: $host, database: $db"
 
+	collision=$($mysql --skip-column-names $db -e "show tables like '_${table}_new'" | wc -l)
+
+	if [ $collision -gt 0 ]; then
+		echo "_${table}_new already exists!"
+		confirm
+	fi
+
 	# dry run
 	if [[ $method =~ ^ddl ]] || $osctool \
 		--critical-load Threads_running=400 \
 		--max-load Threads_running=300 \
 		--dry-run \
-		--alter-foreign-keys-method=none \
+		--alter-foreign-keys-method=none --force \
 		--nocheck-replication-filters \
-		$ptargs \
+		$ptdryargs \
 		--alter "$altersql" \
 		D=$db,t=$table,h=$host,P=$port,u=$user >/dev/null
 	then
@@ -173,12 +196,31 @@ for db in "${dblist[@]}"; do
 			if $osctool --critical-load Threads_running=400 \
 				--max-load Threads_running=300 \
 				--execute \
-				--alter-foreign-keys-method=none \
+				--alter-foreign-keys-method=none --force \
 				--nocheck-replication-filters \
 				$ptargs \
 				--alter "$altersql" \
 				D=$db,t=$table,h=$host,P=$port,u=$user
 			then
+				if [ $cleanup -gt 0 ]; then
+					echo "Ready for cleanup. Will do this:"
+					sqlcom="$ddlrep rename table ${table} to _${table}_done, _${table}_new to ${table}"
+					echo $sqlcom
+					confirm
+					$mysql $db -e "$sqlcom"
+					sqlcom="$ddlrep drop trigger if exists pt_osc_${db}_${table}_ins"
+					echo $sqlcom
+					$mysql $db -e "$sqlcom"
+					sqlcom="$ddlrep drop trigger if exists pt_osc_${db}_${table}_upd"
+					echo $sqlcom
+					$mysql $db -e "$sqlcom"
+					sqlcom="$ddlrep drop trigger if exists pt_osc_${db}_${table}_del"
+					echo $sqlcom
+					$mysql $db -e "$sqlcom"
+					sqlcom="$ddlrep drop table if exists _${table}_done"
+					echo $sqlcom
+					$mysql $db -e "$sqlcom"
+				fi
 				echo "$ddlrep analyze table $table"
 				$mysql $db -e "$ddlrep analyze table $table"
 				reconfirm=0
