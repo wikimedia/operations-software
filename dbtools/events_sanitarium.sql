@@ -101,7 +101,7 @@ create event wmf_information_schema_p
       declare schema_list cursor for
           select schema_name
           from information_schema.schemata
-          where schema_name like '%wik%'
+          where (schema_name like '%wik%' or schema_name like '%auth%')
           and schema_name not like '%\_p'
           and schema_name <> 'l10nwiki'
           order by schema_name;
