@@ -39,6 +39,7 @@ table=""
 altersql=""
 method="percona"
 cleanup=0
+warn=1
 
 for var in "$@"; do
 
@@ -69,6 +70,14 @@ for var in "$@"; do
 	# percona toolkit or straight DDL
 	if [[ "$var" =~ ^--method=(.+) ]]; then
 		method="${BASH_REMATCH[1]}"
+	fi
+
+	if [[ "$var" =~ ^--warn ]]; then
+		warn=1
+	fi
+
+	if [[ "$var" =~ ^--no-warn ]]; then
+		warn=0
 	fi
 
 	if [[ ! "$var" =~ ^-- ]]; then
@@ -168,7 +177,7 @@ confirm
 
 for db in "${dblist[@]}"; do
 
-	reconfirm=1
+	reconfirm=0
 	echo
 	echo "host: $host, database: $db"
 
@@ -223,27 +232,27 @@ for db in "${dblist[@]}"; do
 				fi
 				echo "$ddlrep analyze table $table"
 				$mysql $db -e "$ddlrep analyze table $table"
-				reconfirm=0
 			else
 				echo "WARNING $db : $table encountered problems"
+				reconfirm=$warn
 			fi
 
 		elif [ "$method" == "ddl" ]; then
 			echo "$ddlargs alter table $table $altersql"
-			if $mysql $db -e "$ddlargs alter table $table $altersql"; then
-				reconfirm=0
+			if ! $mysql $db -e "$ddlargs alter table $table $altersql"; then
+				reconfirm=$warn
 			fi
 
 		elif [ "$method" == "ddlonline" ]; then
 			echo "$ddlargs alter online table $table $altersql"
-			if $mysql $db -e "$ddlargs alter online table $table $altersql"; then
-				reconfirm=0
+			if ! $mysql $db -e "$ddlargs alter online table $table $altersql"; then
+				reconfirm=$warn
 			fi
 		fi
 
 	else
 		echo "SKIPPING $db : $table - dry-run encountered problems"
-		reconfirm=0
+		reconfirm=$warn
 	fi
 
 	if [ $reconfirm -gt 0 ]; then
