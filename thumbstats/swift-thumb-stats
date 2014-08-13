@@ -1,0 +1,194 @@
+#!/usr/bin/python
+
+# this script will scan all containers with thumbnails for the given account
+# and feed each thumbnail to a filter. At the end the result from each filter
+# is printed on standard output in JSON in an object like:
+#   {'FooFilter': <result>, 'BarFilter': <result>}
+
+import argparse
+import collections
+import datetime
+import json
+import os
+import pprint
+import re
+import sys
+import threading
+
+import swiftclient
+
+CONTAINER_THUMB_RE = re.compile('-thumb(\.[a-f0-9][a-f0-9])?$')
+THUMB_RE = re.compile('/(?P<size>\d+)px-(?P<name>.*)$')
+
+
+class Thumb(object):
+    pass
+
+
+class Filter(object):
+    def process(self, thumb):
+        pass
+    def result(self):
+        pass
+
+
+class BytesPerSize(Filter):
+    """Size vs size breakdown."""
+    _bytes = {}
+    def process(self, thumb):
+        self._bytes[thumb.thumbsize] = \
+            self._bytes.setdefault(thumb.thumbsize, 0) + int(thumb.bytes)
+    def result(self):
+        return self._bytes
+    def str(self):
+        return "BytesPerSize"
+
+
+class CountPerSize(Filter):
+    """Size vs count breakdown."""
+
+    _count = {}
+    def process(self, thumb):
+        self._count[thumb.thumbsize] = \
+            self._count.setdefault(thumb.thumbsize, 0) + 1
+    def result(self):
+        return self._count
+    def str(self):
+        return "CountPerSize"
+
+
+class BytesByMonth(Filter):
+    """Year+month vs size vs bytes breakdown."""
+    _month = {}
+    def process(self, thumb):
+        key = thumb.last_modified[:7]
+        size = thumb.thumbsize
+        self._month[key] = self._month.setdefault(key, {})
+        self._month[key][size] = \
+            self._month[key].setdefault(size, 0) + int(thumb.bytes)
+    def result(self):
+        return self._month
+    def str(self):
+        return "BytesPerMonth"
+
+
+def iter_container(connection, name, limit=None):
+    """Iterate over the container contents."""
+
+    _, listing = connection.get_container(name, limit=limit)
+    while listing:
+        for container in listing:
+            yield container
+        marker = container['name']
+        _, listing = connection.get_container(name, limit=limit, marker=marker)
+
+
+def iter_thumbs(container):
+    """Iterate over the container contents and yield Thumb objects."""
+
+    for thumb in container:
+        m = THUMB_RE.search(thumb['name'])
+        if not m:
+            continue
+        t = Thumb()
+        t.name = m.group('name')
+        t.thumbsize = m.group('size')
+        t.filename = thumb['name']
+        t.bytes = thumb['bytes']
+        t.last_modified = thumb['last_modified']
+        t.hash = thumb['hash']
+        t.content_type = thumb['content_type']
+        yield t
+
+
+def _process_container(container, connection, filters):
+    """Iterate over the container thumbs and pass items to each filter."""
+
+    container_name = container['name']
+    thumbs = iter_thumbs(iter_container(connection, container_name))
+    start = datetime.datetime.utcnow()
+    for i, thumb in enumerate(thumbs):
+        thumb.container_name = container_name
+        for f in filters:
+            f.process(thumb)
+        if i and i % 10000 == 0:
+            now = datetime.datetime.utcnow()
+            elapsed = now - start
+            start = now
+            print >>sys.stderr, "%s: inserted 10000 records from %s (%s)" % (
+                threading.current_thread().name, container_name, elapsed)
+
+
+def process_container(in_queue, connection, filters):
+    while True:
+        try:
+            container = in_queue.popleft()
+            _process_container(container, connection, filters)
+        except IndexError:
+            break
+
+
+def _join_threads(threads):
+    """Join the given threads while accepting KeyboardInterrupt."""
+
+    _threads = threads[:]
+    while _threads:
+        try:
+            for thread in _threads[:]:
+                if not thread.is_alive():
+                    _threads.remove(thread)
+                else:
+                    thread.join(timeout=0.1)
+        except KeyboardInterrupt:
+            break
+
+
+def thumb_containers(connection):
+    headers, containers = connection.get_account(full_listing=True)
+    for container in containers:
+        if CONTAINER_THUMB_RE.search(container['name']):
+            yield container
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Print swift account statistics")
+    parser.add_argument('-A', '--auth', dest='auth',
+        default=os.environ.get('ST_AUTH', None),
+        help='URL for obtaining an auth token')
+    parser.add_argument('-U', '--user', dest='user',
+        default=os.environ.get('ST_USER', None),
+        help='User name for obtaining an auth token')
+    parser.add_argument('-K', '--key', dest='key',
+        default=os.environ.get('ST_KEY', None),
+        help='Key for obtaining an auth token')
+    parser.add_argument('-t', '--threads', dest='threads',
+        default=3, type=int,
+        help='How many threads to use (%default)')
+    args = parser.parse_args()
+
+    if None in (args.auth, args.user, args.key):
+        parser.error("please provide auth, user and key")
+        return 1
+
+    connection = swiftclient.Connection(args.auth, args.user, args.key,
+            retry_on_ratelimit=True)
+    worker_queue = collections.deque(thumb_containers(connection))
+    filters = [BytesPerSize(), CountPerSize(), BytesByMonth()]
+    threads = []
+
+    for i in range(args.threads):
+        thread_connection = swiftclient.Connection(args.auth, args.user,
+                args.key, retry_on_ratelimit=True)
+        t = threading.Thread(target=process_container, args=(worker_queue,
+            thread_connection, filters))
+        t.daemon = True
+        t.start()
+        threads.append(t)
+
+    _join_threads(threads)
+    out = [(str(x), x.result()) for x in filters]
+    print json.dumps(dict(out))
+
+
+if __name__ == '__main__':
+    sys.exit(main())
