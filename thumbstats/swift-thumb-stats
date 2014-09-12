@@ -151,7 +151,7 @@ def thumb_containers(connection):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Print swift account statistics")
+    parser = argparse.ArgumentParser(description="Print swift thumb statistics")
     parser.add_argument('-A', '--auth', dest='auth',
         default=os.environ.get('ST_AUTH', None),
         help='URL for obtaining an auth token')
