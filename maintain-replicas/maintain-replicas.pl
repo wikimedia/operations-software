@@ -43,9 +43,6 @@ use LWP::UserAgent;
 use JSON;
 use Encode;
 
-my %doslice;
-my $defaultdo = 1;
-
 my %update;
 
 if($ARGV[0] eq '-u') {
@@ -56,27 +53,10 @@ if($ARGV[0] eq '-u') {
     }
 }
 
-foreach my $arg (@ARGV) {
-    $defaultdo = 0   if $arg =~ m/^s[1-7]/;
-    $doslice{$1} = 1 if $arg =~ m/^\+?(s[1-7])/;
-    $doslice{$1} = 0 if $arg =~ m/^-(s[1-7])/;
-}
-
-print "Doing slices: ";
-for(my $i=1; $i<8; $i++) {
-    $doslice{"s$i"} = $defaultdo if not defined $doslice{"s$i"};
-    print "s$i " if $doslice{"s$i"};
-}
-print "\n";
-
 my %slices = (
-    's1' => [ 'labsdb1001.eqiad.wmnet', 3306 ],
-    's2' => [ 'labsdb1002.eqiad.wmnet', 3306 ],
-    's3' => [ 'labsdb1003.eqiad.wmnet', 3306 ],
-    's4' => [ 'labsdb1002.eqiad.wmnet', 3307 ],
-    's5' => [ 'labsdb1002.eqiad.wmnet', 3308 ],
-    's6' => [ 'labsdb1003.eqiad.wmnet', 3307 ],
-    's7' => [ 'labsdb1003.eqiad.wmnet', 3308 ],
+    'c1' => [ 'labsdb1001.eqiad.wmnet', 3306 ],
+    'c2' => [ 'labsdb1002.eqiad.wmnet', 3306 ],
+    'c3' => [ 'labsdb1003.eqiad.wmnet', 3306 ],
 );
 
 my @fullviews = (
@@ -93,16 +73,16 @@ my @fullviews = (
     "ep_revisions", "ep_students", "ep_users_per_course", "externallinks", "flaggedimages",
     "flaggedpage_config", "flaggedpage_pending", "flaggedpages", "flaggedrevs", "flaggedrevs_promote",
     "flaggedrevs_statistics", "flaggedrevs_stats", "flaggedrevs_stats2", "flaggedrevs_tracking",
-    "flaggedtemplates", "geo_killlist", "geo_tags", "geo_updates", "global_block_whitelist", "hashs",
-    "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
+    "flaggedtemplates", "geo_killlist", "geo_tags", "geo_updates", "globalimagelinks", "global_block_whitelist",
+    "hashs", "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
     "l10n_cache", "langlinks", "links", "localisation", "localisation_file_hash",
     "math", "module_deps", "msg_resource", "msg_resource_links", "namespaces",
     "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
     "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags", "pif_edits", "povwatch_log",
-    "povwatch_subscribers", "protected_titles", "redirect", "site_identifiers", "sites", "site_stats",
-    "tag_summary", "templatelinks", "transcode", "updatelog", "updates", "user_daily_contribs",
-    "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log", "wikilove_log",
-    'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
+    "povwatch_subscribers", "protected_titles", 'pr_index', "redirect", 'renameuser_status', "site_identifiers",
+    "sites", "site_stats", "tag_summary", "templatelinks", "transcode", "updatelog", "updates",
+    "user_daily_contribs", "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log",
+    "wikilove_log", 'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wb_entity_per_page',
     'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
 );
@@ -293,7 +273,8 @@ my %customviews = (
                     if(rev_deleted&4,null,rev_user) as rev_user,
                     if(rev_deleted&4,null,rev_user_text) as rev_user_text, rev_timestamp,
                     rev_minor_edit, rev_deleted, if(rev_deleted&1,null,rev_len) as rev_len,
-                    rev_parent_id, if(rev_deleted&1,null,rev_sha1) as rev_sha1' },
+                    rev_parent_id, if(rev_deleted&1,null,rev_sha1) as rev_sha1,
+                    rev_content_model, rev_content_format' },
 
     'revision_userindex' => {
         'source' => 'revision',
@@ -301,7 +282,8 @@ my %customviews = (
                     if(rev_deleted&2,null,rev_comment) as rev_comment, rev_user, rev_user_text,
                     rev_timestamp, rev_minor_edit, rev_deleted,
                     if(rev_deleted&1,null,rev_len) as rev_len, rev_parent_id,
-                    if(rev_deleted&1,null,rev_sha1) as rev_sha1',
+                    if(rev_deleted&1,null,rev_sha1) as rev_sha1,
+                    rev_content_model, rev_content_format',
         'where' => '(rev_deleted&4)=0' },
 
     'user' => {
@@ -384,9 +366,6 @@ dbprop "echowikis", "has_echo", 1;
 dbprop "flaggedrevs", "has_flaggedrevs", 1;
 dbprop "visualeditor", "has_visualeditor", 1;
 dbprop "wikidataclient", "has_wikidata", 1;
-for my $slice (keys %slices) {
-    dbprop $slice, "slice", $slice;
-}
 for my $family ("wikibooks", "wikidata", "wikinews", "wikiquote", "wikisource",
                 "wikiversity", "wikivoyage", "wiktionary", "wikimania", "wikimedia") {
     dbprop $family, "family", "$family";
@@ -421,13 +400,10 @@ if(open CACHE, "<:encoding(UTF-8)", "wiki.cache") {
     close CACHE;
 }
 
-my %byslice;
 foreach my $dbk (keys %db) {
     my $db = $db{$dbk};
-    next unless defined $db->{'slice'};
     next if defined $db->{'deleted'};
     next if defined $db->{'private'};
-    push @{$byslice{$db->{'slice'}}}, $dbk;
     my $canon = $canonical{$dbk};
     if(not defined $canon) {
         my $lang = undef;
@@ -485,14 +461,13 @@ sub twiddle() {
     $twiddlum = 0  if ++$twiddlum == 4;
 }
 
-foreach my $slice (keys %byslice) {
-    next unless $doslice{$slice};
+foreach my $slice (keys %slices) {
     my ($dbhost, $dbport) = @{$slices{$slice}};
     $dbh = DBI->connect("DBI:mysql:host=$dbhost;port=$dbport;mysql_enable_utf8=1", $dbuser, $dbpassword, {'RaiseError' => 0});
     sql("SET NAMES 'utf8';");
 
     $| = 1;
-    foreach my $dbk (@{$byslice{$slice}}) {
+    foreach my $dbk (keys %db) {
         sql("CREATE DATABASE ${dbk}_p;") if sql("SHOW DATABASES LIKE '${dbk}_p';") == 0;
         print "Views for ${dbk}: ";
         foreach my $view (@fullviews) {
