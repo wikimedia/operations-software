@@ -1,0 +1,4 @@
+[pep8]
+# let me live my life of under-indentation
+# continuation line under-indented for visual indent [E128]
+ignore = E128
