@@ -40,6 +40,7 @@ altersql=""
 method="percona"
 cleanup=0
 warn=1
+analyze=0
 
 for var in "$@"; do
 
@@ -78,6 +79,14 @@ for var in "$@"; do
 
 	if [[ "$var" =~ ^--no-warn ]]; then
 		warn=0
+	fi
+
+	if [[ "$var" =~ ^--analyze ]]; then
+		analyze=1
+	fi
+
+	if [[ "$var" =~ ^--no-analyze ]]; then
+		analyze=0
 	fi
 
 	if [[ ! "$var" =~ ^-- ]]; then
@@ -172,6 +181,7 @@ echo "method      : $method"
 echo "pt dry args : $ptdryargs"
 echo "pt args     : $ptargs"
 echo "ddl args    : $ddlargs"
+echo "analyze     : $analyze"
 
 confirm
 
@@ -230,8 +240,10 @@ for db in "${dblist[@]}"; do
 					echo $sqlcom
 					$mysql $db -e "$sqlcom"
 				fi
-				echo "$ddlrep analyze table $table"
-				$mysql $db -e "$ddlrep analyze table $table"
+				if [ $analyze -eq 1 ]; then
+					echo "$ddlrep analyze table $table"
+					$mysql $db -e "$ddlrep analyze table $table"
+				fi
 			else
 				echo "WARNING $db : $table encountered problems"
 				reconfirm=$warn
