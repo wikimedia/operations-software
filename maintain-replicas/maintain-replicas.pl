@@ -366,6 +366,9 @@ dbprop "echowikis", "has_echo", 1;
 dbprop "flaggedrevs", "has_flaggedrevs", 1;
 dbprop "visualeditor", "has_visualeditor", 1;
 dbprop "wikidataclient", "has_wikidata", 1;
+for my $slice ('s1', 's2', 's3', 's4', 's5', 's6', 's7') {
+    dbprop $slice, "slice", $slice;
+}
 for my $family ("wikibooks", "wikidata", "wikinews", "wikiquote", "wikisource",
                 "wikiversity", "wikivoyage", "wiktionary", "wikimania", "wikimedia") {
     dbprop $family, "family", "$family";
