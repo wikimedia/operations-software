@@ -21,7 +21,7 @@ mkdir -p ${EXTDIR}
 PUPPETDIR=${EXTDIR}/puppet
 PRIVATEDIR=${PARENT}/external/private
 FACTS_ARCHIVE=${PARENT}/puppet-facts.tar.xz
-HIERA_CONFIG_FILE=${PUPPETDIR}/modules/puppetmaster/files/prod.hiera.yaml
+HIERA_CONFIG_FILE=${PUPPETDIR}/modules/puppetmaster/files/production.hiera.yaml
 
 function log () {
     echo "$@"
