@@ -7,6 +7,7 @@ if [ -z $1 ]; then
     echo "Usage: $0 [install|cleanup] [<CHANGE_ID>] [<REVISION_ID>]"
 fi;
 
+# Define defaults based on whether we're acting on a change or not.
 if [ ! -z $2 ]; then
     CHANGE=$2
     REVISION=$3
@@ -20,6 +21,7 @@ mkdir -p ${EXTDIR}
 PUPPETDIR=${EXTDIR}/puppet
 PRIVATEDIR=${PARENT}/external/private
 FACTS_ARCHIVE=${PARENT}/puppet-facts.tar.xz
+HIERA_CONFIG_FILE=${PUPPETDIR}/modules/puppetmaster/files/prod.hiera.yaml
 
 function log () {
     echo "$@"
@@ -58,6 +60,15 @@ function setup_change() {
     done;
     popd
     update_change
+}
+
+function copy_hiera() {
+    if [ -f ${HIERA_CONFIG_FILE} ]; then
+        HIERADATA_DIR=${PUPPETDIR}/hieradata
+        log "Patching and copying the hiera config"
+        sed s,/etc/puppet/hiera,${HIERADATA_DIR}, ${HIERA_CONFIG_FILE} | \
+            sed s,/etc/puppet/private/,${PRIVATEDIR}, -  > ${EXTDIR}/etc/hiera.yaml
+    fi;
 }
 
 function checkout() {
@@ -144,6 +155,7 @@ case $1 in
         log "Putting the facts in place."
         copy_facts
         setup_naggen
+        copy_hiera
         ;;
     cleanup)
         purge
