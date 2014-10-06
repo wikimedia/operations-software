@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<otrs_package version="1.1">
+    <Name>Znuny4OTRS-Repo</Name>
+    <Version>1.0.0</Version>
+    <Vendor>Znuny GmbH</Vendor>
+    <URL>http://znuny.com/</URL>
+    <License>GNU AFFERO GENERAL PUBLIC LICENSE Version 3, November 2007</License>
+    <Description Lang="en">Enables Znuny4OTRS repos to install and upgrade packages directly via package manager.</Description>
+    <Description Lang="de">Aktiviert Znuny4OTRS Repositories um Pakete direkt in der Paket-Verwaltung zu installieren oder zu aktuallisieren.</Description>
+    <Framework>3.1.x</Framework>
+    <Framework>3.2.x</Framework>
+    <IntroInstall Lang="en" Title="Pre-Install Information" Type="pre">
+        &lt;br/&gt;
+        &lt;br/&gt;
+        Welcome to &lt;u&gt;Znuny4OTRS Repo&lt;/u&gt;!
+        &lt;br/&gt;
+        &lt;br/&gt;
+
+        &lt;p&gt;
+        You are about to install the Znuny4OTRS Repo extention with the following features:
+            &lt;ul&gt;
+                &lt;li&gt;Direct install and upgrade of Znuny packages via package manager&lt;/li&gt;
+                &lt;li&gt;Enables package verification also for Znuny packages&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/p&gt;
+        &lt;br/&gt;
+        &lt;br/&gt;
+        &lt;p&gt;
+        Your Znuny Team!
+        &lt;br/&gt;
+        &lt;a href=&quot;http://znuny.com/&quot; target=&quot;_blank&quot;&gt;http://znuny.com&lt;/a&gt;
+        &lt;/p&gt;
+        &lt;br/&gt;
+        &lt;br/&gt;
+    </IntroInstall>
+    <IntroInstall Lang="de" Title="Pre-Installations-Information" Type="pre">
+        &lt;br/&gt;
+        &lt;br/&gt;
+        Herzlich Willkommen zu &lt;u&gt;Znuny4OTRS Repo&lt;/u&gt;!
+        &lt;br/&gt;
+        &lt;br/&gt;
+        &lt;p&gt;
+        Sie sind gerade dabei, die Znuny4OTRS Repo Erweiterung mit folgenden Funktionen zu installieren:
+            &lt;ul&gt;
+                &lt;li&gt;Direktes installieren und aktualisieren von Znuny Paketen ??ber den Paket-Manager&lt;/li&gt;
+                &lt;li&gt;Aktiviert Paket-Verifizierung auch f??r Znuny Paketen&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/p&gt;
+        &lt;br/&gt;
+        &lt;br/&gt;
+        &lt;p&gt;
+        Ihr Znuny Team!
+        &lt;br/&gt;
+        &lt;a href=&quot;http://znuny.com/&quot; target=&quot;_blank&quot;&gt;http://znuny.com&lt;/a&gt;
+        &lt;/p&gt;
+        &lt;br/&gt;
+        &lt;br/&gt;
+    </IntroInstall>
+    <BuildDate>2013-07-16 15:56:15</BuildDate>
+    <BuildHost>build.znuny.com</BuildHost>
+    <Filelist>
+        <File Location="Kernel/Modules/Znuny4OTRSRepo.pm" Permission="644" Encode="Base64">CiMgQ29weXJpZ2h0IChDKSAyMDEzIFpudW55IEdtYkgsIGh0dHA6Ly96bnVueS5jb20vCgpwYWNrYWdlIEtlcm5lbDo6TW9kdWxlczo6Wm51bnk0T1RSU1JlcG87Cgp1c2Ugc3RyaWN0Owp1c2Ugd2FybmluZ3M7CgpzdWIgbmV3IHsKICAgIG15ICggJFR5cGUsICVQYXJhbSApID0gQF87CgogICAgIyBhbGxvY2F0ZSBuZXcgaGFzaCBmb3Igb2JqZWN0CiAgICBteSAkU2VsZiA9IFwlUGFyYW07CiAgICBibGVzcyggJFNlbGYsICRUeXBlICk7CgogICAgIyBjaGVjayBuZWVkZWQgb2JqZWN0cwogICAgZm9yIChxdyhQYXJhbU9iamVjdCBEQk9iamVjdCBMb2dPYmplY3QgQ29uZmlnT2JqZWN0KSkgewogICAgICAgIGlmICggISRTZWxmLT57JF99ICkgewogICAgICAgICAgICAkU2VsZi0+e0xheW91dE9iamVjdH0tPkZhdGFsRXJyb3IoIE1lc3NhZ2UgPT4gIkdvdCBubyAkXyEiICk7CiAgICAgICAgfQogICAgfQoKICAgIHJldHVybiAkU2VsZjsKfQoKc3ViIFByZVJ1biB7CiAgICBteSAoICRTZWxmLCAlUGFyYW0gKSA9IEBfOwoKICAgIHJldHVybiBpZiAkU2VsZi0+e0FjdGlvbn0gIX4gL15BZG1pbi87CgogICAgbXkgJFJlcG9zaXRvcnlMaXN0ID0gJFNlbGYtPntDb25maWdPYmplY3R9LT5HZXQoJ1BhY2thZ2U6OlJlcG9zaXRvcnlMaXN0Jyk7CiAgICBpZiAoICEkUmVwb3NpdG9yeUxpc3QgKSB7CiAgICAgICAgJFJlcG9zaXRvcnlMaXN0ID0ge307CiAgICB9CgogICAgbXkgJFR5cGUgPSAkU2VsZi0+e0NvbmZpZ09iamVjdH0tPkdldCgnWm51bnk0T1RSU1JlcG9UeXBlJykgfHwgJ2h0dHBzJzsKICAgICRSZXBvc2l0b3J5TGlzdC0+eyAkVHlwZSAuICc6Ly9wb3J0YWwuem51bnkuY29tL2FwaS9hZGRvbl9yZXBvcy9wdWJsaWMnfSA9ICdbLUFkZG9ucy1dIFpudW55NE9UUlMgLSBQdWJsaWMnOwoKICAgIG15ICRQcml2YXRlUmVwb3N0ID0gJFNlbGYtPntDb25maWdPYmplY3R9LT5HZXQoJ1pudW55NE9UUlNQcml2YXRSZXBvcycpOwogICAgaWYgKCRQcml2YXRlUmVwb3N0ICYmIHJlZiAkUHJpdmF0ZVJlcG9zdCBlcSAnSEFTSCcgKSB7CiAgICAgICAgZm9yIG15ICRLZXkgKCBrZXlzICV7ICRQcml2YXRlUmVwb3N0IH0gKSB7CiAgICAgICAgICAgICRSZXBvc2l0b3J5TGlzdC0+eyAkVHlwZSAuICc6Ly9wb3J0YWwuem51bnkuY29tL2FwaS9hZGRvbl9yZXBvcy8nIC4gJEtleSB9ID0gIlstUHJpdmF0ZS1dICRQcml2YXRlUmVwb3N0LT57JEtleX0gIjsKICAgICAgICB9CiAgICB9CgogICAgJFNlbGYtPntDb25maWdPYmplY3R9LT5TZXQoCiAgICAgICAgS2V5ICAgPT4gJ1BhY2thZ2U6OlJlcG9zaXRvcnlMaXN0JywKICAgICAgICBWYWx1ZSA9PiAkUmVwb3NpdG9yeUxpc3QsCiAgICApOwoKICAgIHJldHVybjsKfQoKMTsK</File>
+        <File Location="Kernel/Config/Files/Znuny4OTRSRepo.xml" Permission="644" Encode="Base64">PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiID8+CjxvdHJzX2NvbmZpZyB2ZXJzaW9uPSIxLjAiIGluaXQ9IkFwcGxpY2F0aW9uIj4KICAgIDxDb25maWdJdGVtIE5hbWU9IlByZUFwcGxpY2F0aW9uTW9kdWxlIyMjWm51bnk0T1RSU1JlcG8iIFJlcXVpcmVkPSIwIiBWYWxpZD0iMSI+CiAgICAgICAgPERlc2NyaXB0aW9uIFRyYW5zbGF0YWJsZT0iMSI+RGVmaW5lcyBhIG1vZHVsZSB0byBlbmFibGUgWm51bnk0T1RSUyByZXBvIGluZm9ybWF0aW9ucy48L0Rlc2NyaXB0aW9uPgogICAgICAgIDxHcm91cD5GcmFtZXdvcms8L0dyb3VwPgogICAgICAgIDxTdWJHcm91cD5Gcm9udGVuZDo6QWdlbnQ8L1N1Ykdyb3VwPgogICAgICAgIDxTZXR0aW5nPgogICAgICAgICAgICA8U3RyaW5nIFJlZ2V4PSIiPktlcm5lbDo6TW9kdWxlczo6Wm51bnk0T1RSU1JlcG88L1N0cmluZz4KICAgICAgICA8L1NldHRpbmc+CiAgICA8L0NvbmZpZ0l0ZW0+CiAgICA8Q29uZmlnSXRlbSBOYW1lPSJabnVueTRPVFJTUHJpdmF0UmVwb3MiIFJlcXVpcmVkPSIwIiBWYWxpZD0iMCI+CiAgICAgICAgPERlc2NyaXB0aW9uIFRyYW5zbGF0YWJsZT0iMSI+RGVmaW5lIHByaXZhdGUgYWRkb24gcmVwb3MuPC9EZXNjcmlwdGlvbj4KICAgICAgICA8R3JvdXA+Wm51bnk0T1RSUy1SZXBvPC9Hcm91cD4KICAgICAgICA8U3ViR3JvdXA+Q29yZTwvU3ViR3JvdXA+CiAgICAgICAgPFNldHRpbmc+CiAgICAgICAgICAgIDxIYXNoPgogICAgICAgICAgICAgICAgPEl0ZW0gS2V5PSJBUEktS0VZIj5NeSBBZGRvbnM8L0l0ZW0+CiAgICAgICAgICAgIDwvSGFzaD4KICAgICAgICA8L1NldHRpbmc+CiAgICA8L0NvbmZpZ0l0ZW0+CiAgICA8Q29uZmlnSXRlbSBOYW1lPSJabnVueTRPVFJTUmVwb1R5cGUiIFJlcXVpcmVkPSIxIiBWYWxpZD0iMSI+CiAgICAgICAgPERlc2NyaXB0aW9uIFRyYW5zbGF0YWJsZT0iMSI+QWNjZXNzIHJlcG9zIHZpYSBodHRwIG9yIGh0dHBzLjwvRGVzY3JpcHRpb24+CiAgICAgICAgPEdyb3VwPlpudW55NE9UUlMtUmVwbzwvR3JvdXA+CiAgICAgICAgPFN1Ykdyb3VwPkNvcmU8L1N1Ykdyb3VwPgogICAgICAgIDxTZXR0aW5nPgogICAgICAgICAgICA8T3B0aW9uIFNlbGVjdGVkSUQ9Imh0dHBzIj4KICAgICAgICAgICAgICAgIDxJdGVtIEtleT0iaHR0cHMiPmh0dHBzPC9JdGVtPgogICAgICAgICAgICAgICAgPEl0ZW0gS2V5PSJodHRwIj5odHRwPC9JdGVtPgogICAgICAgICAgICA8L09wdGlvbj4KICAgICAgICA8L1NldHRpbmc+CiAgICA8L0NvbmZpZ0l0ZW0+Cjwvb3Ryc19jb25maWc+Cg==</File>
+        <File Location="Kernel/Config/Files/Znuny4OTRSRepo.pm" Permission="644" Encode="Base64">CiMgQ29weXJpZ2h0IChDKSAyMDEzIFpudW55IEdtYkgsIGh0dHA6Ly96bnVueS5jb20vCgp1c2Ugc3RyaWN0Owp1c2Ugd2FybmluZ3M7CnVzZSBLZXJuZWw6OlN5c3RlbTo6UGFja2FnZTsKCnVzZSB2YXJzIHF3KEBJU0EpOwoKIyBkaXNhYmxlIHJlZGVmaW5lIHdhcm5pbmdzIGluIHRoaXMgc2NvcGUKewpubyB3YXJuaW5ncyAncmVkZWZpbmUnOwoKc3ViIEtlcm5lbDo6U3lzdGVtOjpQYWNrYWdlOjpfRmlsZVN5c3RlbUNoZWNrIHsKICAgIG15ICggJFNlbGYsICVQYXJhbSApID0gQF87CgogICAgIyBzZXQgbmV3IHBhdiB1cmwKICAgIG15ICRUeXBlID0gJFNlbGYtPntDb25maWdPYmplY3R9LT5HZXQoJ1pudW55NE9UUlNSZXBvVHlwZScpIHx8ICdodHRwcyc7CiAgICAkU2VsZi0+e1BhY2thZ2VWZXJpZnlVUkx9ID0gJFR5cGUgLiAnOi8vcG9ydGFsLnpudW55LmNvbS9hcGkvYWRkb25fcGF2Lyc7CgogICAgbXkgJEhvbWUgPSAkUGFyYW17SG9tZX0gfHwgJFNlbGYtPntIb21lfTsKCiAgICAjIGNoZWNrIEhvbWUKICAgIGlmICggIS1lICRIb21lICkgewogICAgICAgICRTZWxmLT57TG9nT2JqZWN0fS0+TG9nKAogICAgICAgICAgICBQcmlvcml0eSA9PiAnZXJyb3InLAogICAgICAgICAgICBNZXNzYWdlICA9PiAiTm8gc3VjaCBob21lIGRpcmVjdG9yeTogJEhvbWUhIiwKICAgICAgICApOwogICAgICAgIHJldHVybjsKICAgIH0KCiAgICAjIGNyZWF0ZSB0ZXN0IGZpbGVzIGluIGZvbGxvd2luZyBkaXJlY3RvcmllcwogICAgZm9yIChxdygvYmluLyAvS2VybmVsLyAvS2VybmVsL1N5c3RlbS8gL0tlcm5lbC9PdXRwdXQvIC9LZXJuZWwvT3V0cHV0L0hUTUwvIC9LZXJuZWwvTW9kdWxlcy8pKSB7CiAgICAgICAgbXkgJExvY2F0aW9uID0gIiRIb21lLyRfL2NoZWNrX3Blcm1pc3NvbnMuJCQiOwogICAgICAgIG15ICRDb250ZW50ICA9ICd0ZXN0JzsKCiAgICAgICAgIyBjcmVhdGUgdGVzdCBmaWxlCiAgICAgICAgbXkgJFdyaXRlID0gJFNlbGYtPntNYWluT2JqZWN0fS0+RmlsZVdyaXRlKAogICAgICAgICAgICBMb2NhdGlvbiA9PiAkTG9jYXRpb24sCiAgICAgICAgICAgIENvbnRlbnQgID0+IFwkQ29udGVudCwKICAgICAgICApOwoKICAgICAgICAjIHJldHVybiBmYWxzZSBpZiBub3QgY3JlYXRlZAogICAgICAgIHJldHVybiBpZiAhJFdyaXRlOwoKICAgICAgICAjIGRlbGV0ZSB0ZXN0IGZpbGUKICAgICAgICAkU2VsZi0+e01haW5PYmplY3R9LT5GaWxlRGVsZXRlKCBMb2NhdGlvbiA9PiAkTG9jYXRpb24gKTsKICAgIH0KCiAgICByZXR1cm4gMTsKfQoKfQoKMTsK</File>
+    </Filelist>
+</otrs_package>
