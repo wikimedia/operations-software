@@ -54,10 +54,11 @@ function setup_change() {
     popd
     pushd ${EXTDIR}
     rsync -avz --delete ${PROD_DIR}/puppet .
-    for link in etc var; do
-        test -d $link || \
-            ln -s ${PROD_DIR}/$link $link
-    done;
+    test -d var || ln -s ${PROD_DIR}/var var
+    if [ !-d etc ]; then
+        mkdir etc
+        ln -s ${PROD_DIR}/etc/ssl etc/ssl
+    fi;
     popd
     update_change
 }
@@ -66,8 +67,8 @@ function copy_hiera() {
     if [ -f ${HIERA_CONFIG_FILE} ]; then
         HIERADATA_DIR=${PUPPETDIR}/hieradata
         log "Patching and copying the hiera config"
-        sed s,/etc/puppet/hiera,${HIERADATA_DIR}, ${HIERA_CONFIG_FILE} | \
-            sed s,/etc/puppet/private/,${PRIVATEDIR}, -  > ${EXTDIR}/etc/hiera.yaml
+        sed s,/etc/puppet/hieradata,${HIERADATA_DIR}, ${HIERA_CONFIG_FILE} | \
+            sed s,/etc/puppet/private,${PRIVATEDIR}, -  > ${EXTDIR}/etc/hiera.yaml
     fi;
 }
 
