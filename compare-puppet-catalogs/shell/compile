@@ -68,6 +68,7 @@ bundle exec puppet master \
   --confdir $EXTDIR/etc \
   --vardir $EXTDIR/var \
   --masterlog $CATALOG_DIR/master.log \
+  --hiera_config $EXITDIR/etc/hiera.yaml \
   --pluginsync true $COMPILE_OPTIONS\
   --trace \
   --color false \

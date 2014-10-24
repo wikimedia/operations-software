@@ -55,7 +55,7 @@ function setup_change() {
     pushd ${EXTDIR}
     rsync -avz --delete ${PROD_DIR}/puppet .
     test -d var || ln -s ${PROD_DIR}/var var
-    if [ !-d etc ]; then
+    if [ ! -d etc ]; then
         mkdir etc
         ln -s ${PROD_DIR}/etc/ssl etc/ssl
     fi;
