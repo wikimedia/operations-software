@@ -118,10 +118,7 @@ class Term(JunosSlaxBase):
 
         def _GenPorts(endpoint, ports):
             if ports:
-                if len(ports) > 1:
-                    port = '["%s"]' % ' '.join(ports)
-                else:
-                    port = '"%s"' % ' '.join(ports)
+                # FIXME: This only uses the first specified port.
                 from_parts.append('<%s-port> "%s";' % (endpoint, ports[0]))
 
         # What type of traffic are filtering:

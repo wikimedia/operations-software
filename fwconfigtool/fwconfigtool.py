@@ -10,7 +10,6 @@ For a full description of the license, please visit http://www.gnu.org/licenses/
 
 import os
 import sys
-import csv
 import os.path
 import datetime
 import filters
