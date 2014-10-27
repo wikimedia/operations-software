@@ -41,7 +41,7 @@ class DiffParser(object):
             )
             log.debug(cmd)
             return subprocess.check_output(cmd, shell=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             # TODO: logging!
             log.error('Could not create the diffs; command was %s', cmd)
             return ''

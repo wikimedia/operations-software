@@ -45,7 +45,7 @@ import datetime
 from functools import reduce
 
 try:
-    from simplediff import diff, string_diff
+    from simplediff import diff
 except ImportError:
     sys.stderr.write(
         "info: simplediff module not found, only linediff is available\n")
@@ -138,12 +138,12 @@ def linediff(s, t):
         fx, fy = father_coord
         father_val = d[fx][fy][0]
 
-        diff = (cx - fx, cy - fy)
+        reldiff = (cx - fx, cy - fy)
 
-        if diff == (0, 1):
+        if reldiff == (0, 1):
             l1.append("")
             l2.append(DIFFON + t[fy] + DIFFOFF)
-        elif diff == (1, 0):
+        elif reldiff == (1, 0):
             l1.append(DIFFON + s[fx] + DIFFOFF)
             l2.append("")
         elif child_val - father_val == 1:

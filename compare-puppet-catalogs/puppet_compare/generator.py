@@ -3,12 +3,10 @@ import os
 import subprocess
 import shlex
 from collections import defaultdict
-from subprocess import CalledProcessError
 from jinja2 import Environment, PackageLoader
 import requests
 import logging
 import json
-import sys
 import socket
 
 log = logging.getLogger('puppet_compare')
@@ -162,7 +160,6 @@ class NodeDiffPuppetVersions(object):
                 return n.match_physical_nodes(get_nodes())
 
     def on_node_compiled(self, msg):
-        node = msg['data'][0][0]
         self.count += 1
         if not self.count % 5:
             self.update_index()
@@ -303,6 +300,3 @@ class NodeVersionsChange(NodeDiffChange):
         super(NodeVersionsChange, self).__init__(args)
         self.compile_versions = [('2.7', self.change), ('3', self.change)]
         self.mode = 'versions'
-
-if __name__ == '__main__':
-    main()

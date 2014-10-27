@@ -4,6 +4,9 @@ import time
 try:
     # python 2.x
     import Queue as queue
+    # Work around for pyflakes < 0.6.
+    # TODO: Remove when pyflakes has been updated.
+    queue
 except ImportError:
     # python 3.x
     import queue
