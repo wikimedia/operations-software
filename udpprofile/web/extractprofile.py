@@ -5,12 +5,9 @@
 # Copyright (c) 2006 Domas Mituzas
 
 
-import sys
-import os
 import socket
 
 import xml.sax
-from xml.sax import saxutils
 from xml.sax import make_parser
 from xml.sax.handler import feature_namespaces
 

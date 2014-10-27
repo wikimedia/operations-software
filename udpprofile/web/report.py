@@ -16,7 +16,6 @@ import cgi
 import cgitb
 cgitb.enable()
 
-import socket
 import shelve
 
 print "Content-type: text/html"

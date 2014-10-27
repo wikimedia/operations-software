@@ -1,9 +1,7 @@
 #!/usr/bin/python
 import cgi
 import cgitb
-import os
 import rrdtool
-import sys
 
 cgitb.enable()
 

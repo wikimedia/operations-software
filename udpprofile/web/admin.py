@@ -39,8 +39,8 @@ if 'action' not in form:
     if 'sample' in form and authed:
         del store[form['sample']]
 elif form['action'] == 'clear' and authed:
-    from socket import *
-    sock = socket(AF_INET,SOCK_DGRAM)
+    import socket
+    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     sock.sendto('-truncate',(config.host,config.port))
 elif form['action'] == 'take' and authed:
     from extractprofile import SocketProfile
