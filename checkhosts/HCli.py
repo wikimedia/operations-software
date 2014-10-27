@@ -69,7 +69,7 @@ class Cli(object):
             self.hr.displayHosts()
 
     def cliDoSet(self, setCommand):
-        sourceName = command.split()[1]
+        sourceName = setCommand.split()[1]
         if sourceName not in self.knownSources:
             print "Unknown source"
             print HHelp.getSourcesHelp(self.knownSources)

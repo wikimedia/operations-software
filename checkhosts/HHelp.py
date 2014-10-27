@@ -1,4 +1,3 @@
-import os
 import sys
 
 """All methods in this file return help message strings
