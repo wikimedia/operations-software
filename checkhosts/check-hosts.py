@@ -3,7 +3,7 @@ import getopt
 import HHelp
 import HOptions
 import HCli
-from HSources import Source, DecomPuppet, DecomRackTables, Salt, Dsh, Dhcp
+from HSources import Source, DecomPuppet, DecomRackTables, Dsh, Dhcp
 from HSources import Dns, Puppet, PuppetCerts, LogPuppet, PuppetStoredConfigs
 import HFilter
 import HReport
