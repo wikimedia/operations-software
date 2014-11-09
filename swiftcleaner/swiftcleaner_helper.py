@@ -39,7 +39,6 @@ class Token():
             print "getting token excepted with %s" % e
             raise
         authtoken = resp.info()['X-Storage-Token']
-        authurl = resp.info()['X-Storage-Url']
         cls._token = authtoken
         return authtoken
 
@@ -77,7 +76,7 @@ def read_config(conffile, conf):
                 val = (False if val is False or val == 'False' else True)
             conf[opt] = val
         configfh.close()
-    except (IOError, TypeError), e:
+    except (IOError, TypeError):
         # if the conf file doesn't exist, that's cool.  no biggy.
         #print "passing with exp %s" % e
         pass
