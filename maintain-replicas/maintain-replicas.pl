@@ -184,14 +184,14 @@ my %customviews = (
                     ipb_by, ipb_reason, ipb_timestamp, ipb_auto, ipb_anon_only, ipb_create_account,
                     ipb_expiry, if(ipb_auto=0,ipb_range_start,null) as ipb_range_start,
                     if(ipb_auto=0,ipb_range_end,null) as ipb_range_end, ipb_enable_autoblock,
-                    0 as ipb_deleted, ipb_block_email, ipb_by_text, ipb_allow_usertalk, ipb_parent_block_id',
+                    ipb_deleted, ipb_block_email, ipb_by_text, ipb_allow_usertalk, ipb_parent_block_id',
         'where' => 'ipb_deleted=0' },
 
     'ipblocks_ipindex' => {
         'source' => 'ipblocks',
         'view' => 'select ipb_id, ipb_address, ipb_user, ipb_by, ipb_reason, ipb_timestamp,
                     ipb_auto, ipb_anon_only, ipb_create_account, ipb_expiry, ipb_range_start,
-                    ipb_range_end, ipb_enable_autoblock, 0 as ipb_deleted, ipb_block_email,
+                    ipb_range_end, ipb_enable_autoblock, ipb_deleted, ipb_block_email,
                     ipb_by_text, ipb_allow_usertalk, ipb_parent_block_id',
         'where' => 'ipb_deleted=0 and ipb_auto=0' },
 
