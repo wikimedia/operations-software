@@ -74,7 +74,7 @@ my @fullviews = (
     "flaggedpage_config", "flaggedpage_pending", "flaggedpages", "flaggedrevs", "flaggedrevs_promote",
     "flaggedrevs_statistics", "flaggedrevs_stats", "flaggedrevs_stats2", "flaggedrevs_tracking",
     "flaggedtemplates", "geo_killlist", "geo_tags", "geo_updates", "globalimagelinks", "global_block_whitelist",
-    "hashs", "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
+    "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
     "l10n_cache", "langlinks", "links", "localisation", "localisation_file_hash",
     "math", "module_deps", "msg_resource", "msg_resource_links", "namespaces",
     "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
