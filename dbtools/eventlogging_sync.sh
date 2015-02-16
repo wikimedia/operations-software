@@ -38,18 +38,18 @@ for table in $($master $db -e "$querytables $ls"); do
         $dump --no-data $db $table | $slave $db
     fi
 
-    id=$($master $db -e "select min(id) from \`$table\`")
+#    id=$($master $db -e "select min(id) from \`$table\`")
+#
+#    if [ ! $id = "NULL" ]; then
+#        echo -n ", purge < $id"
+#        $slave $db -e "delete from \`$table\` where id < $id order by id limit 100000"
+#    fi
 
-    if [ ! $id = "NULL" ]; then
-        echo -n ", purge < $id"
-        $slave $db -e "delete from \`$table\` where id < $id order by id limit 100000"
-    fi
+    ts=$($slave $db -e "select max(timestamp) from \`$table\`")
 
-    id=$($slave $db -e "select max(id) from \`$table\`")
-
-    if [ ! $id = "NULL" ]; then
-        echo -n ", load > $id"
-        $dumpdata --where="id > $id" $db $table | $slave $db
+    if [ ! $ts = "NULL" ]; then
+        echo -n ", load > $ts"
+        $dumpdata --replace --where="timestamp >= $ts" $db $table | $slave $db
     else
         echo -n ", import"
         $dumpdata $db $table | $slave $db
