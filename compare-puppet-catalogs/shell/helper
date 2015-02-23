@@ -69,7 +69,7 @@ function refresh_prod() {
     popd
     HIERADATA_PROD_DIR=${PROD_PUPPET}/hieradata
     HIERA_PROD_FILE=${PROD_PUPPET}/modules/puppetmaster/files/production.hiera.yaml
-    sed s,/etc/puppet/hieradata,${HIERADATA_DIR}, ${HIERA_PROD_FILE} | \
+    sed s,/etc/puppet/hieradata,${HIERADATA_PROD_DIR}, ${HIERA_PROD_FILE} | \
         sed s,/etc/puppet/private,${PROD_PRIVATE}, -  > ${PROD_DIR}/etc/hiera.yaml
 }
 
