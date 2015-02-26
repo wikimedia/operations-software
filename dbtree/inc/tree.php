@@ -37,7 +37,10 @@ class Tree
         $lag = expect($this->replag, $host_id, 'int', 0);
         $qps = expect($this->qps,    $host_id, 'int', 0);
 
-        $html = tag('div', array(
+        $link_host = sprintf('https://tendril.wikimedia.org/host/view/%s/%d', $host['host'], $host['port']);
+
+        $html = tag('a', array(
+            'href'  => $link_host,
             'html'  => $this->node_describe($host_id),
             'title' => $this->node_instance($host_id),
         ))
