@@ -464,6 +464,8 @@ sub twiddle() {
     $twiddlum = 0  if ++$twiddlum == 4;
 }
 
+my %hosts;
+
 foreach my $slice (keys %slices) {
     my ($dbhost, $dbport) = @{$slices{$slice}};
     $dbh = DBI->connect("DBI:mysql:host=$dbhost;port=$dbport;mysql_enable_utf8=1", $dbuser, $dbpassword, {'RaiseError' => 0});
@@ -538,6 +540,11 @@ foreach my $slice (keys %slices) {
         next if defined $db->{'deleted'};
         next if defined $db->{'private'};
 
+        my $ldb = 'c3';
+        $ldb = 'c2' if $db->{'slice'} =~ m/^s[245]/;
+        $ldb = 'c1' if $db->{'slice'} eq 's1';
+        $hosts{$ldb} = {} unless defined $hosts{$ldb};
+        $hosts{$ldb}->{$dbk} = 1;
         my %fields = (
             'dbname' => quote($dbk),
             'slice' => quote($db->{'slice'}.".labsdb"),
@@ -558,5 +565,19 @@ foreach my $slice (keys %slices) {
     sql("COMMIT;");
     $dbh->disconnect();
 }
+
+$hosts{'c1'}->{'meta'} = 1;
+open H, ">dbs.tmpl" or die "dbs.tmpl: $!\n";
+foreach my $ldb (sort keys %hosts) {
+    my $num = 0;
+    print H "{% set ${ldb}databases = [\n       ";
+    foreach my $db (sort keys %{$hosts{$ldb}}) {
+        print H "\n       " unless $num;
+        print H " '$db',";
+        $num = 0 if ++$num > 3;
+    }
+    print H "\n] %}\n";
+}
+close H;
 
 print "All done.\n";
