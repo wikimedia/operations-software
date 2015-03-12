@@ -74,12 +74,12 @@ my @fullviews = (
     "flaggedpage_config", "flaggedpage_pending", "flaggedpages", "flaggedrevs", "flaggedrevs_promote",
     "flaggedrevs_statistics", "flaggedrevs_stats", "flaggedrevs_stats2", "flaggedrevs_tracking",
     "flaggedtemplates", "geo_killlist", "geo_tags", "geo_updates", "globalimagelinks", "global_block_whitelist",
-    "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
+    "hashs", "hitcounter", "image", "imagelinks", "imagelinks_old", "interwiki", "iwlinks",
     "l10n_cache", "langlinks", "links", "localisation", "localisation_file_hash",
     "math", "module_deps", "msg_resource", "msg_resource_links", "namespaces",
     "page", "page_broken", "pagelinks", "page_props", "page_restrictions", "pagetriage_log",
-    "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags",
-    "protected_titles", 'pr_index', "redirect", 'renameuser_status', "site_identifiers",
+    "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags", "pif_edits", "povwatch_log",
+    "povwatch_subscribers", "protected_titles", 'pr_index', "redirect", 'renameuser_status', "site_identifiers",
     "sites", "site_stats", "tag_summary", "templatelinks", "transcode", "updatelog", "updates",
     "user_daily_contribs", "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log",
     "wikilove_log", 'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
@@ -251,7 +251,7 @@ my %customviews = (
 
     'recentchanges' => {
         'source' => 'recentchanges',
-        'view' => 'select rc_id, rc_timestamp, rc_cur_time, if(rc_deleted&4,null,rc_user) as rc_user,
+        'view' => 'select rc_id, rc_timestamp, if(rc_deleted&4,null,rc_user) as rc_user,
                     if(rc_deleted&4,null,rc_user_text) as rc_user_text, rc_namespace, rc_title,
                     if(rc_deleted&2,null,rc_comment) as rc_comment, rc_minor, rc_bot, rc_new, rc_cur_id,
                     rc_this_oldid, rc_last_oldid, rc_type, rc_source, rc_patrolled, null as rc_ip,
@@ -259,7 +259,7 @@ my %customviews = (
 
     'recentchanges_userindex' => {
         'source' => 'recentchanges',
-        'view' => 'select rc_id, rc_timestamp, rc_cur_time, rc_user,
+        'view' => 'select rc_id, rc_timestamp, rc_user,
                     rc_user_text, rc_namespace, rc_title,
                     if(rc_deleted&2,null,rc_comment) as rc_comment, rc_minor, rc_bot, rc_new, rc_cur_id,
                     rc_this_oldid, rc_last_oldid, rc_type, rc_source, rc_patrolled, null as rc_ip,
@@ -364,7 +364,7 @@ dbprop "private", "private", 1;
 dbprop "special", "family", "special";
 dbprop "echowikis", "has_echo", 1;
 dbprop "flaggedrevs", "has_flaggedrevs", 1;
-dbprop "visualeditor", "has_visualeditor", 1;
+dbprop "visualeditor-default", "has_visualeditor", 1;
 dbprop "wikidataclient", "has_wikidata", 1;
 for my $slice ('s1', 's2', 's3', 's4', 's5', 's6', 's7') {
     dbprop $slice, "slice", $slice;
