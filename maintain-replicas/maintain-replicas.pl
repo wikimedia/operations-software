@@ -559,6 +559,7 @@ foreach my $slice (keys %slices) {
         $fields{'lang'} = quote($db->{lang}) if defined $db->{'lang'};
         $fields{'name'} = quote($db->{name}) if defined $db->{'lang'};
         $fields{'is_closed'} = quote($db->{'closed'}) if defined $db->{'closed'};
+        $fields{'size'} = quote($db->{'size'}) if defined $db->{'size'};
         my $q = "INSERT INTO meta_p.wiki(".join(',',keys %fields).") VALUES (".join(',',values %fields).");";
         sql($q);
     }
