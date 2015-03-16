@@ -386,6 +386,12 @@ $db{'centralauth'} = {
     'slice' => 's7',
 };
 
+# Sadly, case sensitivity of titles isn't in a .dblist, nor is it
+# exposed through the API so we have to hardcode it here to match
+# what is in InitialiseSettings.php
+dbprop "wiktionary", "sensitive", 1;
+$db{'jbowiki'}->{'sensitive'} = 1;
+
 open IS, "<wmf-config/InitialiseSettings.php" or die "InitializeSettings.php: $!\n";
 my $curvar = undef;
 my %canonical;
@@ -541,7 +547,8 @@ foreach my $slice (sort keys %slices) {
         has_echo numeric(1) NOT NULL DEFAULT 0,
         has_flaggedrevs numeric(1) NOT NULL DEFAULT 0,
         has_visualeditor numeric(1) NOT NULL DEFAULT 0,
-        has_wikidata numeric(1) NOT NULL DEFAULT 0);")
+        has_wikidata numeric(1) NOT NULL DEFAULT 0,
+        is_sensitive numeric(1) NOT NULL DEFAULT 0);")
       if sql("SELECT table_name FROM information_schema.tables
               WHERE table_name='wiki' AND table_schema='meta_p';") == 0;
     sql("CREATE OR REPLACE VIEW meta_p.legacy AS
@@ -582,6 +589,7 @@ foreach my $slice (sort keys %slices) {
         $fields{'lang'} = quote($db->{lang}) if defined $db->{'lang'};
         $fields{'name'} = quote($db->{name}) if defined $db->{'lang'};
         $fields{'is_closed'} = quote($db->{'closed'}) if defined $db->{'closed'};
+        $fields{'is_sensitive'} = quote($db->{'sensitive'}) if defined $db->{'sensitive'};
         $fields{'size'} = quote($db->{'size'}) if defined $db->{'size'};
         my $q = "INSERT INTO meta_p.wiki(".join(',',keys %fields).") VALUES (".join(',',values %fields).");";
         sql($q);
