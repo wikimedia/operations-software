@@ -83,8 +83,8 @@ my @fullviews = (
     "sites", "site_stats", "tag_summary", "templatelinks", "transcode", "updatelog", "updates",
     "user_daily_contribs", "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log",
     "wikilove_log", 'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
-    'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wb_entity_per_page',
-    'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
+    'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wbs_propertypairs',
+    'wb_entity_per_page', 'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
 );
 
 my %customviews = (
@@ -105,7 +105,7 @@ my %customviews = (
     'aft_article_feedback' => {
         'source' => 'aft_article_feedback',
         'view' => 'select af_id, af_page_id, af_user_id, NULL as af_user_ip, af_user_anon_token,
-                    af_revision_id, af_bucket_id, af_cta_id, af_link_id, af_created, af_abuse_count,
+                    af_revision_id, af_cta_id, af_link_id, af_created, af_abuse_count,
                     af_helpful_count, af_unhelpful_count, af_oversight_count, af_is_deleted,
                     af_is_hidden, af_net_helpfulness, af_has_comment, af_is_unhidden, af_is_undeleted,
                     af_is_declined, af_activity_count, af_form_id, af_experiment, af_suppress_count,
@@ -308,7 +308,14 @@ my %customviews = (
         'view' => 'select up_user, up_property, up_value',
         'where' => "up_property in ( 'disablemail', 'fancysig', 'gender',
                         'language', 'nickname', 'skin', 'timecorrection',
-                        'variant' )", }
+                        'variant' )", },
+
+    'user_properties_anon' => {
+        'limit' => 2,
+        'source' => [ 'user_properties', 'user', 'meta_p.properties_anon_whitelist' ],
+        'view' => 'select cast(extract(year_month from user_touched)*100+1 as date) upa_touched,
+                    up_property, up_value',
+        'where' => 'user_id=up_user and up_property like pw_property', },
 
 );
 
@@ -466,7 +473,7 @@ sub twiddle() {
 
 my %hosts;
 
-foreach my $slice (keys %slices) {
+foreach my $slice (sort keys %slices) {
     my ($dbhost, $dbport) = @{$slices{$slice}};
     $dbh = DBI->connect("DBI:mysql:host=$dbhost;port=$dbport;mysql_enable_utf8=1", $dbuser, $dbpassword, {'RaiseError' => 0});
     sql("SET NAMES 'utf8';");
@@ -488,23 +495,34 @@ foreach my $slice (keys %slices) {
                 sql($q);
             }
         }
-        foreach my $view (keys %customviews) {
+        VIEW: foreach my $view (keys %customviews) {
             twiddle;
-            my $q = "SELECT table_name FROM information_schema.tables "
-                  . "WHERE table_name='".$customviews{$view}->{'source'}."' and table_schema='$dbk';";
-            if(sql($q) == 1) {
-                $q = "SELECT table_name FROM information_schema.views "
-                   . "WHERE table_name='$view' and table_schema='${dbk}_p';";
-                next if sql($q) == 1 and not defined $update{$view};
-                print "[$view] ";
-                $q = "CREATE OR REPLACE DEFINER=viewmaster VIEW ${dbk}_p.$view AS "
-                   . $customviews{$view}->{'view'}
-                   . " FROM ${dbk}." . $customviews{$view}->{'source'};
-                $q .= " WHERE " . $customviews{$view}->{'where'} if defined $customviews{$view}->{'where'};
-                $q =~ s/\s+/ /g;
-                $q .= ";";
-                sql($q);
+            my $source = $customviews{$view}->{'source'};
+            my @sources;
+            
+            next if ($customviews{$view}->{'limit'}//1) > ($db{$dbk}->{'size'}//1);
+
+            my $q = "SELECT table_name FROM information_schema.views "
+                . "WHERE table_name='$view' and table_schema='${dbk}_p';";
+            next if sql($q) == 1 and not defined $update{$view};
+
+            foreach ((ref($source) eq 'ARRAY')? @$source: $source) {
+                die "Odd table source '$_'\n" unless m/^(?:(.*)\.)?([^.]+)$/;
+                my($db, $table) = ($1, $2);
+                $db = $dbk unless defined $db;
+                my $q = "SELECT table_name FROM information_schema.tables "
+                      . "WHERE table_name='$table' and table_schema='$db';";
+                next VIEW unless sql($q) == 1;
+                push @sources, "$db.$table";
             }
+            print "[$view] ";
+            $q = "CREATE OR REPLACE DEFINER=viewmaster VIEW ${dbk}_p.$view AS "
+               . $customviews{$view}->{'view'}
+               . " FROM " . join(',', @sources);
+            $q .= " WHERE " . $customviews{$view}->{'where'} if defined $customviews{$view}->{'where'};
+            $q =~ s/\s+/ /g;
+            $q .= ";";
+            sql($q);
         }
         print " \n";
     }
@@ -524,12 +542,17 @@ foreach my $slice (keys %slices) {
         has_flaggedrevs numeric(1) NOT NULL DEFAULT 0,
         has_visualeditor numeric(1) NOT NULL DEFAULT 0,
         has_wikidata numeric(1) NOT NULL DEFAULT 0);")
-      if sql("SELECT table_name FROM information_schema.tables WHERE table_name='wiki' AND table_schema='meta_p';") == 0;
+      if sql("SELECT table_name FROM information_schema.tables
+              WHERE table_name='wiki' AND table_schema='meta_p';") == 0;
     sql("CREATE OR REPLACE VIEW meta_p.legacy AS
         SELECT dbname, lang, family, NULL AS domain, size, 0 AS is_meta,
                is_closed, 0 AS is_multilang, (family='wiktionary') AS is_sensitive,
                NULL AS root_category, slice AS server, '/w/' AS script_path
             FROM meta_p.wiki;");
+    sql("CREATE TABLE meta_p.properties_anon_whitelist (
+        pw_property varbinary(255) PRIMARY KEY);")
+      if sql("SELECT table_name FROM information_schema.tables
+              WHERE table_name='properties_anon_whitelist' AND table_schema='meta_p';") == 0;
     sql("START TRANSACTION;");
     sql("DELETE FROM meta_p.wiki;");
     foreach my $dbk (keys %db) {
@@ -563,6 +586,11 @@ foreach my $slice (keys %slices) {
         my $q = "INSERT INTO meta_p.wiki(".join(',',keys %fields).") VALUES (".join(',',values %fields).");";
         sql($q);
     }
+    sql("COMMIT;");
+    sql("START TRANSACTION;");
+    sql("DELETE FROM meta_p.properties_anon_whitelist;");
+    # This is hardcoded for now
+    sql("INSERT INTO meta_p.properties_anon_whitelist VALUES ('gadget-%');");
     sql("COMMIT;");
     $dbh->disconnect();
 }
