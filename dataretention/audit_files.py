@@ -3214,13 +3214,19 @@ class LocalClientPlus(salt.client.LocalClient):
           grep '{' | mawk -F"'" '{ print $2 }'
         '''
         arg = LocalClientPlus.condition_kwarg(arg, kwarg)
-        pub_data = self.run_job(tgt, fun, arg, expr_form, ret,
-                                timeout, **kwargs)
+        job = self.run_job(tgt, fun, arg, expr_form, ret,
+                           timeout, **kwargs)
 
-        if not pub_data:
+        if not job:
             return []
         else:
-            return list(set(pub_data['minions']))
+            time.sleep(3)
+            hosts = []
+            returned = self.get_cli_returns(job['jid'], set(job['minions']))
+            for resp in returned:
+                for host in resp:
+                    hosts.append(host)
+            return list(set(hosts))
 
 
 class Runner(object):
