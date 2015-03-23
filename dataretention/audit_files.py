@@ -3054,6 +3054,8 @@ class Config(object):
         'rotate_basedir': "/etc/logrotate.d",
         'rotate_mainconf': "/etc/logrotate.conf",
 
+        'mysqlconf': "/etc/mysql/my.cnf",
+
         # ignore these
         'ignored_dirs': {
             '*':
@@ -3102,6 +3104,9 @@ class Config(object):
              "salt", "samba", "smokeping/images", "svnusers", "yum"],
 
             '/a/sqldata':
+            ["*"],
+
+            '/srv/sqldata':
             ["*"],
 
             '/a/search':
@@ -4523,14 +4528,77 @@ def executor():
             if os.path.isfile(pathname):
                 rotated_logs.update(LogsAuditor.parse_logrotate_contents(
                     open(pathname).read(), default_freq, default_keep))
-
         return rotated_logs
+
+    def check_mysqlconf(self):
+        '''
+        check how long mysql logs are kept around
+        '''
+        # note that I also see my.cnf.s3 and we don't check those (yet)
+        try:
+            contents = open(Config.cf['mysqlconf']).read()
+        except:
+            # file or directory probably doesn't exist
+            return ''
+        lines = contents.split('\n')
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('datadir'):
+                fields = line.split('=',1)
+                fields = [field.strip() for field in fields]
+                if fields[0] != 'datadir':
+                    continue
+                if not fields[1].startswith('/'):
+                    continue
+                datadir = fields[1]
+                # strip trailing slash if needed
+                if len(datadir) > 1 and datadir.endswith('/'):
+                    datadir = datadir[:-1]
+                # we can skip all bin logs, relay logs, and pid files in this
+                # directory. anything else should get looked at.
+                if '.' in self.hostname:
+                    hostname = self.hostname.split('.')[0]
+                else:
+                    hostname = self.hostname
+                ignore_these = [hostname + '-bin', hostname + '-relay-bin',
+                                hostname + '.pid', hostname + '-bin.index',
+                                hostname + '-relay-bin.index']
+
+                # add these files to ignore list; a one line report on
+                # mysql log expiry configuration is sufficient
+                if datadir not in self.ignored['files']:
+                    self.ignored['files'][datadir] = ignore_these
+                else:
+                    self.ignored['files'][datadir].extend(ignore_these)
+
+            if line.startswith('expire_logs_days'):
+                fields = line.split('=',1)
+                fields = [field.strip() for field in fields]
+                if fields[0] != 'expire_logs_days':
+                    continue
+                if not fields[1].isdigit():
+                    continue
+                if int(fields[1]) > Config.cf['cutoff']/86400:
+                    return ('WARNING: mysql logs expired after %s days'
+                            % fields[1])
+                else:
+                    return ''
+        # if we don't find the entry, the default value is '0'
+        # which means logs are never expired
+        return 'WARNING: mysql logs never expired'
 
     def do_local_audit(self):
         '''
         note that no summary report is done for a  single host,
         for logs we summarize across hosts
         '''
+        mysql_issues = self.check_mysqlconf()
+        result = []
+        if mysql_issues:
+            result.append(mysql_issues)
+
         open_files = FilesAuditor.get_open_files()
         rotated = self.find_rotated_logs()
 
@@ -4544,7 +4612,6 @@ def executor():
 
         all_files_sorted = sorted(all_files,
                                   key=lambda f: all_files[f].path)
-        result = []
         last_log_normalized = ''
         last_log = ''
         age = 0
