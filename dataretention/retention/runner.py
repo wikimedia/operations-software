@@ -63,8 +63,25 @@ class Runner(object):
 
             # try to work around a likely race condition in zmq/salt
             # time.sleep(5)
+
+            # step one: have them pick up the config files
+            # fixme only copy if exists, check returns
+            new_result = client.cmd_full_return(hosts, 'cp.get_file',
+                                                ['salt://audits/retention/configs/{{grains.fqdn}}_store.py',
+                                                 "/srv/audits/retention/configs/{{grains.fqdn}}_store.cf",
+                                                 'template=jinja'], expr_form='list')
+            # fixme only copy if exists, check returns
+            # fixme this content should be ordered by host instead of by ignore-list type
+            # and split into separate files just as the previous files are
+            new_result = client.cmd_full_return(hosts, 'cp.get_file',
+                                                ['salt://audits/retention/configs/allhosts_file.py',
+                                                 "/srv/audits/retention/configs/allhosts_file.cf",
+                                                 'template=jinja'], expr_form='list')
+            print "salt-copy (2):", new_result
+
             new_result = client.cmd(hosts, "cmd.exec_code", ["python2", code],
                                     expr_form='list', timeout=self.timeout)
+
             if new_result is not None:
                 result.update(new_result)
             # fixme, collect and report on hosts that did

@@ -237,9 +237,9 @@ class FilesAuditor(object):
 
     def set_up_perhost_rules(self):
         self.perhost_rules_from_store = runpy.run_path(
-            '/srv/salt/audits/retention/configs/%s_store.py' % self.hostname)['rules']
+            '/srv/audits/retention/configs/%s_store.cf' % self.hostname)['rules']
         self.perhost_rules_from_file = runpy.run_path(
-            '/srv/salt/audits/retention/configs/allhosts_file.py')['perhostcf']
+            '/srv/audits/retention/configs/allhosts_file.cf')['perhostcf']
 
         if self.perhost_rules_from_store is not None:
             self.add_perhost_rules_to_ignored()
