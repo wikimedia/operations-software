@@ -48,7 +48,7 @@ class Runner(object):
                 self.hosts, "test.ping", expr_form=self.hosts_expr_type)
         code = "# -*- coding: utf-8 -*-\n"
         code += self.generate_executor()
-        with open(__file__, 'r') as fp_:
+        with open('/srv/audits/retention/scripts/data_auditor.py', 'r') as fp_:
             code += fp_.read()
 
         hostbatches = [self.expanded_hosts[i: i + Config.cf['batchsize']]

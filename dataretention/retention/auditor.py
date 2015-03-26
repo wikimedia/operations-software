@@ -21,24 +21,10 @@ from retention.rule import Rule, RuleStore
 from retention.config import Config
 from retention.fileinfo import FileInfo, LogInfo, LogUtils
 from retention.utils import JsonHelper
+from retention.runner import Runner
 
 global_keys = [key for key, value_unused in
                sys.modules[__name__].__dict__.items()]
-
-if 'PerHostConfig' not in global_keys:
-    class PerHostConfig(object):
-        # placeholder like the executor above, this class is
-        # generated on the salt master and passed with script
-        # code to the clients
-        perhostcf = None
-
-if 'PerHostRules' not in global_keys:
-    class PerHostRules(object):
-        # placeholder like the executor above, this class is
-        # generated on the salt master and passed with script
-        # code to the clients
-        rules = None
-        compressed = None
 
 def get_dirs_toexamine(host_report):
     '''
@@ -169,17 +155,21 @@ class FilesAuditor(object):
                              self.timeout,
                              self.verbose)
 
-        self.perhost_rules_from_file = PerHostConfig.perhostcf
+        if 'PerHostConfig' in global_keys:
+            self.perhost_rules_from_file = PerHostConfig.perhostcf
+        else:
+            self.perhost_rules_from_file = None
         self.perhost_raw = None
         if self.perhost_rules_from_file is None:
-            if os.path.exists('audit_files_perhost_config.py'):
-                try:
-                    self.perhost_rules_from_file = runpy.run_path(
-                        'audit_files_perhost_config.py')['perhostcf']
-                    self.perhost_raw = open(
-                        'audit_files_perhost_config.py').read()
-                except:
-                    pass
+            if not retention.utils.running_locally(self.hosts_expr):
+                if os.path.exists('/srv/audits/retention/scripts/audit_files_perhost_config.py'):
+                    try:
+                        self.perhost_rules_from_file = runpy.run_path(
+                            '/srv/audits/retention/scripts/audit_files_perhost_config.py')['perhostcf']
+                        self.perhost_raw = open(
+                            '/srv/audits/retention/scripts/audit_files_perhost_config.py').read()
+                    except:
+                        pass
 
         if retention.utils.running_locally(self.hosts_expr):
             self.set_up_perhost_rules()
@@ -246,11 +236,16 @@ class FilesAuditor(object):
             self.dirs_to_check = None
 
     def set_up_perhost_rules(self):
-        self.perhost_rules_from_store = PerHostRules.rules
-        if self.perhost_rules_from_store is None:
-            self.perhost_rules_compressed = PerHostRules.compressed
-            if self.perhost_rules_compressed is not None:
-                self.decompress_perhost_rules()
+        self.perhost_rules_from_store = runpy.run_path(
+            '/srv/audits/retention/configs/%s_store.py' % self.hostname)['rules']
+        self.perhost_rules_from_file = runpy.run_path(
+            '/srv/audits/retention/configs/allhosts_file.py')['perhostcf']
+
+#        self.perhost_rules_from_store = PerHostRules.rules
+#        if self.perhost_rules_from_store is None:
+#            self.perhost_rules_compressed = PerHostRules.compressed
+#            if self.perhost_rules_compressed is not None:
+#                self.decompress_perhost_rules()
 
         if self.perhost_rules_from_store is not None:
             self.add_perhost_rules_to_ignored()
@@ -401,26 +396,27 @@ class FilesAuditor(object):
         code = code + indent + "rules = None\n\n"
         return code
 
-    def get_perhost_rules_normal_code(self, indent):
+    def write_perhost_rules_normal_code(self, indent):
         rules = self.get_perhost_rules_as_json()
-        print "rules is", rules
 
-        code = "\n\nclass PerHostRules(object):\n" + indent + "rules = {}\n\n"
         for host in rules:
-            code += indent + "rules['%s'] = [\n" % host
-            code += (indent + indent +
+            rulescode = "rules = {}\n\n"
+            rulescode += "rules['%s'] = [\n" % host
+            rulescode += (indent +
                      (",\n%s" % (indent + indent)).join(rules[host]) + "\n")
-            code += indent + "]\n"
-        return code
+            rulescode += "]\n"
 
-    def generate_other_code(self):
+            with open("/srv/audits/retention/configs/%s_store.py" % host, "w+") as fp:
+                fp.write(rulescode)
+                fp.close()
+
+    def write_rules_for_minion(self):
         indent = "    "
-        code = self.get_perhost_rules_compressed_code(indent)
-
+        self.write_perhost_rules_normal_code(indent)
         if self.perhost_raw is not None:
-            code += ("\n\nclass PerHostConfig(object):\n" +
-                     indent + self.perhost_raw + "\n\n")
-        return code
+            with open("/srv/audits/retention/configs/allhosts_file.py", "w+") as fp:
+                fp.write(self.perhost_raw)
+                fp.close()
 
     def generate_executor(self):
         code = ("""
@@ -440,7 +436,8 @@ def executor():
                  self.timeout,
                  self.MAX_FILES))
 
-        code += self.generate_other_code()
+        self.write_rules_for_minion()
+
         return code
 
     def show_ignored(self, basedirs):
@@ -1166,7 +1163,8 @@ def executor():
                   if self.ignore_also is not None else "None"),
                  self.timeout, self.MAX_FILES))
 
-        code += self.generate_other_code()
+        self.write_rules_for_minion()
+
         return code
 
     @staticmethod
@@ -1694,7 +1692,8 @@ def executor():
                  self.timeout,
                  self.MAX_FILES))
 
-        code += self.generate_other_code()
+        self.write_rules_for_minion()
+
         return code
 
     def display_host_summary(self):
@@ -1757,78 +1756,3 @@ def executor():
             summary[dirname][group]['odd_owner'] += 1
 
 
-class Runner(object):
-    '''
-    Manage running current script remotely via salt on one or more hosts
-    '''
-
-    def __init__(self, hosts_expr, expanded_hosts,
-                 audit_type, generate_executor,
-                 show_sample_content=False, to_check=None,
-                 timeout=30, verbose=False):
-        self.hosts_expr = hosts_expr
-        self.expanded_hosts = expanded_hosts
-        self.hosts, self.hosts_expr_type = Runner.get_hosts_expr_type(
-            self.hosts_expr)
-        self.audit_type = audit_type
-        self.generate_executor = generate_executor
-        self.show_sample_content = show_sample_content
-        self.to_check = to_check
-        self.timeout = timeout
-        self.verbose = verbose
-
-    def run_remotely(self):
-        '''
-        run the current script on specified remote hosts
-        '''
-
-        client = LocalClientPlus()
-
-        if self.expanded_hosts is None:
-            self.expanded_hosts = client.cmd_expandminions(
-                self.hosts, "test.ping", expr_form=self.hosts_expr_type)
-        code = "# -*- coding: utf-8 -*-\n"
-        code += self.generate_executor()
-#        with open(__file__, 'r') as fp_:
-        with open('/srv/audits/retention/scripts/data_auditor.py', 'r') as fp_:
-            code += fp_.read()
-
-        hostbatches = [self.expanded_hosts[i: i + Config.cf['batchsize']]
-                       for i in range(0, len(self.expanded_hosts),
-                                      Config.cf['batchsize'])]
-
-        result = {}
-        for hosts in hostbatches:
-            if self.verbose:
-                sys.stderr.write("INFO: running on hosts\n")
-                sys.stderr.write(','.join(hosts) + '\n')
-
-            # try to work around a likely race condition in zmq/salt
-            # time.sleep(5)
-            new_result = client.cmd(hosts, "cmd.exec_code", ["python2", code],
-                                    expr_form='list', timeout=self.timeout)
-            if new_result is not None:
-                result.update(new_result)
-            # fixme, collect and report on hosts that did
-            # not respond
-        return result
-
-    @staticmethod
-    def get_hosts_expr_type(hosts_expr):
-        '''
-        return the type of salt host expr and stash
-        the converted expression as well
-        '''
-
-        if hosts_expr.startswith('grain:'):
-            hosts = hosts_expr[6:]
-            return hosts, 'grain'
-        elif hosts_expr.startswith('pcre:'):
-            hosts = hosts_expr[5:]
-            return hosts, 'pcre'
-        elif hosts_expr.startswith('list:'):
-            hosts = hosts_expr[5:].split(',')
-            return hosts, 'list'
-        else:
-            hosts = hosts_expr
-            return hosts, 'glob'  # default
