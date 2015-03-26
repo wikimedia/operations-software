@@ -237,15 +237,9 @@ class FilesAuditor(object):
 
     def set_up_perhost_rules(self):
         self.perhost_rules_from_store = runpy.run_path(
-            '/srv/audits/retention/configs/%s_store.py' % self.hostname)['rules']
+            '/srv/salt/audits/retention/configs/%s_store.py' % self.hostname)['rules']
         self.perhost_rules_from_file = runpy.run_path(
-            '/srv/audits/retention/configs/allhosts_file.py')['perhostcf']
-
-#        self.perhost_rules_from_store = PerHostRules.rules
-#        if self.perhost_rules_from_store is None:
-#            self.perhost_rules_compressed = PerHostRules.compressed
-#            if self.perhost_rules_compressed is not None:
-#                self.decompress_perhost_rules()
+            '/srv/salt/audits/retention/configs/allhosts_file.py')['perhostcf']
 
         if self.perhost_rules_from_store is not None:
             self.add_perhost_rules_to_ignored()
@@ -317,25 +311,6 @@ class FilesAuditor(object):
                             continue
                 break
 
-    def decompress_perhost_rules(self):
-        '''
-        we compress rules from the rule store before sending
-        them to the remote host vi salt, it's much more reliable
-        so the client must uncompress them
-        '''
-        rules_json_string = zlib.decompress(base64.b64decode(
-            self.perhost_rules_compressed))
-        rules_json_dict = json.loads(rules_json_string,
-                                     object_hook=JsonHelper.decode_dict)
-        self.perhost_rules_from_store = {}
-        for host in rules_json_dict:
-            if host not in self.perhost_rules_from_store:
-                self.perhost_rules_from_store[host] = []
-            for rule in rules_json_dict[host]:
-                self.perhost_rules_from_store[host].append(
-                    json.loads(rule,
-                               object_hook=JsonHelper.decode_dict))
-
     def get_perhost_rules_as_json(self):
         '''
         this reads from the data_retention.d directory files for the minions
@@ -380,22 +355,6 @@ class FilesAuditor(object):
                                 rules[host].append(rule)
         return rules
 
-    def get_perhost_rules_compressed_code(self, indent):
-        '''
-        piece of the code that will be fed to salt and run on the
-        remote hosts; this provides the rules for the host
-        retrieved from the rules store db, in compressed format
-        '''
-        rules_json_dict = self.get_perhost_rules_as_json()
-        rules_json_string = json.dumps(rules_json_dict)
-        rules_json_compressed = zlib.compress(rules_json_string, 9)
-        rules_json_b64 = base64.b64encode(rules_json_compressed)
-
-        code = "\n\nclass PerHostRules(object):\n"
-        code = code + indent + "compressed = '" + rules_json_b64 + "'\n"
-        code = code + indent + "rules = None\n\n"
-        return code
-
     def write_perhost_rules_normal_code(self, indent):
         rules = self.get_perhost_rules_as_json()
 
@@ -406,7 +365,7 @@ class FilesAuditor(object):
                      (",\n%s" % (indent + indent)).join(rules[host]) + "\n")
             rulescode += "]\n"
 
-            with open("/srv/audits/retention/configs/%s_store.py" % host, "w+") as fp:
+            with open("/srv/salt/audits/retention/configs/%s_store.py" % host, "w+") as fp:
                 fp.write(rulescode)
                 fp.close()
 
@@ -414,7 +373,7 @@ class FilesAuditor(object):
         indent = "    "
         self.write_perhost_rules_normal_code(indent)
         if self.perhost_raw is not None:
-            with open("/srv/audits/retention/configs/allhosts_file.py", "w+") as fp:
+            with open("/srv/salt/audits/retention/configs/allhosts_file.py", "w+") as fp:
                 fp.write(self.perhost_raw)
                 fp.close()
 
