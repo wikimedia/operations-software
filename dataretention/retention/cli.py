@@ -8,18 +8,18 @@ import atexit
 import traceback
 import salt.client
 
-sys.path.append('/home/ariel/src/wmf/git-ops-software/software/dataretention')
+sys.path.append('/srv/audits/retention/scripts/')
 
-from status import Status
-from rule import Rule, RuleStore
-import auditor
-from auditor import FilesAuditor, HomesAuditor, LogsAuditor
-from fileinfo import FileInfo
-import utils
-from utils import JsonHelper
-from runner import Runner
-from config import Config
-from examiner import DirExaminer, FileExaminer
+from retention.status import Status
+from retention.rule import Rule, RuleStore
+import retention.auditor
+from retention.auditor import FilesAuditor, HomesAuditor, LogsAuditor
+from retention.fileinfo import FileInfo
+import retention.utils
+from retention.utils import JsonHelper
+from retention.runner import Runner
+from retention.config import Config
+from retention.examiner import DirExaminer, FileExaminer
 
 class LocalIgnores(object):
     '''
@@ -43,7 +43,7 @@ class LocalIgnores(object):
 
         local_ignores = {}
 
-        if utils.running_locally(self.host):
+        if retention.utils.running_locally(self.host):
             local_ignores = HomesAuditor.get_local_ignores(self.locations)
             output = json.dumps(local_ignores)
             print output
@@ -365,13 +365,13 @@ class CommandLine(object):
             self.get_perhost_ignores_from_rules([host])
 
         if Runner.running_locally(self.host):
-            self.dirs_problem, self.dirs_skipped = auditor.get_dirs_toexamine(report)
+            self.dirs_problem, self.dirs_skipped = retention.auditor.get_dirs_toexamine(report)
         else:
             if host not in report:
                 self.dirs_problem = None
                 self.dirs_skipped = None
             else:
-                self.dirs_problem, self.dirs_skipped = auditor.get_dirs_toexamine(report[host])
+                self.dirs_problem, self.dirs_skipped = retention.auditor.get_dirs_toexamine(report[host])
         if self.dirs_problem is None and self.dirs_skipped is None:
             print "No report available from this host"
         elif len(self.dirs_problem) == 0 and len(self.dirs_skipped) == 0:

@@ -1,9 +1,9 @@
 import sys
 
-sys.path.append('/home/ariel/src/wmf/git-ops-software/software/dataretention')
+sys.path.append('/srv/audits/retention/scripts/')
 
-from saltclientplus import LocalClientPlus
-from config import Config
+from retention.saltclientplus import LocalClientPlus
+from retention.config import Config
 
 class Runner(object):
     '''

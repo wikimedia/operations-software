@@ -3,12 +3,12 @@ import sys
 import stat
 import json
 
-sys.path.append('/home/ariel/src/wmf/git-ops-software/software/dataretention')
+sys.path.append('/srv/audits/retention/scripts/')
 
-from saltclientplus import LocalClientPlus
-import utils
-from utils import JsonHelper
-from fileinfo import FileInfo, EntryInfo
+from retention.saltclientplus import LocalClientPlus
+import retention.utils
+from retention.utils import JsonHelper
+from retention.fileinfo import FileInfo, EntryInfo
 
 
 class FileExaminer(object):
@@ -26,7 +26,7 @@ class FileExaminer(object):
         '''
         do all the work
         '''
-        if utils.running_locally(self.host):
+        if retention.utils.running_locally(self.host):
             finf = FileInfo(self.path, None)
             if finf.get_is_binary(self.num_lines):
                 result = "BINARY CONTENT\n"
@@ -202,7 +202,7 @@ class DirExaminer(object):
         maybe we want to fix that
         '''
 
-        if utils.running_locally(self.host):
+        if retention.utils.running_locally(self.host):
             dcont = DirContents(self.path, self.batchno, self.batchsize,
                              self.prettyprint)
             result = dcont.get_contents()

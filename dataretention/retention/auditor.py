@@ -11,17 +11,16 @@ import locale
 import zlib
 import base64
 
-# workaround system version of magic
-sys.path = ['/srv/audits/retention/scripts'] + sys.path
+sys.path.append('/srv/audits/retention/scripts/')
 
-import utils
-import magic
-from status import Status
-from saltclientplus import LocalClientPlus
-from rule import Rule, RuleStore
-from config import Config
-from fileinfo import FileInfo, LogInfo, LogUtils
-from utils import JsonHelper
+import retention.utils
+import retention.magic
+from retention.status import Status
+from retention.saltclientplus import LocalClientPlus
+from retention.rule import Rule, RuleStore
+from retention.config import Config
+from retention.fileinfo import FileInfo, LogInfo, LogUtils
+from retention.utils import JsonHelper
 
 global_keys = [key for key, value_unused in
                sys.modules[__name__].__dict__.items()]
@@ -153,7 +152,7 @@ class FilesAuditor(object):
 
         self.cutoff = Config.cf['cutoff']
 
-        if not utils.running_locally(self.hosts_expr):
+        if not retention.utils.running_locally(self.hosts_expr):
             client = LocalClientPlus()
             hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
             self.expanded_hosts = client.cmd_expandminions(
@@ -182,10 +181,10 @@ class FilesAuditor(object):
                 except:
                     pass
 
-        if utils.running_locally(self.hosts_expr):
+        if retention.utils.running_locally(self.hosts_expr):
             self.set_up_perhost_rules()
 
-        if not utils.running_locally(self.hosts_expr):
+        if not retention.utils.running_locally(self.hosts_expr):
             self.cdb = RuleStore(self.store_filepath)
             self.cdb.store_db_init(self.expanded_hosts)
             self.set_up_and_export_rule_store()
@@ -195,7 +194,7 @@ class FilesAuditor(object):
         self.show_ignored(Config.cf[self.locations])
 
         self.today = time.time()
-        self.magic = magic.magic_open(magic.MAGIC_NONE)
+        self.magic = retention.magic.magic_open(retention.magic.MAGIC_NONE)
         self.magic.load()
         self.summary = None
         self.display_from_dict = FileInfo.display_from_dict
@@ -404,6 +403,7 @@ class FilesAuditor(object):
 
     def get_perhost_rules_normal_code(self, indent):
         rules = self.get_perhost_rules_as_json()
+        print "rules is", rules
 
         code = "\n\nclass PerHostRules(object):\n" + indent + "rules = {}\n\n"
         for host in rules:
@@ -445,7 +445,7 @@ def executor():
 
     def show_ignored(self, basedirs):
         if self.verbose:
-            if not utils.running_locally(self.hosts_expr):
+            if not retention.utils.running_locally(self.hosts_expr):
                 sys.stderr.write(
                     "INFO: The below does not include per-host rules\n")
                 sys.stderr.write(
@@ -1076,7 +1076,7 @@ def executor():
             print "WARNING: failed to load json from host"
 
     def audit_hosts(self):
-        if utils.running_locally(self.hosts_expr):
+        if retention.utils.running_locally(self.hosts_expr):
             result = self.do_local_audit()
         else:
             result = self.runner.run_remotely()
@@ -1790,7 +1790,7 @@ class Runner(object):
         code = "# -*- coding: utf-8 -*-\n"
         code += self.generate_executor()
 #        with open(__file__, 'r') as fp_:
-        with open('/home/ariel/wmf/retention-policy/data_auditor.py', 'r') as fp_:
+        with open('/srv/audits/retention/scripts/data_auditor.py', 'r') as fp_:
             code += fp_.read()
 
         hostbatches = [self.expanded_hosts[i: i + Config.cf['batchsize']]

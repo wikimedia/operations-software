@@ -6,12 +6,12 @@ import os
 import sys
 import getopt
 
-sys.path.append('/home/ariel/src/wmf/git-ops-software/software/dataretention')
+sys.path.append('/srv/audits/retention/scripts/')
 
-import saltclientplus
-import utils
-from rule import Rule, RuleStore
-from status import Status
+from retention.saltclientplus import LocalClientPlus
+import retention.utils
+from retention.rule import Rule, RuleStore
+from retention.status import Status
 
 def usage(message=None):
     if message:
@@ -149,14 +149,14 @@ def main():
     cdb = RuleStore(store_filepath)
     cdb.store_db_init(None)
 
-    hosts, htype = utils.get_hosts_expr_type(host)
+    hosts, htype = retention.utils.get_hosts_expr_type(host)
     
     # if we are given one host, check that the host has a table or whine
     if htype == 'glob' and '*' not in hosts:
         if not Rule.check_host_table_exists(cdb, host):
             usage('no such host in rule store, %s' % host)
     elif htype == 'grain':
-        client = saltclientplus.LocalClientPlus()
+        client = LocalClientPlus()
         hosts = client.cmd_expandminions(hosts, "test.ping", expr_form=htype)
     do_action(cdb, action, hosts, status, path, dryrun)
 

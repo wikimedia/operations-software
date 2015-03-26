@@ -4,8 +4,8 @@ import re
 import json
 import traceback
 import sqlite3
-from saltclientplus import LocalClientPlus
-from status import Status
+from retention.saltclientplus import LocalClientPlus
+from retention.status import Status
 
 class Rule(object):
     '''

@@ -1,10 +1,10 @@
 import sys
 import getopt
-sys.path.append('/home/ariel/src/wmf/git-ops-software/software/dataretention')
+sys.path.append('/srv/audits/retention/scripts/')
 
-from cli import CommandLine
-from auditor import FilesAuditor, LogsAuditor, HomesAuditor
-from examiner import FileExaminer, DirExaminer
+from retention.cli import CommandLine
+from retention.auditor import FilesAuditor, LogsAuditor, HomesAuditor
+from retention.examiner import FileExaminer, DirExaminer
 
 def usage(message=None):
     if message:
