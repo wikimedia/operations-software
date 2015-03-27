@@ -3,7 +3,7 @@ import getopt
 sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.cli import CommandLine
-from retention.auditor import HomesAuditor
+#from retention.auditor import HomesAuditor
 from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor

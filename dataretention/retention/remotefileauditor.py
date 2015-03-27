@@ -337,16 +337,6 @@ class RemoteFilesAuditor(object):
                         self.ignored['extensions'][basedir])
                         + " in " + basedir + '\n')
 
-    def contains(self, string_arg, list_arg):
-        '''
-        check if the string arg cotains any elt in
-        the list_arg
-        '''
-        for elt in list_arg:
-            if elt in string_arg:
-                return True
-        return False
-
     def normalize(self, fname):
         '''
         subclasses may want to do something different, see

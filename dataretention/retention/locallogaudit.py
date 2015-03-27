@@ -9,6 +9,7 @@ import retention.magic
 from retention.config import Config
 from retention.fileinfo import LogInfo, LogUtils
 from retention.localfileaudit import LocalFilesAuditor
+import retention.fileutils
 
 global_keys = [key for key, value_unused in
                sys.modules[__name__].__dict__.items()]
@@ -237,7 +238,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         if mysql_issues:
             result.append(mysql_issues)
 
-        open_files = LocalFilesAuditor.get_open_files()
+        open_files = retention.fileutils.get_open_files()
         rotated = self.find_rotated_logs()
 
         all_files = {}
@@ -261,8 +262,8 @@ class LocalLogsAuditor(LocalFilesAuditor):
                                    for fname in all_files]) + 2
 
         for fname in all_files_sorted:
-            if self.contains(all_files[fname].filetype,
-                             Config.cf['ignored_types']):
+            if retention.fileutils.contains(all_files[fname].filetype,
+                                            Config.cf['ignored_types']):
                 continue
 
             if (self.oldest_only and

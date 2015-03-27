@@ -12,14 +12,15 @@ sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.status import Status
 from retention.rule import Rule, RuleStore
-import retention.auditor
-from retention.auditor import FilesAuditor, HomesAuditor, LogsAuditor
+import retention.remotefileauditor
+from retention.localhomeaudit import LocalHomesAuditor
+from retention.locallogaudit import LocalLogsAuditor
 from retention.fileinfo import FileInfo
 import retention.utils
 from retention.utils import JsonHelper
-from retention.runner import Runner
 from retention.config import Config
 from retention.examiner import DirExaminer, FileExaminer
+import retention.fileutils
 
 class LocalIgnores(object):
     '''
@@ -44,7 +45,7 @@ class LocalIgnores(object):
         local_ignores = {}
 
         if retention.utils.running_locally(self.host):
-            local_ignores = HomesAuditor.get_local_ignores(self.locations)
+            local_ignores = LocalHomesAuditor.get_local_ignores(self.locations)
             output = json.dumps(local_ignores)
             print output
         else:
@@ -164,8 +165,8 @@ class CommandLine(object):
                         host in self.perhost_rules_from_file['ignored_files']):
                     for path in self.perhost_rules_from_file['ignored_files'][host]:
                         if (path.startswith('/') and
-                            path not in self.perhost_ignores_from_rules[
-                                host]['files']['/']):
+                                path not in self.perhost_ignores_from_rules[
+                                    host]['files']['/']):
                             self.perhost_ignores_from_rules[host]['files']['/'].append(path)
 
     def get_perhostcf_from_file(self):
@@ -361,17 +362,17 @@ class CommandLine(object):
 
     def do_one_host(self, host, report):
         self.set_host(host)
-        if not Runner.running_locally(self.host):
+        if not retention.utils.running_locally(self.host):
             self.get_perhost_ignores_from_rules([host])
 
-        if Runner.running_locally(self.host):
-            self.dirs_problem, self.dirs_skipped = retention.auditor.get_dirs_toexamine(report)
+        if retention.utils.running_locally(self.host):
+            self.dirs_problem, self.dirs_skipped = retention.remotefileauditor.get_dirs_toexamine(report)
         else:
             if host not in report:
                 self.dirs_problem = None
                 self.dirs_skipped = None
             else:
-                self.dirs_problem, self.dirs_skipped = retention.auditor.get_dirs_toexamine(report[host])
+                self.dirs_problem, self.dirs_skipped = retention.remotefileauditor.get_dirs_toexamine(report[host])
         if self.dirs_problem is None and self.dirs_skipped is None:
             print "No report available from this host"
         elif len(self.dirs_problem) == 0 and len(self.dirs_skipped) == 0:
@@ -379,7 +380,7 @@ class CommandLine(object):
         else:
             dirs_problem_to_depth = [CommandLine.get_path_prefix(
                 d, self.max_depth_top_level)
-                for d in self.dirs_problem]
+                                     for d in self.dirs_problem]
             dirs_skipped = [s for s in self.dirs_skipped
                             if s not in dirs_problem_to_depth]
             relevant_dirs = (sorted(list(set(dirs_problem_to_depth)))
@@ -406,7 +407,7 @@ class CommandLine(object):
         add/update rules for those dirs and files
         '''
         self.ignored = ignored
-        if Runner.running_locally(self.hosts_expr):
+        if retention.utils.running_locally(self.hosts_expr):
             host_todo = "localhost"
             self.do_one_host(host_todo, report)
             return
@@ -420,7 +421,7 @@ class CommandLine(object):
             else:
                 local_ign = LocalIgnores(host_todo, self.timeout, self.audit_type)
                 self.local_ignores = local_ign.run(True)
-                local_ignored_dirs, local_ignored_files = HomesAuditor.process_local_ignores(
+                local_ignored_dirs, local_ignored_files = LocalHomesAuditor.process_local_ignores(
                     self.local_ignores, self.ignored)
                 self.do_one_host(host_todo, report)
 
@@ -642,39 +643,39 @@ class CommandLine(object):
     def entry_is_not_ignored(self, path, entrytype):
         basedir = self.get_basedir_from_path(path)
         if self.audit_type == 'logs' and entrytype == 'file':
-            path = LogsAuditor.normalize(path)
+            path = LocalLogsAuditor.normalize(path)
 
         if entrytype == 'file':
-            if FilesAuditor.file_is_ignored(path, basedir, self.ignored):
+            if retention.fileutils.file_is_ignored(path, basedir, self.ignored):
                 return False
 
             # check perhost file
             if self.host in self.perhost_ignores:
-                if FilesAuditor.file_is_ignored(
+                if retention.fileutils.file_is_ignored(
                         path, basedir,
                         self.perhost_ignores[self.host]):
                     return False
 
             # check perhost rules
             if self.host in self.perhost_ignores_from_rules:
-                if FilesAuditor.file_is_ignored(
+                if retention.fileutils.file_is_ignored(
                         path, basedir,
                         self.perhost_ignores_from_rules[self.host]):
                     return False
 
         elif entrytype == 'dir':
-            if FilesAuditor.dir_is_ignored(path, self.ignored):
+            if retention.fileutils.dir_is_ignored(path, self.ignored):
                 return False
 
             # check perhost file
             if self.host in self.perhost_ignores:
-                if FilesAuditor.dir_is_ignored(
+                if retention.fileutils.dir_is_ignored(
                         path, self.perhost_ignores[self.host]):
                     return False
 
             # check perhost rules
             if self.host in self.perhost_ignores_from_rules:
-                if FilesAuditor.dir_is_ignored(
+                if retention.fileutils.dir_is_ignored(
                         path, self.perhost_ignores_from_rules[self.host]):
                     return False
         else:

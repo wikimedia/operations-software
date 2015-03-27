@@ -1,12 +1,10 @@
 import os
 import sys
 import time
-import re
 import socket
 import runpy
 import stat
 import locale
-import logging
 
 sys.path.append('/srv/audits/retention/scripts/')
 
@@ -15,8 +13,8 @@ import retention.magic
 from retention.rule import Rule
 from retention.config import Config
 from retention.fileinfo import FileInfo
+import retention.fileutils
 
-log = logging.getLogger(__name__)
 
 class LocalFilesAuditor(object):
     '''
@@ -185,190 +183,12 @@ class LocalFilesAuditor(object):
                             continue
                 break
 
-    @staticmethod
-    def startswith(string_arg, list_arg):
-        '''
-        check if the string arg starts with any elt in
-        the list_arg
-        '''
-        for elt in list_arg:
-            if string_arg.startswith(elt):
-                return True
-        return False
-
-    def contains(self, string_arg, list_arg):
-        '''
-        check if the string arg cotains any elt in
-        the list_arg
-        '''
-        for elt in list_arg:
-            if elt in string_arg:
-                return True
-        return False
-
-    @staticmethod
-    def endswith(string_arg, list_arg):
-        '''
-        check if the string arg ends with any elt in
-        the list_arg
-        '''
-        for elt in list_arg:
-            if string_arg.endswith(elt):
-                return True
-        return False
-
-    @staticmethod
-    def startswithpath(string_arg, list_arg):
-        '''
-        check if the string arg starts with any elt in
-        the list_arg and the next character, if any,
-        is the os dir separator
-        '''
-
-        for elt in list_arg:
-            if string_arg == elt or string_arg.startswith(elt + "/"):
-                return True
-        return False
-
-    @staticmethod
-    def subdir_check(dirname, directories):
-        '''
-        check if one of the directories listed is the
-        specified dirname or the dirname is somewhere in
-        a subtree of one of the listed directories,
-        returning True if so and fFalse otherwise
-        '''
-
-        # fixme test this
-        # also see if this needs to replace dirtree_checkeverywhere or not
-        for dname in directories:
-            if dname == dirname or dirname.startswith(dname + "/"):
-                return True
-        return False
-
-    @staticmethod
-    def dirtree_check(dirname, directories):
-        '''
-        check if the dirname is either a directory at or above one of
-        the the directories specified in the tree or vice versa, returning
-        True if so and fFalse otherwise
-        '''
-
-        for dname in directories:
-            if dirname == dname or dirname.startswith(dname + "/"):
-                return True
-            if dname.startswith(dirname + "/"):
-                return True
-        return False
-
-    @staticmethod
-    def expand_ignored_dirs(basedir, ignored):
-        '''
-        find dirs to ignore relative to the specified
-        basedir, in Config entry.  Fall back to wildcard spec
-        if there is not entry for the basedir.  Dirs in
-        Config entry may have one * in the path, this
-        will be treated as a wildcard for the purposes
-        of checking directories against the entry.
-
-        args: absolute path of basedir being crawled
-              hash of ignored dirs, file, etc
-        returns: list of absolute paths of dirs to ignore,
-        plus separate list of abslute paths containing '*',
-        also to ignore, or the empty list if there are none
-        '''
-
-        dirs = []
-        wildcard_dirs = []
-
-        to_expand = []
-        if 'dirs' in ignored:
-            if '*' in ignored['dirs']:
-                to_expand.extend(ignored['dirs']['*'])
-
-            if '/' in ignored['dirs']:
-                to_expand.extend(ignored['dirs']['/'])
-
-            if basedir in ignored['dirs']:
-                to_expand.extend(ignored['dirs'][basedir])
-
-            for dname in to_expand:
-                if '*' in dname:
-                    wildcard_dirs.append(os.path.join(basedir, dname))
-                else:
-                    dirs.append(os.path.join(basedir, dname))
-
-        return dirs, wildcard_dirs
-
-    @staticmethod
-    def wildcard_matches(dirname, wildcard_dirs, exact=True):
-        '''given a list of absolute paths with exactly one '*'
-        in each entry, see if the passed dirname matches
-        any of the list entries'''
-        for dname in wildcard_dirs:
-            if len(dirname) + 1 < len(dname):
-                continue
-
-            left, right = dname.split('*', 1)
-            if dirname.startswith(left):
-                if dirname.endswith(right):
-                    return True
-                elif (not exact and
-                      dirname.rfind(right + "/", len(left)) != -1):
-                    return True
-                else:
-                    continue
-        return False
-
     def normalize(self, fname):
         '''
         subclasses may want to do something different, see
         LogsAuditor for an example
         '''
         return fname
-
-    @staticmethod
-    def file_is_ignored(fname, basedir, ignored):
-        '''
-        pass normalized name (abs path), basedir (location audited),
-        hash of ignored files, dirs, prefixes, extensions
-        get back True if the file is to be ignored and
-        False otherwise
-        '''
-
-        basename = os.path.basename(fname)
-
-        if 'prefixes' in ignored:
-            if LocalFilesAuditor.startswith(basename, ignored['prefixes']):
-                return True
-
-        if 'extensions' in ignored:
-            if '*' in ignored['extensions']:
-                if LocalFilesAuditor.endswith(basename, ignored['extensions']['*']):
-                    return True
-            if basedir in ignored['extensions']:
-                if LocalFilesAuditor.endswith(
-                        basename, ignored['extensions'][basedir]):
-                    return True
-
-        if 'files' in ignored:
-            if basename in ignored['files']:
-                return True
-            if '*' in ignored['files']:
-                if LocalFilesAuditor.endswith(basename, ignored['files']['*']):
-                    return True
-
-            if '/' in ignored['files']:
-                if fname in ignored['files']['/']:
-                    return True
-                if LocalFilesAuditor.wildcard_matches(
-                        fname, [w for w in ignored['files']['/'] if '*' in w]):
-                    return True
-
-            if basedir in ignored['files']:
-                if LocalFilesAuditor.endswith(basename, ignored['files'][basedir]):
-                    return True
-        return False
 
     def file_is_wanted(self, fname, basedir):
         '''
@@ -381,7 +201,7 @@ class LocalFilesAuditor(object):
         '''
         fname = self.normalize(fname)
 
-        if LocalFilesAuditor.file_is_ignored(fname, basedir, self.ignored):
+        if retention.fileutils.file_is_ignored(fname, basedir, self.ignored):
             return False
 
         if (self.filenames_to_check is not None and
@@ -390,34 +210,12 @@ class LocalFilesAuditor(object):
 
         return True
 
-    @staticmethod
-    def dir_is_ignored(dirname, ignored):
-        expanded_dirs, wildcard_dirs = LocalFilesAuditor.expand_ignored_dirs(
-            os.path.dirname(dirname), ignored)
-        if dirname in expanded_dirs:
-            return True
-        if LocalFilesAuditor.wildcard_matches(dirname, wildcard_dirs):
-            return True
-        return False
-
-    @staticmethod
-    def dir_is_wrong_type(dirname):
-        try:
-            dirstat = os.lstat(dirname)
-        except:
-            return True
-        if stat.S_ISLNK(dirstat.st_mode):
-            return True
-        if not stat.S_ISDIR(dirstat.st_mode):
-            return True
-        return False
-
     def get_subdirs_to_do(self, dirname, dirname_depth, todo):
 
         locale.setlocale(locale.LC_ALL, '')
-        if LocalFilesAuditor.dir_is_ignored(dirname, self.ignored):
+        if retention.fileutils.dir_is_ignored(dirname, self.ignored):
             return todo
-        if LocalFilesAuditor.dir_is_wrong_type(dirname):
+        if retention.fileutils.dir_is_wrong_type(dirname):
             return todo
 
         if self.depth < dirname_depth:
@@ -427,7 +225,7 @@ class LocalFilesAuditor(object):
             todo[dirname_depth] = []
 
         if self.dirs_to_check is not None:
-            if LocalFilesAuditor.subdir_check(dirname, self.dirs_to_check):
+            if retention.fileutils.subdir_check(dirname, self.dirs_to_check):
                 todo[dirname_depth].append(dirname)
         else:
             todo[dirname_depth].append(dirname)
@@ -439,7 +237,7 @@ class LocalFilesAuditor(object):
         dirs = [os.path.join(dirname, d)
                 for d in os.listdir(dirname)]
         if self.dirs_to_check is not None:
-            dirs = [d for d in dirs if LocalFilesAuditor.dirtree_check(
+            dirs = [d for d in dirs if retention.fileutils.dirtree_check(
                 d, self.dirs_to_check)]
 
         for dname in dirs:
@@ -448,7 +246,7 @@ class LocalFilesAuditor(object):
 
     def get_dirs_to_do(self, dirname):
         if (self.dirs_to_check is not None and
-                not LocalFilesAuditor.dirtree_check(dirname, self.dirs_to_check)):
+                not retention.fileutils.dirtree_check(dirname, self.dirs_to_check)):
             return {}
 
         todo = {}
@@ -526,10 +324,10 @@ class LocalFilesAuditor(object):
             results: the result set
         '''
         if self.dirs_to_check is not None:
-            if not LocalFilesAuditor.dirtree_check(subdirpath, self.dirs_to_check):
+            if not retention.fileutils.dirtree_check(subdirpath, self.dirs_to_check):
                 return
 
-        if LocalFilesAuditor.dir_is_ignored(subdirpath, self.ignored):
+        if retention.fileutils.dir_is_ignored(subdirpath, self.ignored):
             return True
 
         count = 0
@@ -557,16 +355,16 @@ class LocalFilesAuditor(object):
         # cutoff won't be in our list
         temp_results = []
         for base, paths, files in self.walk_nolinks(subdirpath):
-            expanded_dirs, wildcard_dirs = LocalFilesAuditor.expand_ignored_dirs(
+            expanded_dirs, wildcard_dirs = retention.fileutils.expand_ignored_dirs(
                 base, self.ignored)
             if self.dirs_to_check is not None:
                 paths[:] = [p for p in paths
-                            if LocalFilesAuditor.dirtree_check(os.path.join(base, p),
-                                                               self.dirs_to_check)]
+                            if retention.fileutils.dirtree_check(os.path.join(base, p),
+                                                                 self.dirs_to_check)]
             paths[:] = [p for p in paths if
-                        (not LocalFilesAuditor.startswithpath(os.path.join(
+                        (not retention.fileutils.startswithpath(os.path.join(
                             base, p), expanded_dirs) and
-                         not LocalFilesAuditor.wildcard_matches(os.path.join(
+                         not retention.fileutils.wildcard_matches(os.path.join(
                              base, p), wildcard_dirs, exact=False))]
             count = self.process_files_from_path(location, base, files,
                                                  count, temp_results,
@@ -591,32 +389,6 @@ class LocalFilesAuditor(object):
                         self.process_one_dir(location, dname, depth, results)
         return results
 
-    @staticmethod
-    def get_open_files():
-        '''
-        scrounge /proc/nnn/fd and collect all open files
-        '''
-        open_files = set()
-        dirs = os.listdir("/proc")
-        for dname in dirs:
-            if not re.match('^[0-9]+$', dname):
-                continue
-            try:
-                links = os.listdir(os.path.join("/proc", dname, "fd"))
-            except:
-                # process may have gone away
-                continue
-            # must follow sym link for all of these, yuck
-            files = set()
-            for link in links:
-                try:
-                    files.add(os.readlink(os.path.join("/proc", dname,
-                                                       "fd", link)))
-                except:
-                    continue
-            open_files |= files
-        return open_files
-
     def warn_too_many_files(self, path=None):
         print "WARNING: too many files to audit",
         if path is not None:
@@ -629,7 +401,7 @@ class LocalFilesAuditor(object):
                % (os.path.sep.join(fields[:self.depth + 1]), self.MAX_FILES))
 
     def do_local_audit(self):
-        open_files = LocalFilesAuditor.get_open_files()
+        open_files = retention.fileutils.get_open_files()
 
         all_files = {}
         files = self.find_all_files()
@@ -650,8 +422,8 @@ class LocalFilesAuditor(object):
                                    for fname in all_files]) + 2
 
         for fname in all_files_sorted:
-            if (not self.contains(all_files[fname].filetype,
-                                  Config.cf['ignored_types'])
+            if (not retention.fileutils.contains(all_files[fname].filetype,
+                                                 Config.cf['ignored_types'])
                     and not all_files[fname].is_empty):
                 result.append(all_files[fname].format_output(
                     self.show_sample_content, False,
