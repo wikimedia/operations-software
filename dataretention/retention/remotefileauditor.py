@@ -138,22 +138,6 @@ class RemoteFilesAuditor(object):
             hosts, "test.ping", expr_form=expr_type)
 
         self.set_up_max_files(maxfiles)
-        fileaudit_args = [self.show_sample_content,
-                          self.dirsizes,
-                          self.depth - 1,
-                          self.to_check,
-                          ",".join(self.ignore_also) if self.ignore_also is not None else None,
-                          self.timeout,
-                          self.MAX_FILES]
-
-        self.runner = Runner(hosts_expr,
-                             self.expanded_hosts,
-                             self.audit_type,
-                             fileaudit_args,
-                             self.show_sample_content,
-                             self.to_check,
-                             self.timeout,
-                             self.verbose)
 
         self.perhost_raw = None
         if os.path.exists('/srv/audits/retention/scripts/audit_files_perhost_config.py'):
@@ -178,6 +162,27 @@ class RemoteFilesAuditor(object):
         self.magic.load()
         self.summary = None
         self.display_from_dict = FileInfo.display_from_dict
+
+    def get_audit_args(self):
+        audit_args = [self.show_sample_content,
+                      self.dirsizes,
+                      self.depth - 1,
+                      self.to_check,
+                      ",".join(self.ignore_also) if self.ignore_also is not None else None,
+                      self.timeout,
+                      self.MAX_FILES]
+        return audit_args
+
+    def set_up_runner(self):
+
+        self.runner = Runner(self.hosts_expr,
+                             self.expanded_hosts,
+                             self.audit_type,
+                             self.get_audit_args(),
+                             self.show_sample_content,
+                             self.to_check,
+                             self.timeout,
+                             self.verbose)
 
     def set_up_max_files(self, maxfiles):
         '''
@@ -465,6 +470,7 @@ class RemoteFilesAuditor(object):
             print "WARNING: failed to load json from host"
 
     def audit_hosts(self):
+        self.set_up_runner()
         result = self.runner.run_remotely()
         if result is None:
             print "WARNING: failed to get output from audit script on any host"

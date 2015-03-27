@@ -3,8 +3,9 @@ import getopt
 sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.cli import CommandLine
-from retention.auditor import LogsAuditor, HomesAuditor
+from retention.auditor import HomesAuditor
 from retention.remotefileauditor import RemoteFilesAuditor
+from retention.remotelogauditor import RemoteLogsAuditor
 from retention.examiner import FileExaminer, DirExaminer
 
 def usage(message=None):
@@ -246,11 +247,11 @@ def main():
         usage("'oldest' argument may only be used with logs audit")
 
     if audit_type == 'logs':
-        logsaudit = LogsAuditor(hosts_expr, audit_type, prettyprint,
-                                oldest_only, show_sample_content, dirsizes,
-                                show_system_logs,
-                                summary_report, depth, files_to_check, ignore_also,
-                                timeout, maxfiles, store_filepath, verbose)
+        logsaudit = RemoteLogsAuditor(hosts_expr, audit_type, prettyprint,
+                                      oldest_only, show_sample_content, dirsizes,
+                                      show_system_logs,
+                                      summary_report, depth, files_to_check, ignore_also,
+                                      timeout, maxfiles, store_filepath, verbose)
         report, ignored = logsaudit.audit_hosts()
         if interactive:
             cmdline = CommandLine(store_filepath, timeout, audit_type, hosts_expr)
