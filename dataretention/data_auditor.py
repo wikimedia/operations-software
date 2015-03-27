@@ -6,6 +6,7 @@ from retention.cli import CommandLine
 from retention.auditor import HomesAuditor
 from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
+from retention.remotehomeauditor import RemoteHomesAuditor
 from retention.examiner import FileExaminer, DirExaminer
 
 def usage(message=None):
@@ -269,11 +270,11 @@ def main():
             cmdline.run(report, ignored)
 
     elif audit_type == 'homes':
-        homesaudit = HomesAuditor(hosts_expr, audit_type, prettyprint,
-                                  show_sample_content, dirsizes,
-                                  summary_report,
-                                  depth, files_to_check, ignore_also,
-                                  timeout, maxfiles, store_filepath, verbose)
+        homesaudit = RemoteHomesAuditor(hosts_expr, audit_type, prettyprint,
+                                        show_sample_content, dirsizes,
+                                        summary_report,
+                                        depth, files_to_check, ignore_also,
+                                        timeout, maxfiles, store_filepath, verbose)
         report, ignored = homesaudit.audit_hosts()
         if interactive:
             cmdline = CommandLine(store_filepath, timeout, audit_type, hosts_expr)

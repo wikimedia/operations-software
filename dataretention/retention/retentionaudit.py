@@ -6,6 +6,7 @@ sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.localfileaudit import LocalFilesAuditor
 from retention.locallogaudit import LocalLogsAuditor
+from retention.localhomeaudit import LocalHomesAuditor
 
 log = logging.getLogger(__name__)
 
@@ -21,12 +22,23 @@ def fileaudit_host(show_content, dirsizes, depth,
 
 def logaudit_host(oldest, show_content, show_system_logs,
                   dirsizes, depth,
-                   to_check, ignore_also, timeout,
-                   maxfiles):
+                  to_check, ignore_also, timeout,
+                  maxfiles):
     lauditor = LocalLogsAuditor('logs', oldest, show_content,
                                 show_system_logs,
                                 dirsizes, depth, to_check,
                                 ignore_also, timeout,
                                 maxfiles)
     result = lauditor.do_local_audit()
+    return result
+
+def homeaudit_host(show_content,
+                   dirsizes, depth,
+                   to_check, ignore_also, timeout,
+                   maxfiles):
+    hauditor = LocalHomesAuditor('homes', show_content,
+                                 dirsizes, depth, to_check,
+                                 ignore_also, timeout,
+                                 maxfiles)
+    result = hauditor.do_local_audit()
     return result
