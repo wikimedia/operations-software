@@ -3,7 +3,8 @@ import getopt
 sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.cli import CommandLine
-from retention.auditor import FilesAuditor, LogsAuditor, HomesAuditor
+from retention.auditor import LogsAuditor, HomesAuditor
+from retention.remotefileauditor import RemoteFilesAuditor
 from retention.examiner import FileExaminer, DirExaminer
 
 def usage(message=None):
@@ -256,11 +257,11 @@ def main():
             cmdline.run(report, ignored)
 
     elif audit_type == 'root':
-        filesaudit = FilesAuditor(hosts_expr, audit_type, prettyprint,
-                                  show_sample_content, dirsizes,
-                                  summary_report,
-                                  depth, files_to_check, ignore_also,
-                                  timeout, maxfiles, store_filepath, verbose)
+        filesaudit = RemoteFilesAuditor(hosts_expr, audit_type, prettyprint,
+                                        show_sample_content, dirsizes,
+                                        summary_report,
+                                        depth, files_to_check, ignore_also,
+                                        timeout, maxfiles, store_filepath, verbose)
         report, ignored = filesaudit.audit_hosts()
         if interactive:
             cmdline = CommandLine(store_filepath, timeout, audit_type, hosts_expr)

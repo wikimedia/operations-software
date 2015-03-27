@@ -11,7 +11,7 @@ class Runner(object):
     '''
 
     def __init__(self, hosts_expr, expanded_hosts,
-                 audit_type, generate_executor,
+                 audit_type, auditor_args,
                  show_sample_content=False, to_check=None,
                  timeout=30, verbose=False):
         self.hosts_expr = hosts_expr
@@ -19,22 +19,21 @@ class Runner(object):
         self.hosts, self.hosts_expr_type = Runner.get_hosts_expr_type(
             self.hosts_expr)
         self.audit_type = audit_type
-        self.generate_executor = generate_executor
+        self.auditmodule_args = auditor_args
         self.show_sample_content = show_sample_content
         self.to_check = to_check
         self.timeout = timeout
         self.verbose = verbose
 
-    @staticmethod
-    def running_locally(hosts_expr):
-        '''
-        determine whether this script is to run on the local
-        host or on one or more remote hosts
-        '''
-        if hosts_expr == "127.0.0.1" or hosts_expr == "localhost":
-            return True
+    def get_auditfunction_name(self):
+        if self.audit_type == 'root':
+            return 'fileaudit_host'
+        elif self.audit_type == 'logs':
+            return 'logaudit_host'
+        elif self.audit_type == 'homes':
+            return 'homeaudit_host'
         else:
-            return False
+            return None
 
     def run_remotely(self):
         '''
@@ -46,10 +45,9 @@ class Runner(object):
         if self.expanded_hosts is None:
             self.expanded_hosts = client.cmd_expandminions(
                 self.hosts, "test.ping", expr_form=self.hosts_expr_type)
-        code = "# -*- coding: utf-8 -*-\n"
-        code += self.generate_executor()
-        with open('/srv/audits/retention/scripts/data_auditor.py', 'r') as fp_:
-            code += fp_.read()
+
+        # fixme instead of this we call the right salt module based on the
+        # audit type and with the self.auditmodule_args which is a list
 
         hostbatches = [self.expanded_hosts[i: i + Config.cf['batchsize']]
                        for i in range(0, len(self.expanded_hosts),
@@ -72,14 +70,15 @@ class Runner(object):
                                                  'template=jinja'], expr_form='list')
             # fixme only copy if exists, check returns
             # fixme this content should be ordered by host instead of by ignore-list type
-            # and split into separate files just as the previous files are
+            # and split into separate files just as the previous files are, and actually be in one file
+            # with one copy total per client
             new_result = client.cmd_full_return(hosts, 'cp.get_file',
                                                 ['salt://audits/retention/configs/allhosts_file.py',
                                                  "/srv/audits/retention/configs/allhosts_file.cf",
                                                  'template=jinja'], expr_form='list')
-            print "salt-copy (2):", new_result
 
-            new_result = client.cmd(hosts, "cmd.exec_code", ["python2", code],
+            # step two: run the appropriate salt audit module function
+            new_result = client.cmd(hosts, "retentionaudit.%s" % self.get_auditfunction_name(), self.auditmodule_args,
                                     expr_form='list', timeout=self.timeout)
 
             if new_result is not None:
