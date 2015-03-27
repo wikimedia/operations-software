@@ -8,6 +8,7 @@ from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor
 from retention.examiner import RemoteFileExaminer, RemoteDirExaminer
+from retention.userconfretriever import RemoteUserCfRetriever
 
 def usage(message=None):
     if message:
@@ -89,6 +90,10 @@ Options:
     linecount   (-l) -- number of lines of file content to be displayed
                         (efault: 1)
 
+    userconf    (-u) -- instead of an audit, display the per user config
+                        files on the given hosts; this may not be specified
+                        with 'audit'.
+
 For 'logs' audit type:
 
     system      (-S) -- show system logs (e.g. syslog, messages) along with
@@ -111,6 +116,7 @@ def main():
     verbose = False
     ignore_also = None
     dir_info = None
+    getuserconfs = False
     batchno = 1
     file_info = None
     linecount = 1
@@ -125,7 +131,7 @@ def main():
 
     try:
         (options, remainder) = getopt.gnu_getopt(
-            sys.argv[1:], "a:b:d:Df:F:l:i:Ie:m:oprsSt:T:vh",
+            sys.argv[1:], "a:b:d:Df:F:l:i:Ie:m:oprsSt:T:uvh",
             ["audit=", "files=",
              "filecontents=", "linecount=",
              "ignore=",
@@ -134,7 +140,8 @@ def main():
              "oldest", "prettyprint", "report",
              "dirsizes", "examine", "batchno",
              "sample", "system",
-             "target=", "timeout=", "verbose", "help"])
+             "target=", "timeout=",
+             "userconf", "verbose", "help"])
 
     except getopt.GetoptError as err:
         usage("Unknown option specified: " + str(err))
@@ -186,6 +193,8 @@ def main():
             if not val.isdigit():
                 usage("timeout must be a number")
             timeout = int(val)
+        elif opt in ["-u", "--userconf"]:
+            getuserconfs = True
         elif opt in ["-h", "--help"]:
             usage()
         elif opt in ["-v", "--verbose"]:
@@ -199,12 +208,12 @@ def main():
     if hosts_expr is None:
         usage("Mandatory target argument not specified")
 
-    count = len(filter(None, [audit_type, dir_info, file_info]))
+    count = len(filter(None, [audit_type, dir_info, file_info, getuserconfs]))
     if count == 0:
-        usage("One of 'audit', 'examine' "
+        usage("One of 'audit', 'examine', 'userconf' "
               "or 'filecontents' must be specified")
     elif count > 1:
-        usage("Only one of 'audit', 'examine' "
+        usage("Only one of 'audit', 'examine' 'userconf' "
               "or 'filecontents' may be specified")
 
     if dir_info is not None:
@@ -215,6 +224,10 @@ def main():
     elif file_info is not None:
         fileexam = RemoteFileExaminer(file_info, hosts_expr, linecount, timeout)
         fileexam.run()
+        sys.exit(0)
+    elif getuserconfs:
+        getconfs = RemoteUserCfRetriever(hosts_expr, timeout, 'homes')
+        getconfs.run()
         sys.exit(0)
 
     if audit_type not in ['root', 'logs', 'homes']:

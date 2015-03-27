@@ -6,12 +6,11 @@ import runpy
 import readline
 import atexit
 import traceback
-import salt.client
 
 sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.status import Status
-from retention.rule import Rule, RuleStore
+from retention.rule import RuleStore
 import retention.remotefileauditor
 from retention.localhomeaudit import LocalHomesAuditor
 from retention.locallogaudit import LocalLogsAuditor
@@ -22,66 +21,7 @@ from retention.config import Config
 from retention.examiner import RemoteDirExaminer, RemoteFileExaminer
 import retention.fileutils
 import retention.ruleutils
-
-class LocalIgnores(object):
-    '''
-    retrieval and display dirs / files listed as to
-    be ignored in per-user lists on local host
-    '''
-    def __init__(self, host, timeout, audit_type):
-        self.host = host
-        self.timeout = timeout
-        self.audit_type = audit_type
-        self.locations = audit_type + "_locations"
-
-    def run(self, quiet=False):
-        '''
-        do all the work
-
-        note that 'quiet' applies only to remotely
-        run, and the same is true for returning the contents.
-        maybe we want to fix that
-        '''
-
-        local_ignores = {}
-
-        if retention.utils.running_locally(self.host):
-            local_ignores = LocalHomesAuditor.get_local_ignores(self.locations)
-            output = json.dumps(local_ignores)
-            print output
-        else:
-            client = salt.client.LocalClient()
-            code = "# -*- coding: utf-8 -*-\n"
-            code += self.generate_executor()
-            with open(__file__, 'r') as fp_:
-                code += fp_.read()
-            result = client.cmd([self.host], "cmd.exec_code",
-                                ["python2", code],
-                                expr_form='list',
-                                timeout=self.timeout)
-            if self.host in result:
-                input = result[self.host]
-                try:
-                    local_ignores = json.loads(
-                        input, object_hook=JsonHelper.decode_dict)
-                except:
-                    print "WARNING: failed to get local ignores on host",
-                    print self.host,
-                    print "got this:", input
-                    local_ignores = {}
-
-            if not quiet:
-                print local_ignores
-
-            return local_ignores
-
-    def generate_executor(self):
-        code = """
-def executor():
-    de = LocalIgnores('localhost', %d, '%s')
-    de.run()
-""" % (self.timeout, self.audit_type)
-        return code
+from retention.userconfretriever import RemoteUserCfRetriever
 
 
 class CommandLine(object):
@@ -420,7 +360,7 @@ class CommandLine(object):
                 print "exiting at user request"
                 break
             else:
-                local_ign = LocalIgnores(host_todo, self.timeout, self.audit_type)
+                local_ign = RemoteUserCfRetriever(host_todo, self.timeout, self.audit_type)
                 self.local_ignores = local_ign.run(True)
                 local_ignored_dirs, local_ignored_files = LocalHomesAuditor.process_local_ignores(
                     self.local_ignores, self.ignored)

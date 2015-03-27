@@ -8,6 +8,7 @@ from retention.localfileaudit import LocalFilesAuditor
 from retention.locallogaudit import LocalLogsAuditor
 from retention.localhomeaudit import LocalHomesAuditor
 from retention.examiner import LocalFileExaminer, LocalDirExaminer
+from retention.userconfretriever import LocalUserCfRetriever
 
 log = logging.getLogger(__name__)
 
@@ -58,3 +59,7 @@ def examine_dir(path, batchno, batchsize,
     result = dexaminer.run()
     return result
 
+def retrieve_usercfs(timeout, audit_type):
+    ucfsretriever = LocalUserCfRetriever(timeout, audit_type)
+    result = ucfsretriever.run()
+    return result
