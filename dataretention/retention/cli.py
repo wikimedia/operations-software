@@ -19,7 +19,7 @@ from retention.fileinfo import FileInfo
 import retention.utils
 from retention.utils import JsonHelper
 from retention.config import Config
-from retention.examiner import DirExaminer, FileExaminer
+from retention.examiner import DirExaminer, RemoteFileExaminer
 import retention.fileutils
 import retention.ruleutils
 
@@ -574,7 +574,7 @@ class CommandLine(object):
     def get_file_contents(self, path):
         # get 20 lines and hope that's enough for the user to evaluate
         # fixme the number of lines should be configurable
-        fileexamin = FileExaminer(path, self.host, 20, self.timeout, quiet=True)
+        fileexamin = RemoteFileExaminer(path, self.host, 20, self.timeout, quiet=True)
         contents = fileexamin.run()
         return contents
 

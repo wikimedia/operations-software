@@ -11,9 +11,9 @@ from retention.utils import JsonHelper
 from retention.fileinfo import FileInfo, EntryInfo
 
 
-class FileExaminer(object):
+class RemoteFileExaminer(object):
     '''
-    retrieval and display of file contents on local or remote host
+    retrieval and display of file contents on remote host
     '''
     def __init__(self, path, host, num_lines, timeout=20, quiet=False):
         self.path = path
@@ -26,44 +26,44 @@ class FileExaminer(object):
         '''
         do all the work
         '''
-        if retention.utils.running_locally(self.host):
-            finf = FileInfo(self.path, None)
-            if finf.get_is_binary(self.num_lines):
-                result = "BINARY CONTENT\n"
-            else:
-                result = finf.start_content
+        client = LocalClientPlus()
+        module_args = [self.path,
+                       self.num_lines,
+                       self.timeout]
+
+        result = client.cmd([self.host],
+                            "retentionaudit.examine_file",
+                            module_args, expr_form='list',
+                            timeout=self.timeout)
+
+        if self.host in result:
             if not self.quiet:
-                print result,
-            return result
+                print result[self.host]
+            return result[self.host]
+
+
+class LocalFileExaminer(object):
+    '''
+    retrieval and display of file contents on local host
+    '''
+    def __init__(self, path, num_lines, timeout=20, quiet=False):
+        self.path = path
+        self.timeout = timeout
+        self.num_lines = num_lines
+        self.quiet = quiet
+
+    def run(self):
+        '''
+        do all the work
+        '''
+        finf = FileInfo(self.path, None)
+        if finf.get_is_binary(self.num_lines):
+            result = "BINARY CONTENT\n"
         else:
-            client = LocalClientPlus()
-            code = "# -*- coding: utf-8 -*-\n"
-            code += self.generate_executor()
-            with open(__file__, 'r') as fp_:
-                code += fp_.read()
-            result = client.cmd([self.host], "cmd.exec_code",
-                                ["python2", code],
-                                expr_form='list',
-                                timeout=self.timeout)
-            if self.host in result:
-                if not self.quiet:
-                    print result[self.host]
-                return result[self.host]
-
-    def generate_executor(self):
-        '''
-        horrible hack: this code is fed to salt when we feed this
-        script to stdin to run it remotely, thus bypassing all
-        the command line argument parsing logic
-
-        in this case we set up for FileExaminer directly
-        '''
-        code = """
-def executor():
-    fe = FileExaminer('%s', 'localhost', %d, %d)
-    fe.run()
-""" % (self.path, self.num_lines, self.timeout)
-        return code
+            result = finf.start_content
+        if not self.quiet:
+            print result,
+        return result
 
 
 class DirContents(object):
@@ -204,7 +204,7 @@ class DirExaminer(object):
 
         if retention.utils.running_locally(self.host):
             dcont = DirContents(self.path, self.batchno, self.batchsize,
-                             self.prettyprint)
+                                self.prettyprint)
             result = dcont.get_contents()
             if result != 'ok':
                 print ('WARNING: failed to get directory contents'

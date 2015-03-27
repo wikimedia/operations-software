@@ -7,6 +7,7 @@ sys.path.append('/srv/audits/retention/scripts/')
 from retention.localfileaudit import LocalFilesAuditor
 from retention.locallogaudit import LocalLogsAuditor
 from retention.localhomeaudit import LocalHomesAuditor
+from retention.examiner import LocalFileExaminer
 
 log = logging.getLogger(__name__)
 
@@ -41,4 +42,11 @@ def homeaudit_host(show_content,
                                  ignore_also, timeout,
                                  maxfiles)
     result = hauditor.do_local_audit()
+    return result
+
+def examine_file(path, num_lines,
+                 timeout, quiet=False):
+    fexaminer = LocalFileExaminer(path, num_lines,
+                                  timeout, quiet)
+    result = fexaminer.run()
     return result

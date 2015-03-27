@@ -7,7 +7,7 @@ from retention.cli import CommandLine
 from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor
-from retention.examiner import FileExaminer, DirExaminer
+from retention.examiner import RemoteFileExaminer, DirExaminer
 
 def usage(message=None):
     if message:
@@ -102,17 +102,6 @@ For 'logs' audit type:
 
 
 def main():
-    if len(sys.argv) == 1:
-        # special case, no args, we expect a special
-        # executor function to have been defined and
-        # added to the existing code, shovelled into
-        # the interpreter... if not there, whine
-        for key, value_unused in sys.modules[__name__].__dict__.items():
-            if key == 'executor':
-                executor()
-                sys.exit(0)
-        usage()
-
     hosts_expr = None
     audit_type = None
     files_to_check = None
@@ -224,7 +213,7 @@ def main():
         direxam.run()
         sys.exit(0)
     elif file_info is not None:
-        fileexam = FileExaminer(file_info, hosts_expr, linecount, timeout)
+        fileexam = RemoteFileExaminer(file_info, hosts_expr, linecount, timeout)
         fileexam.run()
         sys.exit(0)
 
