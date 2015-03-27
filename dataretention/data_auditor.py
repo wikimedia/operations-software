@@ -7,7 +7,7 @@ from retention.cli import CommandLine
 from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor
-from retention.examiner import RemoteFileExaminer, DirExaminer
+from retention.examiner import RemoteFileExaminer, RemoteDirExaminer
 
 def usage(message=None):
     if message:
@@ -209,7 +209,7 @@ def main():
 
     if dir_info is not None:
         # for now more than 1000 entries in a dir = we silently toss them
-        direxam = DirExaminer(dir_info, hosts_expr, batchno, 1000, timeout)
+        direxam = RemoteDirExaminer(dir_info, hosts_expr, batchno, 1000, timeout)
         direxam.run()
         sys.exit(0)
     elif file_info is not None:

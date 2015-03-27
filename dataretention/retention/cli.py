@@ -19,7 +19,7 @@ from retention.fileinfo import FileInfo
 import retention.utils
 from retention.utils import JsonHelper
 from retention.config import Config
-from retention.examiner import DirExaminer, RemoteFileExaminer
+from retention.examiner import RemoteDirExaminer, RemoteFileExaminer
 import retention.fileutils
 import retention.ruleutils
 
@@ -549,7 +549,7 @@ class CommandLine(object):
 
         # fixme batchno? batchno should increment too
         # for now more than 1000 entries in a dir = we silently toss them
-        direxamin = DirExaminer(path, self.host, batchno, 1000, self.timeout, prettyprint=False)
+        direxamin = RemoteDirExaminer(path, self.host, batchno, 1000, self.timeout, prettyprint=False)
         contents = direxamin.run(True)
         if contents is not None:
             contents = contents.split("\n")

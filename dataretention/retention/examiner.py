@@ -2,6 +2,7 @@ import os
 import sys
 import stat
 import json
+import logging
 
 sys.path.append('/srv/audits/retention/scripts/')
 
@@ -9,6 +10,8 @@ from retention.saltclientplus import LocalClientPlus
 import retention.utils
 from retention.utils import JsonHelper
 from retention.fileinfo import FileInfo, EntryInfo
+
+log = logging.getLogger(__name__)
 
 
 class RemoteFileExaminer(object):
@@ -164,24 +167,28 @@ class DirContents(object):
     def display_json(self, json_text):
         if not self.prettyprint:
             print json_text
-            return
+            return json_text
 
         try:
             item = json.loads(json_text, object_hook=JsonHelper.decode_dict)
         except:
             print json_text
-            return
+            return json_text
         output = FileInfo.format_pretty_output_from_dict(item, path_justify=50)
         print output
+        return output
 
     def show_batch(self):
+        output = []
         for entry in self.batch_entryinfo:
-            self.display_json(entry)
+            output.append(self.display_json(entry))
+        output = '\n'.join(output)
+        return output
+            
 
-
-class DirExaminer(object):
+class RemoteDirExaminer(object):
     '''
-    retrieval and display of directory contents on local or remote host
+    retrieval and display of directory contents on remote host
     '''
     def __init__(self, path, host, batchno=1, batchsize=300, timeout=20,
                  prettyprint=False):
@@ -202,81 +209,89 @@ class DirExaminer(object):
         maybe we want to fix that
         '''
 
-        if retention.utils.running_locally(self.host):
-            dcont = DirContents(self.path, self.batchno, self.batchsize,
-                                self.prettyprint)
-            result = dcont.get_contents()
-            if result != 'ok':
-                print ('WARNING: failed to get directory contents'
-                       'for <%s> (%s)'
-                       % (self.path, result))
-            else:
-                dcont.get_batch_entryinfo()
-                dcont.show_batch()
-        else:
-            while True:
-                client = LocalClientPlus()
-                code = "# -*- coding: utf-8 -*-\n"
-                code += self.generate_executor()
-                with open(__file__, 'r') as fp_:
-                    code += fp_.read()
-                result = client.cmd([self.host], "cmd.exec_code",
-                                    ["python2", code],
-                                    expr_form='list',
-                                    timeout=self.timeout)
-                if self.host in result:
-                    lines = result[self.host].split("\n")
+        while True:
+            client = LocalClientPlus()
+            module_args = [self.path, self.batchno,
+                           self.batchsize, self.timeout,
+                           quiet]
 
-                    maxlen = 0
+            result = client.cmd([self.host],
+                                "retentionaudit.examine_dir",
+                                module_args, expr_form='list',
+                                timeout=self.timeout)
+
+            if self.host in result:
+                lines = result[self.host].split("\n")
+
+                maxlen = 0
+                for line in lines:
+                    if (line.startswith("WARNING:") or
+                        line.startswith("INFO:")):
+                        continue
+                    else:
+                        try:
+                            entry = json.loads(
+                                line, object_hook=JsonHelper.decode_dict)
+                            if len(entry['path']) > maxlen:
+                                maxlen = len(entry['path'])
+                        except:
+                            continue
+
+                if not quiet:
                     for line in lines:
                         if (line.startswith("WARNING:") or
-                                line.startswith("INFO:")):
-                            continue
+                            line.startswith("INFO:")):
+                            print line
                         else:
                             try:
                                 entry = json.loads(
-                                    line, object_hook=JsonHelper.decode_dict)
-                                if len(entry['path']) > maxlen:
-                                    maxlen = len(entry['path'])
+                                    line,
+                                    object_hook=JsonHelper.decode_dict)
+                                EntryInfo.display_from_dict(
+                                    entry, True, maxlen)
                             except:
-                                continue
-
-                    if not quiet:
-                        for line in lines:
-                            if (line.startswith("WARNING:") or
-                                    line.startswith("INFO:")):
                                 print line
-                            else:
-                                try:
-                                    entry = json.loads(
-                                        line,
-                                        object_hook=JsonHelper.decode_dict)
-                                    EntryInfo.display_from_dict(
-                                        entry, True, maxlen)
-                                except:
-                                    print line
-                    return result[self.host]
-                else:
-                    print "Failed to retrieve dir content for", self.path, "on", self.host
-                    continuing = ("Try again? Y/N [N]: ")
-                    if continuing == "":
-                        continuing = "N"
-                    if continuing.upper() != "Y":
-                        return None
+                return result[self.host]
+            else:
+                print "Failed to retrieve dir content for", self.path, "on", self.host
+                continuing = ("Try again? Y/N [N]: ")
+                if continuing == "":
+                    continuing = "N"
+                if continuing.upper() != "Y":
+                    return None
 
-    def generate_executor(self):
-        '''
-        horrible hack: this code is fed to salt when we feed this
-        script to stdin to run it remotely, thus bypassing all
-        the command line argument parsing logic
 
-        in this case we set up for DirExaminer directly
+class LocalDirExaminer(object):
+    '''
+    retrieval and display of directory contents on local host
+    '''
+    def __init__(self, path, batchno=1, batchsize=300, timeout=20, quiet=False):
+        self.path = path
+        self.st = None
+        self.timeout = timeout
+        self.batchno = batchno
+        self.batchsize = batchsize
+        self.quiet = quiet
+
+    def run(self, quiet=False):
         '''
-        code = """
-def executor():
-    de = DirExaminer('%s', 'localhost', %d, %d, %d)
-    de.run()
-""" % (self.path, self.batchno, self.batchsize, self.timeout)
-        return code
+        do all the work
+
+        note that 'quiet' applies only to remotely
+        run, and the same is true for returning the contents.
+        maybe we want to fix that
+        '''
+
+        print ('WARNING: trying to get directory contents')
+        dcont = DirContents(self.path, self.batchno, self.batchsize, False)
+        result = dcont.get_contents()
+        if result != 'ok':
+            print ('WARNING: failed to get directory contents'
+                   'for <%s> (%s)'
+                   % (self.path, result))
+        else:
+            dcont.get_batch_entryinfo()
+            output = dcont.show_batch()
+            return output
 
 

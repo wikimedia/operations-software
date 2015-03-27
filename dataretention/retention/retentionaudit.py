@@ -7,7 +7,7 @@ sys.path.append('/srv/audits/retention/scripts/')
 from retention.localfileaudit import LocalFilesAuditor
 from retention.locallogaudit import LocalLogsAuditor
 from retention.localhomeaudit import LocalHomesAuditor
-from retention.examiner import LocalFileExaminer
+from retention.examiner import LocalFileExaminer, LocalDirExaminer
 
 log = logging.getLogger(__name__)
 
@@ -50,3 +50,11 @@ def examine_file(path, num_lines,
                                   timeout, quiet)
     result = fexaminer.run()
     return result
+
+def examine_dir(path, batchno, batchsize,
+                timeout, quiet=False):
+    dexaminer = LocalDirExaminer(path, batchno,
+                                 batchsize, timeout, quiet)
+    result = dexaminer.run()
+    return result
+
