@@ -17,6 +17,7 @@ from retention.fileinfo import FileInfo
 from retention.utils import JsonHelper
 from retention.runner import Runner
 from retention.localfileaudit import LocalFilesAuditor
+import retention.ruleutils
 
 global_keys = [key for key, value_unused in
                sys.modules[__name__].__dict__.items()]
@@ -105,8 +106,6 @@ class RemoteFilesAuditor(object):
         store_filepath: full path to rule store (sqlite3 db)
         verbose:      show informative messages during processing
         '''
-
-        global rules
 
         self.hosts_expr = hosts_expr
         self.audit_type = audit_type
@@ -211,7 +210,7 @@ class RemoteFilesAuditor(object):
             os.makedirs(where_to_put, 0755)
         for host in hosts:
             nicepath = os.path.join(where_to_put, host + ".conf")
-            Rule.export_rules(self.cdb, nicepath, host)
+            retention.ruleutils.export_rules(self.cdb, nicepath, host)
 
     def set_up_ignored(self):
         '''
@@ -272,10 +271,10 @@ class RemoteFilesAuditor(object):
                                     continue
                                 if entry[-1] == os.path.sep:
                                     entry = entry[:-1]
-                                    entry_type = Rule.text_to_entrytype('dir')
+                                    entry_type = retention.ruleutils.text_to_entrytype('dir')
                                 else:
-                                    entry_type = Rule.text_to_entrytype('file')
-                                rule = Rule.get_rule_as_json(
+                                    entry_type = retention.ruleutils.text_to_entrytype('file')
+                                rule = retention.ruleutils.get_rule_as_json(
                                     entry, entry_type, status)
                                 rules[host].append(rule)
         return rules
@@ -287,7 +286,7 @@ class RemoteFilesAuditor(object):
             rulescode = "rules = {}\n\n"
             rulescode += "rules['%s'] = [\n" % host
             rulescode += (indent +
-                     (",\n%s" % (indent + indent)).join(rules[host]) + "\n")
+                          (",\n%s" % (indent + indent)).join(rules[host]) + "\n")
             rulescode += "]\n"
 
             with open("/srv/salt/audits/retention/configs/%s_store.py" % host, "w+") as fp:
@@ -335,7 +334,7 @@ class RemoteFilesAuditor(object):
                 if basedir in basedirs or basedir == '*':
                     sys.stderr.write("INFO: " + ','.join(
                         self.ignored['extensions'][basedir])
-                        + " in " + basedir + '\n')
+                                     + " in " + basedir + '\n')
 
     def normalize(self, fname):
         '''
@@ -482,7 +481,7 @@ class RemoteFilesAuditor(object):
         hostlist = report.keys()
         for host in hostlist:
             try:
-                problem_rules = Rule.get_rules(self.cdb, host, Status.text_to_status('problem'))
+                problem_rules = retention.ruleutils.get_rules(self.cdb, host, Status.text_to_status('problem'))
             except:
                 print 'WARNING: problem retrieving problem rules for host', host
                 problem_rules = None
@@ -495,9 +494,9 @@ class RemoteFilesAuditor(object):
             if dirs_problem is not None:
                 dirs_problem = list(set(dirs_problem))
                 for dirname in dirs_problem:
-                    Rule.do_add_rule(self.cdb, dirname,
-                                     Rule.text_to_entrytype('dir'),
-                                     Status.text_to_status('problem'), host)
+                    retention.ruleutils.do_add_rule(self.cdb, dirname,
+                                                    retention.ruleutils.text_to_entrytype('dir'),
+                                                    Status.text_to_status('problem'), host)
 
             if dirs_skipped is not None:
                 dirs_skipped = list(set(dirs_skipped))
@@ -505,8 +504,6 @@ class RemoteFilesAuditor(object):
                     if dirname in dirs_problem or dirname in existing_problems:
                         # problem report overrides 'too many to audit'
                         continue
-                    Rule.do_add_rule(self.cdb, dirname,
-                                     Rule.text_to_entrytype('dir'),
-                                     Status.text_to_status('unreviewed'), host)
-
-
+                    retention.ruleutils.do_add_rule(self.cdb, dirname,
+                                                    retention.ruleutils.text_to_entrytype('dir'),
+                                                    Status.text_to_status('unreviewed'), host)

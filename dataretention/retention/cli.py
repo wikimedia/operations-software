@@ -21,6 +21,7 @@ from retention.utils import JsonHelper
 from retention.config import Config
 from retention.examiner import DirExaminer, FileExaminer
 import retention.fileutils
+import retention.ruleutils
 
 class LocalIgnores(object):
     '''
@@ -138,7 +139,7 @@ class CommandLine(object):
         if hosts is None:
             hosts = self.cdb.store_db_list_all_hosts()
         for host in hosts:
-            self.perhost_rules_from_store = Rule.get_rules(
+            self.perhost_rules_from_store = retention.ruleutils.get_rules(
                 self.cdb, host, Status.text_to_status('good'))
 
             if self.perhost_rules_from_store is not None:
@@ -812,7 +813,7 @@ class CommandLine(object):
                 print 'skipping %s, not in current dir listing' % entry
                 print self.current_dir_contents_dict
                 continue
-            filetype = Rule.entrytype_to_text(
+            filetype = retention.ruleutils.entrytype_to_text(
                 self.current_dir_contents_dict[entry]['type'])
             if filetype == 'link':
                 print 'No need to mark', file_expr, 'links are always skipped'
@@ -821,7 +822,7 @@ class CommandLine(object):
                 print 'Not a dir or regular file, no need to mark, skipping'
                 continue
             status = Status.text_to_status('good')
-            Rule.do_add_rule(self.cdb, file_expr, filetype, status, self.host)
+            retention.ruleutils.do_add_rule(self.cdb, file_expr, filetype, status, self.host)
         return True
 
     def check_rules_path(self, rules_path):
@@ -866,11 +867,11 @@ class CommandLine(object):
                 path = os.path.join(self.current_dir, path)
             if path[-1] == os.path.sep:
                 path = path[:-1]
-                filetype = Rule.text_to_entrytype('dir')
+                filetype = retention.ruleutils.text_to_entrytype('dir')
             else:
-                filetype = Rule.text_to_entrytype('file')
+                filetype = retention.ruleutils.text_to_entrytype('file')
 
-            Rule.do_add_rule(self.cdb, path, filetype, status, self.host)
+            retention.ruleutils.do_add_rule(self.cdb, path, filetype, status, self.host)
             # update the ignores list since we have a new rule
             self.perhost_ignores_from_rules = {}
             self.get_perhost_ignores_from_rules([self.host])
@@ -899,23 +900,23 @@ class CommandLine(object):
                 if prefix == "":
                     prefix = "/"
                 if status == 'a' or status == 'A':
-                    Rule.show_rules(self.cdb, self.host, prefix=prefix)
+                    retention.ruleutils.show_rules(self.cdb, self.host, prefix=prefix)
                     return True
                 elif status[0].upper() in Status.STATUSES:
-                    Rule.show_rules(self.cdb, self.host, status[0].upper(),
-                                    prefix=prefix)
+                    retention.ruleutils.show_rules(self.cdb, self.host, status[0].upper(),
+                                                   prefix=prefix)
                     return True
         elif command == 'D' or command == 'd':
             if not self.current_dir_contents_list:
                 self.get_dir_contents(self.current_dir, self.batchno)
-            Rule.get_rules_for_path(self.cdb, self.current_dir, self.host)
+            retention.ruleutils.get_rules_for_path(self.cdb, self.current_dir, self.host)
             return True
         elif command == 'C' or command == 'c':
             if not self.current_dir_contents_list:
                 self.get_dir_contents(self.current_dir, self.batchno)
-            Rule.get_rules_for_entries(self.cdb, self.current_dir,
-                                       self.current_dir_contents_dict,
-                                       self.host)
+            retention.ruleutils.get_rules_for_entries(self.cdb, self.current_dir,
+                                                      self.current_dir_contents_dict,
+                                                      self.host)
             return True
         elif command == 'R' or command == 'r':
             # fixme need different completer here I think, that
@@ -929,7 +930,7 @@ class CommandLine(object):
                 path = os.path.join(self.current_dir, path)
             if path[-1] == os.path.sep:
                 path = path[:-1]
-            Rule.do_remove_rule(self.cdb, path, self.host)
+            retention.ruleutils.do_remove_rule(self.cdb, path, self.host)
             # update the ignores list since we removed a rule
             self.perhost_ignores_from_rules = {}
             self.get_perhost_ignores_from_rules([self.host])
@@ -943,7 +944,7 @@ class CommandLine(object):
             if not self.check_rules_path(rules_path):
                 print "bad rules file path specified, aborting"
             else:
-                Rule.import_rules(self.cdb, rules_path, self.host)
+                retention.ruleutils.import_rules(self.cdb, rules_path, self.host)
             return True
         elif command == 'E' or command == 'e':
             readline.set_completer(None)
@@ -954,7 +955,7 @@ class CommandLine(object):
             if not self.check_rules_path(rules_path):
                 print "bad rules file path specified, aborting"
             else:
-                Rule.export_rules(self.cdb, rules_path, self.host)
+                retention.ruleutils.export_rules(self.cdb, rules_path, self.host)
             return True
         elif command == 'Q' or command == 'q':
             print "quitting this level"
@@ -1116,9 +1117,9 @@ class CommandLine(object):
             if command in Status.STATUSES:
                 # this option is invoked on a directory so
                 # type is dir every time
-                Rule.do_add_rule(self.cdb, dir_path,
-                                 Rule.text_to_entrytype('dir'),
-                                 command, self.host)
+                retention.ruleutils.do_add_rule(self.cdb, dir_path,
+                                                retention.ruleutils.text_to_entrytype('dir'),
+                                                command, self.host)
                 return None
             elif command == 'Q' or command == 'q':
                 return None

@@ -10,6 +10,7 @@ sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.saltclientplus import LocalClientPlus
 import retention.utils
+import retention.ruleutils
 from retention.rule import Rule, RuleStore
 from retention.status import Status
 
@@ -65,7 +66,7 @@ def do_action(cdb, action, hosts, status, path, dryrun):
         if path and path[-1] == os.path.sep:
             path = path[:-1]
         for host in hosts:
-            Rule.show_rules(cdb, host, status, prefix=path)
+            retention.ruleutils.show_rules(cdb, host, status, prefix=path)
 
     elif action == 'delete':
         if path and path[-1] == os.path.sep:
@@ -76,13 +77,13 @@ def do_action(cdb, action, hosts, status, path, dryrun):
                 print "would remove rule for %s in %s" % (path, hosts)
             else:
                 for host in hosts:
-                    Rule.do_remove_rule(cdb, path, host)
+                    retention.ruleutils.do_remove_rule(cdb, path, host)
         elif status:
             if dryrun:
                 print "would remove rules for status %s in %s" % (status, hosts)
             else:
                 for host in hosts:
-                    Rule.do_remove_rules(cdb, status, host)
+                    retention.ruleutils.do_remove_rules(cdb, status, host)
 
     elif action == 'add':
         if status is None:
@@ -91,17 +92,17 @@ def do_action(cdb, action, hosts, status, path, dryrun):
             usage('path must be specified to add a rule')
 
         if path[-1] == os.path.sep:
-            rtype = Rule.text_to_entrytype('dir')
+            rtype = retention.ruleutils.text_to_entrytype('dir')
             path = path[:-1]
         else:
-            rtype = Rule.text_to_entrytype('file')
+            rtype = retention.ruleutils.text_to_entrytype('file')
 
         if dryrun:
             print "would add rule for %s in %s with status %s of type %s" % (
                 hosts, path, status, rtype)
 
         for host in hosts:
-            Rule.do_add_rule(cdb, path, rtype, status, host)
+            retention.ruleutils.do_add_rule(cdb, path, rtype, status, host)
 
 def main():
     host = None
@@ -150,10 +151,10 @@ def main():
     cdb.store_db_init(None)
 
     hosts, htype = retention.utils.get_hosts_expr_type(host)
-    
+
     # if we are given one host, check that the host has a table or whine
     if htype == 'glob' and '*' not in hosts:
-        if not Rule.check_host_table_exists(cdb, host):
+        if not retention.ruleutils.check_host_table_exists(cdb, host):
             usage('no such host in rule store, %s' % host)
     elif htype == 'grain':
         client = LocalClientPlus()

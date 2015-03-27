@@ -14,6 +14,7 @@ from retention.rule import Rule
 from retention.config import Config
 from retention.fileinfo import FileInfo
 import retention.fileutils
+import retention.ruleutils
 
 
 class LocalFilesAuditor(object):
@@ -172,10 +173,10 @@ class LocalFilesAuditor(object):
                 for rule in self.perhost_rules_from_store[host]:
                     path = os.path.join(rule['basedir'], rule['name'])
                     if rule['status'] == 'good':
-                        if Rule.entrytype_to_text(rule['type']) == 'dir':
+                        if retention.ruleutils.entrytype_to_text(rule['type']) == 'dir':
                             if path not in self.ignored['dirs']['/']:
                                 self.ignored['dirs']['/'].append(path)
-                        elif Rule.entrytype_to_text(rule['type']) == 'file':
+                        elif retention.ruleutils.entrytype_to_text(rule['type']) == 'file':
                             if path not in self.ignored['files']['/']:
                                 self.ignored['files']['/'].append(path)
                         else:
