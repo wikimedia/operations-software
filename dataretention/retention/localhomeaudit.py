@@ -8,10 +8,6 @@ import retention.magic
 from retention.config import Config
 from retention.localfileaudit import LocalFilesAuditor
 
-global_keys = [key for key, value_unused in
-               sys.modules[__name__].__dict__.items()]
-
-
 class LocalHomesAuditor(LocalFilesAuditor):
     '''
     auditing of home directories on a set of hosts

@@ -11,10 +11,6 @@ from retention.fileinfo import LogInfo, LogUtils
 from retention.localfileaudit import LocalFilesAuditor
 import retention.fileutils
 
-global_keys = [key for key, value_unused in
-               sys.modules[__name__].__dict__.items()]
-
-
 class LocalLogsAuditor(LocalFilesAuditor):
     def __init__(self, audit_type,
                  oldest=False,

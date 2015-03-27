@@ -10,9 +10,6 @@ from retention.utils import JsonHelper
 from retention.remotefileauditor import RemoteFilesAuditor
 
 
-global_keys = [key for key, value_unused in
-               sys.modules[__name__].__dict__.items()]
-
 class RemoteLogsAuditor(RemoteFilesAuditor):
     def __init__(self, hosts_expr, audit_type, prettyprint=False,
                  oldest=False,

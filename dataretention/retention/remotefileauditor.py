@@ -19,9 +19,6 @@ from retention.runner import Runner
 from retention.localfileaudit import LocalFilesAuditor
 import retention.ruleutils
 
-global_keys = [key for key, value_unused in
-               sys.modules[__name__].__dict__.items()]
-
 def get_dirs_toexamine(host_report):
     '''
     given full report output from host (list of

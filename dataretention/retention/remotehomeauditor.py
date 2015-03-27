@@ -7,9 +7,6 @@ import retention.utils
 import retention.magic
 from retention.remotefileauditor import RemoteFilesAuditor
 
-global_keys = [key for key, value_unused in
-               sys.modules[__name__].__dict__.items()]
-
 
 class RemoteHomesAuditor(RemoteFilesAuditor):
     '''
