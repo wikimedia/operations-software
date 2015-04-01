@@ -17,16 +17,6 @@ def get_hosts_expr_type(hosts_expr):
         hosts = hosts_expr
         return hosts, 'glob'  # default
 
-def running_locally(hosts_expr):
-    '''
-    determine whether this script is to run on the local
-    host or on one or more remote hosts
-    '''
-    if hosts_expr == "127.0.0.1" or hosts_expr == "localhost":
-        return True
-    else:
-        return False
-
 
 class JsonHelper(object):
     # adapted from

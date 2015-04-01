@@ -6,7 +6,8 @@ import logging
 
 sys.path.append('/srv/audits/retention/scripts/')
 
-from retention.saltclientplus import LocalClientPlus
+from salt.client import LocalClient
+#from retention.saltclientplus import LocalClientPlus
 import retention.utils
 from retention.utils import JsonHelper
 from retention.fileinfo import FileInfo, EntryInfo
@@ -29,7 +30,8 @@ class RemoteFileExaminer(object):
         '''
         do all the work
         '''
-        client = LocalClientPlus()
+#        client = LocalClientPlus()
+        client = LocalClient()
         module_args = [self.path,
                        self.num_lines,
                        self.timeout]
@@ -210,7 +212,8 @@ class RemoteDirExaminer(object):
         '''
 
         while True:
-            client = LocalClientPlus()
+#            client = LocalClientPlus()
+            client = LocalClient()
             module_args = [self.path, self.batchno,
                            self.batchsize, self.timeout,
                            quiet]
