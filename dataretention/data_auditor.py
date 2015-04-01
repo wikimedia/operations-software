@@ -8,7 +8,7 @@ from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor
 from retention.examiner import RemoteFileExaminer, RemoteDirExaminer
-from retention.userconfretriever import RemoteUserCfRetriever
+from retention.ignores import RemoteUserCfRetriever
 
 def usage(message=None):
     if message:

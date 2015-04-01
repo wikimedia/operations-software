@@ -10,7 +10,6 @@ sys.path.append('/srv/audits/retention/scripts/')
 from retention.status import Status
 from retention.rule import RuleStore
 import retention.remotefileauditor
-from retention.localhomeaudit import LocalHomesAuditor
 from retention.locallogaudit import LocalLogsAuditor
 from retention.fileinfo import FileInfo
 import retention.utils
@@ -19,9 +18,9 @@ from retention.config import Config
 from retention.examiner import RemoteDirExaminer, RemoteFileExaminer
 import retention.fileutils
 import retention.ruleutils
-from retention.userconfretriever import RemoteUserCfRetriever
 import retention.cliutils
-from retention.ignores import Ignores
+from retention.ignores import Ignores, RemoteUserCfRetriever
+import retention.ignores
 from retention.completion import Completion
 
 
@@ -279,7 +278,7 @@ class CommandLine(object):
             else:
                 local_ign = RemoteUserCfRetriever(host_todo, self.timeout, self.audit_type)
                 self.local_ignores = local_ign.run(True)
-                local_ignored_dirs, local_ignored_files = LocalHomesAuditor.process_local_ignores(
+                local_ignored_dirs, local_ignored_files = retention.ignores.process_local_ignores(
                     self.local_ignores, self.ignored)
                 self.do_one_host(host_todo, report)
 
@@ -365,19 +364,19 @@ class CommandLine(object):
             path = LocalLogsAuditor.normalize(path)
 
         if entrytype == 'file':
-            if retention.fileutils.file_is_ignored(path, basedir, self.ignored):
+            if retention.ignores.file_is_ignored(path, basedir, self.ignored):
                 return False
 
             # check perhost file
             if self.cenv.host in self.ignores.perhost_ignores:
-                if retention.fileutils.file_is_ignored(
+                if retention.ignores.file_is_ignored(
                         path, basedir,
                         self.ignores.perhost_ignores[self.cenv.host]):
                     return False
 
             # check perhost rules
             if self.cenv.host in self.ignores.perhost_ignores_from_rules:
-                if retention.fileutils.file_is_ignored(
+                if retention.ignores.file_is_ignored(
                         path, basedir,
                         self.ignores.perhost_ignores_from_rules[self.cenv.host]):
                     return False

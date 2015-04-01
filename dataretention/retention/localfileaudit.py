@@ -15,7 +15,8 @@ from retention.config import Config
 from retention.fileinfo import FileInfo
 import retention.fileutils
 import retention.ruleutils
-
+from retention.ignores import Ignores
+import retention.ignores
 
 class LocalFilesAuditor(object):
     '''
@@ -65,7 +66,8 @@ class LocalFilesAuditor(object):
         self.timeout = timeout
 
         self.ignored = {}
-        self.set_up_ignored()
+        self.ignores = Ignores(None)
+        self.ignores.set_up_ignored()
 
         self.hostname = socket.getfqdn()
 
@@ -120,69 +122,22 @@ class LocalFilesAuditor(object):
             '/srv/audits/retention/configs/allhosts_file.cf')['perhostcf']
 
         if self.perhost_rules_from_store is not None:
-            self.add_perhost_rules_to_ignored()
+            self.ignores.add_perhost_rules_to_ignored(self.hostname)
 
         if (self.perhost_rules_from_file is not None and
                 'ignored_dirs' in self.perhost_rules_from_file):
-            if '/' not in self.ignored['dirs']:
-                self.ignored['dirs']['/'] = []
+            if '/' not in self.ignores.ignored['dirs']:
+                self.ignores.ignored['dirs']['/'] = []
             if self.hostname in self.perhost_rules_from_file['ignored_dirs']:
                 for path in self.perhost_rules_from_file[
                         'ignored_dirs'][self.hostname]:
                     if path.startswith('/'):
-                        self.ignored['dirs']['/'].append(path)
+                        self.ignores.ignored['dirs']['/'].append(path)
             if '*' in self.perhost_rules_from_file['ignored_dirs']:
                 for path in self.perhost_rules_from_file[
                         'ignored_dirs'][self.hostname]:
                     if path.startswith('/'):
-                        self.ignored['dirs']['/'].append(path)
-
-    def set_up_ignored(self):
-        '''
-        collect up initial list of files/dirs to skip during audit
-        '''
-        self.ignored['files'] = Config.cf['ignored_files']
-        self.ignored['dirs'] = Config.cf['ignored_dirs']
-        self.ignored['prefixes'] = Config.cf['ignored_prefixes']
-        self.ignored['extensions'] = Config.cf['ignored_extensions']
-
-        if self.ignore_also is not None:
-            # silently skip paths that are not absolute
-            for path in self.ignore_also:
-                if path.startswith('/'):
-                    if path.endswith('/'):
-                        if '/' not in self.ignored['dirs']:
-                            self.ignored['dirs']['/'] = []
-                        self.ignored['dirs']['/'].append(path[:-1])
-                    else:
-                        if '/' not in self.ignored['files']:
-                            self.ignored['files']['/'] = []
-                        self.ignored['files']['/'].append(path)
-
-    def add_perhost_rules_to_ignored(self):
-        '''
-        add dirs/files to be skipped during audit based
-        on rules in the rule store db
-        '''
-        if '/' not in self.ignored['dirs']:
-            self.ignored['dirs']['/'] = []
-        if '/' not in self.ignored['files']:
-            self.ignored['files']['/'] = []
-        for host in self.perhost_rules_from_store:
-            if host == self.hostname:
-                for rule in self.perhost_rules_from_store[host]:
-                    path = os.path.join(rule['basedir'], rule['name'])
-                    if rule['status'] == 'good':
-                        if retention.ruleutils.entrytype_to_text(rule['type']) == 'dir':
-                            if path not in self.ignored['dirs']['/']:
-                                self.ignored['dirs']['/'].append(path)
-                        elif retention.ruleutils.entrytype_to_text(rule['type']) == 'file':
-                            if path not in self.ignored['files']['/']:
-                                self.ignored['files']['/'].append(path)
-                        else:
-                            # some other random type, don't care
-                            continue
-                break
+                        self.ignores.ignored['dirs']['/'].append(path)
 
     def normalize(self, fname):
         '''
@@ -202,7 +157,7 @@ class LocalFilesAuditor(object):
         '''
         fname = self.normalize(fname)
 
-        if retention.fileutils.file_is_ignored(fname, basedir, self.ignored):
+        if retention.ignores.file_is_ignored(fname, basedir, self.ignores.ignored):
             return False
 
         if (self.filenames_to_check is not None and
@@ -214,7 +169,7 @@ class LocalFilesAuditor(object):
     def get_subdirs_to_do(self, dirname, dirname_depth, todo):
 
         locale.setlocale(locale.LC_ALL, '')
-        if retention.fileutils.dir_is_ignored(dirname, self.ignored):
+        if retention.fileutils.dir_is_ignored(dirname, self.ignores.ignored):
             return todo
         if retention.fileutils.dir_is_wrong_type(dirname):
             return todo
@@ -328,7 +283,7 @@ class LocalFilesAuditor(object):
             if not retention.fileutils.dirtree_check(subdirpath, self.dirs_to_check):
                 return
 
-        if retention.fileutils.dir_is_ignored(subdirpath, self.ignored):
+        if retention.fileutils.dir_is_ignored(subdirpath, self.ignores.ignored):
             return True
 
         count = 0
@@ -356,8 +311,8 @@ class LocalFilesAuditor(object):
         # cutoff won't be in our list
         temp_results = []
         for base, paths, files in self.walk_nolinks(subdirpath):
-            expanded_dirs, wildcard_dirs = retention.fileutils.expand_ignored_dirs(
-                base, self.ignored)
+            expanded_dirs, wildcard_dirs = retention.ignores.expand_ignored_dirs(
+                base, self.ignores.ignored)
             if self.dirs_to_check is not None:
                 paths[:] = [p for p in paths
                             if retention.fileutils.dirtree_check(os.path.join(base, p),

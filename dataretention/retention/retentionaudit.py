@@ -8,7 +8,7 @@ from retention.localfileaudit import LocalFilesAuditor
 from retention.locallogaudit import LocalLogsAuditor
 from retention.localhomeaudit import LocalHomesAuditor
 from retention.examiner import LocalFileExaminer, LocalDirExaminer
-from retention.userconfretriever import LocalUserCfRetriever
+from retention.ignores import LocalUserCfRetriever
 
 log = logging.getLogger(__name__)
 

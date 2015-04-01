@@ -18,6 +18,8 @@ from retention.utils import JsonHelper
 from retention.runner import Runner
 from retention.localfileaudit import LocalFilesAuditor
 import retention.ruleutils
+from retention.ignores import Ignores
+
 
 def get_dirs_toexamine(host_report):
     '''
@@ -121,8 +123,6 @@ class RemoteFilesAuditor(object):
         self.store_filepath = store_filepath
         self.verbose = verbose
 
-        self.set_up_ignored()
-
         # need this for locally running jobs
         self.hostname = socket.getfqdn()
 
@@ -151,7 +151,10 @@ class RemoteFilesAuditor(object):
         self.cdb.store_db_init(self.expanded_hosts)
         self.set_up_and_export_rule_store()
 
-        self.show_ignored(Config.cf[self.locations])
+        self.ignores = Ignores(self.cdb)
+        self.ignores.set_up_ignored(self.ignore_also)
+        if self.verbose:
+            self.ignores.show_ignored(Config.cf[self.locations])
 
         self.today = time.time()
         self.magic = retention.magic.magic_open(retention.magic.MAGIC_NONE)
@@ -208,29 +211,6 @@ class RemoteFilesAuditor(object):
         for host in hosts:
             nicepath = os.path.join(where_to_put, host + ".conf")
             retention.ruleutils.export_rules(self.cdb, nicepath, host)
-
-    def set_up_ignored(self):
-        '''
-        collect up initial list of files/dirs to skip during audit
-        '''
-        self.ignored = {}
-        self.ignored['files'] = Config.cf['ignored_files']
-        self.ignored['dirs'] = Config.cf['ignored_dirs']
-        self.ignored['prefixes'] = Config.cf['ignored_prefixes']
-        self.ignored['extensions'] = Config.cf['ignored_extensions']
-
-        if self.ignore_also is not None:
-            # silently skip paths that are not absolute
-            for path in self.ignore_also:
-                if path.startswith('/'):
-                    if path.endswith('/'):
-                        if '/' not in self.ignored['dirs']:
-                            self.ignored['dirs']['/'] = []
-                        self.ignored['dirs']['/'].append(path[:-1])
-                    else:
-                        if '/' not in self.ignored['files']:
-                            self.ignored['files']['/'] = []
-                        self.ignored['files']['/'].append(path)
 
     def get_perhost_rules_as_json(self):
         '''
@@ -297,41 +277,6 @@ class RemoteFilesAuditor(object):
             with open("/srv/salt/audits/retention/configs/allhosts_file.py", "w+") as fp:
                 fp.write(self.perhost_raw)
                 fp.close()
-
-    def show_ignored(self, basedirs):
-        if self.verbose:
-            sys.stderr.write(
-                "INFO: The below does not include per-host rules\n")
-            sys.stderr.write(
-                "INFO: or rules derived from the directory status entries.\n")
-
-            sys.stderr.write("INFO: Ignoring the following directories:\n")
-
-            for basedir in self.ignored['dirs']:
-                if basedir in basedirs or basedir == '*' or basedir == '/':
-                    sys.stderr.write(
-                        "INFO: " + ','.join(self.ignored['dirs'][basedir])
-                        + " in " + basedir + '\n')
-
-            sys.stderr.write("INFO: Ignoring the following files:\n")
-            for basedir in self.ignored['files']:
-                if basedir in basedirs or basedir == '*' or basedir == '/':
-                    sys.stderr.write(
-                        "INFO: " + ','.join(self.ignored['files'][basedir])
-                        + " in " + basedir + '\n')
-
-            sys.stderr.write(
-                "INFO: Ignoring files starting with the following:\n")
-            sys.stderr.write(
-                "INFO: " + ','.join(self.ignored['prefixes']) + '\n')
-
-            sys.stderr.write(
-                "INFO: Ignoring files ending with the following:\n")
-            for basedir in self.ignored['extensions']:
-                if basedir in basedirs or basedir == '*':
-                    sys.stderr.write("INFO: " + ','.join(
-                        self.ignored['extensions'][basedir])
-                                     + " in " + basedir + '\n')
 
     def normalize(self, fname):
         '''
@@ -472,7 +417,7 @@ class RemoteFilesAuditor(object):
                         print "no output from host", host
         # add some results to rule store
         self.update_status_rules_from_report(result)
-        return result, self.ignored
+        return result, self.ignores.ignored
 
     def update_status_rules_from_report(self, report):
         hostlist = report.keys()
