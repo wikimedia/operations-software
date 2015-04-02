@@ -1,0 +1,23 @@
+root_locations:
+  - /root
+logs_locations:
+  - /var/log
+  - /a
+  - /var/store
+homes_locations:
+  - /home
+  - /data/db20/home
+
+rotate_basedir: /etc/logrotate.d
+rotate_mainconf: /etc/logrotate.conf
+
+mysqlconf:
+  - /etc/mysql/my.cnf
+  - /etc/my.cnf
+
+# older than 90 days is bad
+# 90 * 86400
+cutoff: 7776000
+
+# run on this many hosts at once
+batchsize: 20

@@ -6,7 +6,7 @@ sys.path.append('/srv/audits/retention/scripts/')
 
 import retention.utils
 import retention.magic
-from retention.config import Config
+import retention.config
 from retention.fileinfo import LogInfo, LogUtils
 from retention.localfileaudit import LocalFilesAuditor
 import retention.fileutils
@@ -60,6 +60,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
     @staticmethod
     def parse_logrotate_contents(contents,
                                  default_freq='-', default_keep='-'):
+        retention.config.set_up_conf()
         lines = contents.split('\n')
         state = 'want_lbracket'
         logs = {}
@@ -109,6 +110,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         return logs
 
     def get_logrotate_defaults(self):
+        retention.config.set_up_conf()
         contents = open(Config.cf['rotate_mainconf']).read()
         lines = contents.split('\n')
         skip = False
@@ -142,6 +144,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         gather all names of log files from logrotate
         config files
         '''
+        retention.config.set_up_conf()
         rotated_logs = {}
         default_freq, default_keep = self.get_logrotate_defaults()
         rotated_logs.update(LocalLogsAuditor.parse_logrotate_contents(
@@ -159,6 +162,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         check how long mysql logs are kept around
         '''
         # note that I also see my.cnf.s3 and we don't check those (yet)
+        retention.config.set_up_conf()
         output = ''
         for filename in Config.cf['mysqlconf']:
             found = False
@@ -229,6 +233,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         note that no summary report is done for a  single host,
         for logs we summarize across hosts
         '''
+        retention.config.set_up_conf()
         mysql_issues = self.check_mysqlconf()
         result = []
         if mysql_issues:

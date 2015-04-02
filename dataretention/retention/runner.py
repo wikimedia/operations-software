@@ -3,7 +3,7 @@ import sys
 sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.saltclientplus import LocalClientPlus
-from retention.config import Config
+import retention.config
 
 class Runner(object):
     '''
@@ -24,6 +24,7 @@ class Runner(object):
         self.to_check = to_check
         self.timeout = timeout
         self.verbose = verbose
+        retention.config.set_up_conf()
 
     def get_auditfunction_name(self):
         if self.audit_type == 'root':
@@ -49,9 +50,9 @@ class Runner(object):
         # fixme instead of this we call the right salt module based on the
         # audit type and with the self.auditmodule_args which is a list
 
-        hostbatches = [self.expanded_hosts[i: i + Config.cf['batchsize']]
+        hostbatches = [self.expanded_hosts[i: i + retention.config.cf['batchsize']]
                        for i in range(0, len(self.expanded_hosts),
-                                      Config.cf['batchsize'])]
+                                      retention.config.cf['batchsize'])]
 
         result = {}
         for hosts in hostbatches:

@@ -14,7 +14,7 @@ from retention.locallogaudit import LocalLogsAuditor
 from retention.fileinfo import FileInfo
 import retention.utils
 from retention.utils import JsonHelper
-from retention.config import Config
+import retention.config
 from retention.examiner import RemoteDirExaminer, RemoteFileExaminer
 import retention.fileutils
 import retention.ruleutils
@@ -223,6 +223,7 @@ class CommandLine(object):
         self.dircontents = CurrentDirContents(self.timeout)
         self.cenv = CurrentEnv()
         self.cmpl = Completion(self.dircontents, self.cenv, self.max_depth_top_level)
+        retention.config.set_up_conf()
 
     def do_one_host(self, host, report):
         self.set_host(host)
@@ -352,7 +353,7 @@ class CommandLine(object):
         return contents
 
     def get_basedir_from_path(self, path):
-        for location in Config.cf[self.locations]:
+        for location in retention.config.cf[self.locations]:
             if path == location or path.startswith(location + os.path.sep):
                 return location
         # fixme is this really the right fallback? check it

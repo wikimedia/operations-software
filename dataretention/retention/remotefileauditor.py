@@ -12,7 +12,7 @@ import retention.magic
 from retention.status import Status
 from retention.saltclientplus import LocalClientPlus
 from retention.rule import Rule, RuleStore
-from retention.config import Config
+import retention.config
 from retention.fileinfo import FileInfo
 from retention.utils import JsonHelper
 from retention.runner import Runner
@@ -126,7 +126,8 @@ class RemoteFilesAuditor(object):
         # need this for locally running jobs
         self.hostname = socket.getfqdn()
 
-        self.cutoff = Config.cf['cutoff']
+        retention.config.set_up_conf()
+        self.cutoff = retention.config.cf['cutoff']
 
         client = LocalClientPlus()
         hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
@@ -154,7 +155,7 @@ class RemoteFilesAuditor(object):
         self.ignores = Ignores(self.cdb)
         self.ignores.set_up_ignored(self.ignore_also)
         if self.verbose:
-            self.ignores.show_ignored(Config.cf[self.locations])
+            self.ignores.show_ignored(retention.config.cf[self.locations])
 
         self.today = time.time()
         self.magic = retention.magic.magic_open(retention.magic.MAGIC_NONE)

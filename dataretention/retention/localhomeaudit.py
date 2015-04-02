@@ -1,11 +1,9 @@
-import os
 import sys
 
 sys.path.append('/srv/audits/retention/scripts/')
 
 import retention.utils
 import retention.magic
-from retention.config import Config
 from retention.localfileaudit import LocalFilesAuditor
 import retention.ignores
 

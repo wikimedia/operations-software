@@ -11,7 +11,7 @@ sys.path.append('/srv/audits/retention/scripts/')
 import retention.utils
 import retention.magic
 from retention.rule import Rule
-from retention.config import Config
+import retention.config
 from retention.fileinfo import FileInfo
 import retention.fileutils
 import retention.ruleutils
@@ -71,7 +71,8 @@ class LocalFilesAuditor(object):
 
         self.hostname = socket.getfqdn()
 
-        self.cutoff = Config.cf['cutoff']
+        retention.config.set_up_conf()
+        self.cutoff = retention.config.cf['cutoff']
 
         self.perhost_rules_from_store = None
         self.perhost_rules_from_file = None
@@ -332,7 +333,7 @@ class LocalFilesAuditor(object):
 
     def find_all_files(self):
         results = []
-        for location in Config.cf[self.locations]:
+        for location in retention.config.cf[self.locations]:
             dirs_to_do = self.get_dirs_to_do(location)
             if location.count(os.path.sep) >= self.depth + 1:
                 # do the run at least once
@@ -379,7 +380,7 @@ class LocalFilesAuditor(object):
 
         for fname in all_files_sorted:
             if (not retention.fileutils.contains(all_files[fname].filetype,
-                                                 Config.cf['ignored_types'])
+                                                 retention.config.cf['ignored_types'])
                     and not all_files[fname].is_empty):
                 result.append(all_files[fname].format_output(
                     self.show_sample_content, False,

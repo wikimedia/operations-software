@@ -3,6 +3,7 @@ import sys
 import runpy
 import json
 import salt.client
+import salt.utils.yamlloader
 
 sys.path.append('/srv/audits/retention/scripts/')
 
@@ -13,7 +14,7 @@ from retention.utils import JsonHelper
 import retention.fileutils
 import retention.ruleutils
 import retention.cliutils
-from retention.config import Config
+import retention.config
 
 def expand_ignored_dirs(basedir, ignored):
     '''
@@ -111,7 +112,7 @@ def get_home_dirs(locations):
     '''
     home_dirs = []
 
-    for location in Config.cf[locations]:
+    for location in retention.config.cf[locations]:
         if not os.path.isdir(location):
             continue
         home_dirs.extend([os.path.join(location, d)
@@ -204,10 +205,23 @@ class Ignores(object):
         collect up initial list of files/dirs to skip during audit
         '''
 
-        self.ignored['files'] = Config.cf['ignored_files']
-        self.ignored['dirs'] = Config.cf['ignored_dirs']
-        self.ignored['prefixes'] = Config.cf['ignored_prefixes']
-        self.ignored['extensions'] = Config.cf['ignored_extensions']
+        if os.path.exists('/srv/salt/audits/retention/configs/ignored.yaml'):
+            try:
+                contents = open('/srv/salt/audits/retention/configs/ignored.yaml').read()
+                ign = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+                if 'ignored_files' in ign:
+                    self.ignored['files'] = ign['ignored_files']
+                if 'ignored_dirs' in ign:
+                    self.ignored['dirs'] = ign['ignored_dirs']
+                if 'ignored_prefixes' in ign:
+                    self.ignored['prefixes'] = ign['ignored_prefixes']
+                if 'ignored_extensions' in ign:
+                    self.ignored['extensions'] = ign['ignored_extensions']
+            except:
+                self.ignored['files'] = {}
+                self.ignored['dirs'] = {}
+                self.ignored['prefixes'] = {}
+                self.ignored['extensions'] = {}
 
         if ignore_also is not None:
             # silently skip paths that are not absolute
@@ -317,33 +331,36 @@ class Ignores(object):
         sys.stderr.write(
             "INFO: or rules derived from the directory status entries.\n")
 
-        sys.stderr.write("INFO: Ignoring the following directories:\n")
+        if 'dirs' in self.ignored:
+            sys.stderr.write("INFO: Ignoring the following directories:\n")
+            for basedir in self.ignored['dirs']:
+                if basedir in basedirs or basedir == '*' or basedir == '/':
+                    sys.stderr.write(
+                        "INFO: " + ','.join(self.ignored['dirs'][basedir])
+                        + " in " + basedir + '\n')
 
-        for basedir in self.ignored['dirs']:
-            if basedir in basedirs or basedir == '*' or basedir == '/':
-                sys.stderr.write(
-                    "INFO: " + ','.join(self.ignored['dirs'][basedir])
-                    + " in " + basedir + '\n')
+        if 'files' in self.ignored:
+            sys.stderr.write("INFO: Ignoring the following files:\n")
+            for basedir in self.ignored['files']:
+                if basedir in basedirs or basedir == '*' or basedir == '/':
+                    sys.stderr.write(
+                        "INFO: " + ','.join(self.ignored['files'][basedir])
+                        + " in " + basedir + '\n')
 
-        sys.stderr.write("INFO: Ignoring the following files:\n")
-        for basedir in self.ignored['files']:
-            if basedir in basedirs or basedir == '*' or basedir == '/':
-                sys.stderr.write(
-                    "INFO: " + ','.join(self.ignored['files'][basedir])
-                    + " in " + basedir + '\n')
+        if 'prefixes' in self.ignored:
+            sys.stderr.write(
+                "INFO: Ignoring files starting with the following:\n")
+            sys.stderr.write(
+                "INFO: " + ','.join(self.ignored['prefixes']) + '\n')
 
-        sys.stderr.write(
-            "INFO: Ignoring files starting with the following:\n")
-        sys.stderr.write(
-            "INFO: " + ','.join(self.ignored['prefixes']) + '\n')
-
-        sys.stderr.write(
-            "INFO: Ignoring files ending with the following:\n")
-        for basedir in self.ignored['extensions']:
-            if basedir in basedirs or basedir == '*':
-                sys.stderr.write("INFO: " + ','.join(
-                    self.ignored['extensions'][basedir])
-                                 + " in " + basedir + '\n')
+        if 'extensions' in self.ignored:
+            sys.stderr.write(
+                "INFO: Ignoring files ending with the following:\n")
+            for basedir in self.ignored['extensions']:
+                if basedir in basedirs or basedir == '*':
+                    sys.stderr.write("INFO: " + ','.join(
+                        self.ignored['extensions'][basedir])
+                                     + " in " + basedir + '\n')
 
 
 class RemoteUserCfRetriever(object):
