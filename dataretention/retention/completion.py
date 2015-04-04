@@ -2,8 +2,6 @@ import os
 import sys
 import readline
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.remotefileauditor
 import retention.utils
 import retention.fileutils

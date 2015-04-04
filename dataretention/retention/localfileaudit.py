@@ -6,8 +6,6 @@ import runpy
 import stat
 import locale
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.utils
 import retention.magic
 from retention.rule import Rule
@@ -23,7 +21,7 @@ class LocalFilesAuditor(object):
     audit files on the local host
     in a specified set of directories
     '''
-    def __init__(self, audit_type,
+    def __init__(self, audit_type, confdir=None,
                  show_content=False, dirsizes=False,
                  depth=2, to_check=None, ignore_also=None,
                  timeout=60, maxfiles=None):
@@ -67,7 +65,7 @@ class LocalFilesAuditor(object):
 
         self.ignored = {}
         self.ignores = Ignores(None)
-        self.ignores.set_up_ignored()
+        self.ignores.set_up_ignored(confdir)
 
         self.hostname = socket.getfqdn()
 
@@ -170,7 +168,7 @@ class LocalFilesAuditor(object):
     def get_subdirs_to_do(self, dirname, dirname_depth, todo):
 
         locale.setlocale(locale.LC_ALL, '')
-        if retention.fileutils.dir_is_ignored(dirname, self.ignores.ignored):
+        if retention.ignores.dir_is_ignored(dirname, self.ignores.ignored):
             return todo
         if retention.fileutils.dir_is_wrong_type(dirname):
             return todo
@@ -284,7 +282,7 @@ class LocalFilesAuditor(object):
             if not retention.fileutils.dirtree_check(subdirpath, self.dirs_to_check):
                 return
 
-        if retention.fileutils.dir_is_ignored(subdirpath, self.ignores.ignored):
+        if retention.ignores.dir_is_ignored(subdirpath, self.ignores.ignored):
             return True
 
         count = 0

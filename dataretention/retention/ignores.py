@@ -1,19 +1,13 @@
 import os
 import sys
 import runpy
-import json
 import salt.client
 import salt.utils.yamlloader
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 from retention.status import Status
-import retention.remotefileauditor
 import retention.utils
-from retention.utils import JsonHelper
 import retention.fileutils
 import retention.ruleutils
-import retention.cliutils
 import retention.config
 
 def expand_ignored_dirs(basedir, ignored):
@@ -58,7 +52,7 @@ def dir_is_ignored(dirname, ignored):
         os.path.dirname(dirname), ignored)
     if dirname in expanded_dirs:
         return True
-    if wildcard_matches(dirname, wildcard_dirs):
+    if retention.fileutils.wildcard_matches(dirname, wildcard_dirs):
         return True
     return False
 
@@ -73,15 +67,15 @@ def file_is_ignored(fname, basedir, ignored):
     basename = os.path.basename(fname)
 
     if 'prefixes' in ignored:
-        if startswith(basename, ignored['prefixes']):
+        if retention.fileutils.startswith(basename, ignored['prefixes']):
             return True
 
     if 'extensions' in ignored:
         if '*' in ignored['extensions']:
-            if endswith(basename, ignored['extensions']['*']):
+            if retention.fileutils.endswith(basename, ignored['extensions']['*']):
                 return True
         if basedir in ignored['extensions']:
-            if endswith(
+            if retention.fileutils.endswith(
                     basename, ignored['extensions'][basedir]):
                 return True
 
@@ -89,18 +83,18 @@ def file_is_ignored(fname, basedir, ignored):
         if basename in ignored['files']:
             return True
         if '*' in ignored['files']:
-            if endswith(basename, ignored['files']['*']):
+            if retention.fileutils.endswith(basename, ignored['files']['*']):
                 return True
 
         if '/' in ignored['files']:
             if fname in ignored['files']['/']:
                 return True
-            if wildcard_matches(
+            if retention.fileutils.wildcard_matches(
                     fname, [w for w in ignored['files']['/'] if '*' in w]):
                 return True
 
         if basedir in ignored['files']:
-            if endswith(basename, ignored['files'][basedir]):
+            if retention.fileutils.endswith(basename, ignored['files'][basedir]):
                 return True
     return False
 
@@ -110,8 +104,13 @@ def get_home_dirs(locations):
     specified in the Config class (see 'home_locations'), by reading
     these root location dirs and grabbing all subdirectory names from them
     '''
+    retention.config.set_up_conf()
     home_dirs = []
 
+#    filep = open('/home/ariel/src/wmf/git-ops-software/software/dataretention/retention/junk', 'w+')
+#    filep.write('INFO: ' + ','.join(dir('retention.config')))
+#    filep.close()
+#    print 'INFO:', dir('retention.config')
     for location in retention.config.cf[locations]:
         if not os.path.isdir(location):
             continue
@@ -200,28 +199,32 @@ class Ignores(object):
         self.get_perhost_cf_from_file()
         self.ignored = {}
 
-    def set_up_ignored(self, ignore_also):
+    def set_up_ignored(self, confdir, ignore_also=None):
         '''
         collect up initial list of files/dirs to skip during audit
         '''
 
-        if os.path.exists('/srv/salt/audits/retention/configs/ignored.yaml'):
-            try:
-                contents = open('/srv/salt/audits/retention/configs/ignored.yaml').read()
-                ign = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
-                if 'ignored_files' in ign:
-                    self.ignored['files'] = ign['ignored_files']
-                if 'ignored_dirs' in ign:
-                    self.ignored['dirs'] = ign['ignored_dirs']
-                if 'ignored_prefixes' in ign:
-                    self.ignored['prefixes'] = ign['ignored_prefixes']
-                if 'ignored_extensions' in ign:
-                    self.ignored['extensions'] = ign['ignored_extensions']
-            except:
-                self.ignored['files'] = {}
-                self.ignored['dirs'] = {}
-                self.ignored['prefixes'] = {}
-                self.ignored['extensions'] = {}
+        self.ignored['files'] = {}
+        self.ignored['dirs'] = {}
+        self.ignored['prefixes'] = {}
+        self.ignored['extensions'] = {}
+
+        if confdir is not None:
+            configfile = os.path.join(confdir, 'ignored.yaml')
+            if os.path.exists(configfile):
+                try:
+                    contents = open(configfile).read()
+                    ign = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+                    if 'ignored_files' in ign:
+                        self.ignored['files'] = ign['ignored_files']
+                    if 'ignored_dirs' in ign:
+                        self.ignored['dirs'] = ign['ignored_dirs']
+                    if 'ignored_prefixes' in ign:
+                        self.ignored['prefixes'] = ign['ignored_prefixes']
+                    if 'ignored_extensions' in ign:
+                        self.ignored['extensions'] = ign['ignored_extensions']
+                except:
+                    pass
 
         if ignore_also is not None:
             # silently skip paths that are not absolute
@@ -361,75 +364,3 @@ class Ignores(object):
                     sys.stderr.write("INFO: " + ','.join(
                         self.ignored['extensions'][basedir])
                                      + " in " + basedir + '\n')
-
-
-class RemoteUserCfRetriever(object):
-    '''
-    retrieval and display dirs / files listed as to
-    be ignored in per-user lists on remote host
-    '''
-    def __init__(self, host, timeout, audit_type):
-        self.host = host
-        self.timeout = timeout
-        self.audit_type = audit_type
-        self.locations = audit_type + "_locations"
-
-    def run(self, quiet=False):
-        '''
-        do all the work
-
-        note that 'quiet' applies only to remotely
-        run, and the same is true for returning the contents.
-        maybe we want to fix that
-        '''
-
-        local_ignores = {}
-
-        client = salt.client.LocalClient()
-        module_args = [self.timeout, self.audit_type]
-
-        result = client.cmd([self.host], "retentionaudit.retrieve_usercfs",
-                            module_args, expr_form='list',
-                            timeout=self.timeout)
-
-        if self.host in result:
-            input = result[self.host]
-            try:
-                local_ignores = json.loads(
-                    input, object_hook=JsonHelper.decode_dict)
-            except:
-                print "WARNING: failed to get local ignores on host",
-                print self.host,
-                print "got this:", input
-                local_ignores = {}
-
-        if not quiet:
-            print local_ignores
-
-        return local_ignores
-
-class LocalUserCfRetriever(object):
-    '''
-    retrieval and display dirs / files listed as to
-    be ignored in per-user lists on local host
-    '''
-    def __init__(self, timeout, audit_type='homes'):
-        self.timeout = timeout
-        self.audit_type = audit_type
-        self.locations = audit_type + "_locations"
-
-    def run(self, quiet=False):
-        '''
-        do all the work
-
-        note that 'quiet' applies only to remotely
-        run, and the same is true for returning the contents.
-        maybe we want to fix that
-        '''
-
-        local_ignores = {}
-
-        local_ignores = get_local_ignores(self.locations)
-        output = json.dumps(local_ignores)
-        print output
-        return output

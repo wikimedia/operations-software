@@ -21,3 +21,22 @@ cutoff: 7776000
 
 # run on this many hosts at once
 batchsize: 20
+
+ignored_types:
+  - script
+  - package
+  - python
+  - debian
+  - HTML
+  - RPM
+  - GIF
+  - JPEG
+  - PNG
+  - SVG
+  - program
+  - DSA
+  - PDF
+  - symbolic link
+  - executable
+  - shared object
+  - MS Windows icon

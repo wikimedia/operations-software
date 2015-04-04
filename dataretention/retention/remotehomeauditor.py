@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.utils
 import retention.magic
 from retention.remotefileauditor import RemoteFilesAuditor
@@ -17,14 +15,15 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
     or directories (dirs must end in '/') to skip during the audit
     '''
 
-    def __init__(self, hosts_expr, audit_type, prettyprint=False,
+    def __init__(self, hosts_expr, audit_type, confdir=None, prettyprint=False,
                  show_content=False, dirsizes=False, summary_report=False,
                  depth=2, to_check=None, ignore_also=None, timeout=60,
                  maxfiles=None, store_filepath=None, verbose=False):
         '''
         see FilesAuditor for the arguments to the constructor
         '''
-        super(RemoteHomesAuditor, self).__init__(hosts_expr, audit_type, prettyprint,
+        super(RemoteHomesAuditor, self).__init__(hosts_expr, audit_type,
+                                                 confdir, prettyprint,
                                                  show_content, dirsizes,
                                                  summary_report, depth,
                                                  to_check, ignore_also, timeout,
@@ -32,7 +31,8 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
         self.homes_owners = {}
 
     def get_audit_args(self):
-        audit_args = [self.show_sample_content,
+        audit_args = [self.confdir,
+                      self.show_sample_content,
                       self.dirsizes,
                       self.depth - 1,
                       self.to_check,

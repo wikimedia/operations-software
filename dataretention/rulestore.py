@@ -6,8 +6,6 @@ import os
 import sys
 import getopt
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 from retention.saltclientplus import LocalClientPlus
 import retention.utils
 import retention.ruleutils

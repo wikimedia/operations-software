@@ -1,20 +1,19 @@
 import sys
 import getopt
-sys.path.append('/srv/audits/retention/scripts/')
 
 from retention.cli import CommandLine
 #from retention.auditor import HomesAuditor
 from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor
-from retention.examiner import RemoteFileExaminer, RemoteDirExaminer
-from retention.ignores import RemoteUserCfRetriever
+from retention.remoteexaminer import RemoteFileExaminer, RemoteDirExaminer
+from retention.remoteusercfgrabber import RemoteUserCfGrabber
 
 def usage(message=None):
     if message:
         sys.stderr.write(message + "\n")
-    usage_message = """Usage: data_auditor.py --target <hostexpr>
-             [--prettyprint] [-report] [--depth <number>] [--dirsizes]
+    usage_message = """Usage: data_auditor.py --audit <audit-type> --target <hostexpr>
+             [--confdir <path>] [--prettyprint] [-report] [--depth <number>] [--dirsizes]
              [--maxfiles <number>] [--sample] [--files <filelist>]
              [--ignore <filelist>] [--examine <path>]
              [--timeout <number>] [--verbose]
@@ -40,6 +39,8 @@ Options:
     audit       (-a) -- specify the type of audit to be done, one of 'root',
                         'logs' or 'homes'; this may not be specified with
                         the 'info' option.
+    confdir     (-d) -- path to dir where ignores.yaml is located
+                        default: /srv/salt/audits/retention/configs
     target      (-t) -- for local runs, this must be 'localhost' or '127.0.1'
                         for remote hosts, this should be a host expression
                         recognizable by salt, in the following format:
@@ -109,6 +110,7 @@ For 'logs' audit type:
 def main():
     hosts_expr = None
     audit_type = None
+    confdir = '/srv/salt/audits/retention/configs'
     files_to_check = None
     prettyprint = False
     show_sample_content = False
@@ -131,8 +133,8 @@ def main():
 
     try:
         (options, remainder) = getopt.gnu_getopt(
-            sys.argv[1:], "a:b:d:Df:F:l:i:Ie:m:oprsSt:T:uvh",
-            ["audit=", "files=",
+            sys.argv[1:], "a:b:c:d:Df:F:l:i:Ie:m:oprsSt:T:uvh",
+            ["audit=", "confdir=", "files=",
              "filecontents=", "linecount=",
              "ignore=",
              "interactive",
@@ -151,6 +153,8 @@ def main():
             hosts_expr = val
         elif opt in ["-a", "--audit"]:
             audit_type = val
+        elif opt in ["-c", "--confir"]:
+            confdir = val
         elif opt in ["-d", "--depth"]:
             if not val.isdigit():
                 usage("depth must be a number")
@@ -226,7 +230,7 @@ def main():
         fileexam.run()
         sys.exit(0)
     elif getuserconfs:
-        getconfs = RemoteUserCfRetriever(hosts_expr, timeout, 'homes')
+        getconfs = RemoteUserCfGrabber(hosts_expr, timeout, 'homes')
         getconfs.run()
         sys.exit(0)
 
@@ -240,7 +244,8 @@ def main():
         usage("'oldest' argument may only be used with logs audit")
 
     if audit_type == 'logs':
-        logsaudit = RemoteLogsAuditor(hosts_expr, audit_type, prettyprint,
+        logsaudit = RemoteLogsAuditor(hosts_expr, audit_type, confdir,
+                                      prettyprint,
                                       oldest_only, show_sample_content, dirsizes,
                                       show_system_logs,
                                       summary_report, depth, files_to_check, ignore_also,
@@ -251,7 +256,8 @@ def main():
             cmdline.run(report, ignored)
 
     elif audit_type == 'root':
-        filesaudit = RemoteFilesAuditor(hosts_expr, audit_type, prettyprint,
+        filesaudit = RemoteFilesAuditor(hosts_expr, audit_type, confdir,
+                                        prettyprint,
                                         show_sample_content, dirsizes,
                                         summary_report,
                                         depth, files_to_check, ignore_also,
@@ -262,7 +268,8 @@ def main():
             cmdline.run(report, ignored)
 
     elif audit_type == 'homes':
-        homesaudit = RemoteHomesAuditor(hosts_expr, audit_type, prettyprint,
+        homesaudit = RemoteHomesAuditor(hosts_expr, audit_type, confdir,
+                                        prettyprint,
                                         show_sample_content, dirsizes,
                                         summary_report,
                                         depth, files_to_check, ignore_also,

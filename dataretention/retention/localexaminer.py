@@ -1,50 +1,13 @@
 import os
-import sys
 import stat
 import json
 import logging
 
-sys.path.append('/srv/audits/retention/scripts/')
-
-from salt.client import LocalClient
-#from retention.saltclientplus import LocalClientPlus
 import retention.utils
 from retention.utils import JsonHelper
 from retention.fileinfo import FileInfo, EntryInfo
 
 log = logging.getLogger(__name__)
-
-
-class RemoteFileExaminer(object):
-    '''
-    retrieval and display of file contents on remote host
-    '''
-    def __init__(self, path, host, num_lines, timeout=20, quiet=False):
-        self.path = path
-        self.host = host
-        self.timeout = timeout
-        self.num_lines = num_lines
-        self.quiet = quiet
-
-    def run(self):
-        '''
-        do all the work
-        '''
-#        client = LocalClientPlus()
-        client = LocalClient()
-        module_args = [self.path,
-                       self.num_lines,
-                       self.timeout]
-
-        result = client.cmd([self.host],
-                            "retentionaudit.examine_file",
-                            module_args, expr_form='list',
-                            timeout=self.timeout)
-
-        if self.host in result:
-            if not self.quiet:
-                print result[self.host]
-            return result[self.host]
 
 
 class LocalFileExaminer(object):
@@ -187,82 +150,6 @@ class DirContents(object):
         output = '\n'.join(output)
         return output
             
-
-class RemoteDirExaminer(object):
-    '''
-    retrieval and display of directory contents on remote host
-    '''
-    def __init__(self, path, host, batchno=1, batchsize=300, timeout=20,
-                 prettyprint=False):
-        self.path = path
-        self.st = None
-        self.host = host
-        self.timeout = timeout
-        self.batchno = batchno
-        self.batchsize = batchsize
-        self.prettyprint = prettyprint
-
-    def run(self, quiet=False):
-        '''
-        do all the work
-
-        note that 'quiet' applies only to remotely
-        run, and the same is true for returning the contents.
-        maybe we want to fix that
-        '''
-
-        while True:
-#            client = LocalClientPlus()
-            client = LocalClient()
-            module_args = [self.path, self.batchno,
-                           self.batchsize, self.timeout,
-                           quiet]
-
-            result = client.cmd([self.host],
-                                "retentionaudit.examine_dir",
-                                module_args, expr_form='list',
-                                timeout=self.timeout)
-
-            if self.host in result:
-                lines = result[self.host].split("\n")
-
-                maxlen = 0
-                for line in lines:
-                    if (line.startswith("WARNING:") or
-                        line.startswith("INFO:")):
-                        continue
-                    else:
-                        try:
-                            entry = json.loads(
-                                line, object_hook=JsonHelper.decode_dict)
-                            if len(entry['path']) > maxlen:
-                                maxlen = len(entry['path'])
-                        except:
-                            continue
-
-                if not quiet:
-                    for line in lines:
-                        if (line.startswith("WARNING:") or
-                            line.startswith("INFO:")):
-                            print line
-                        else:
-                            try:
-                                entry = json.loads(
-                                    line,
-                                    object_hook=JsonHelper.decode_dict)
-                                EntryInfo.display_from_dict(
-                                    entry, True, maxlen)
-                            except:
-                                print line
-                return result[self.host]
-            else:
-                print "Failed to retrieve dir content for", self.path, "on", self.host
-                continuing = ("Try again? Y/N [N]: ")
-                if continuing == "":
-                    continuing = "N"
-                if continuing.upper() != "Y":
-                    return None
-
 
 class LocalDirExaminer(object):
     '''

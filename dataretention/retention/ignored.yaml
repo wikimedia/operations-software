@@ -225,25 +225,6 @@ ignored_files:
     - udev
     - ufw.log
 
-ignored_types:
-  - script
-  - package
-  - python
-  - debian
-  - HTML
-  - RPM
-  - GIF
-  - JPEG
-  - PNG
-  - SVG
-  - program
-  - DSA
-  - PDF
-  - symbolic link
-  - executable
-  - shared object
-  - MS Windows icon
-
 ignored_extensions:
   "*":
     - amd64.changes

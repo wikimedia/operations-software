@@ -1,32 +1,29 @@
 # salt module
-import sys
 import logging
 
-sys.path.append('/srv/audits/retention/scripts/')
+log = logging.getLogger(__name__)
 
 from retention.localfileaudit import LocalFilesAuditor
 from retention.locallogaudit import LocalLogsAuditor
 from retention.localhomeaudit import LocalHomesAuditor
-from retention.examiner import LocalFileExaminer, LocalDirExaminer
-from retention.ignores import LocalUserCfRetriever
+from retention.localexaminer import LocalFileExaminer, LocalDirExaminer
+from retention.localusercfgrabber import LocalUserCfGrabber
 
-log = logging.getLogger(__name__)
-
-def fileaudit_host(show_content, dirsizes, depth,
+def fileaudit_host(confdir,show_content, dirsizes, depth,
                    to_check, ignore_also, timeout,
                    maxfiles):
-    fauditor = LocalFilesAuditor('root', show_content,
+    fauditor = LocalFilesAuditor('root', confdir, show_content,
                                  dirsizes, depth, to_check,
                                  ignore_also, timeout,
                                  maxfiles)
     result = fauditor.do_local_audit()
     return result
 
-def logaudit_host(oldest, show_content, show_system_logs,
+def logaudit_host(confdir, oldest, show_content, show_system_logs,
                   dirsizes, depth,
                   to_check, ignore_also, timeout,
                   maxfiles):
-    lauditor = LocalLogsAuditor('logs', oldest, show_content,
+    lauditor = LocalLogsAuditor('logs', confdir, oldest, show_content,
                                 show_system_logs,
                                 dirsizes, depth, to_check,
                                 ignore_also, timeout,
@@ -34,11 +31,11 @@ def logaudit_host(oldest, show_content, show_system_logs,
     result = lauditor.do_local_audit()
     return result
 
-def homeaudit_host(show_content,
+def homeaudit_host(confdir, show_content,
                    dirsizes, depth,
                    to_check, ignore_also, timeout,
                    maxfiles):
-    hauditor = LocalHomesAuditor('homes', show_content,
+    hauditor = LocalHomesAuditor('homes', confdir, show_content,
                                  dirsizes, depth, to_check,
                                  ignore_also, timeout,
                                  maxfiles)
@@ -60,6 +57,6 @@ def examine_dir(path, batchno, batchsize,
     return result
 
 def retrieve_usercfs(timeout, audit_type):
-    ucfsretriever = LocalUserCfRetriever(timeout, audit_type)
+    ucfsretriever = LocalUserCfGrabber(timeout, audit_type)
     result = ucfsretriever.run()
     return result

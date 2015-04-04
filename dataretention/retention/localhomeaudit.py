@@ -1,7 +1,5 @@
 import sys
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.utils
 import retention.magic
 from retention.localfileaudit import LocalFilesAuditor
@@ -16,14 +14,14 @@ class LocalHomesAuditor(LocalFilesAuditor):
     or directories (dirs must end in '/') to skip during the audit
     '''
 
-    def __init__(self, audit_type,
+    def __init__(self, audit_type, confdir=None,
                  show_content=False, dirsizes=False,
                  depth=2, to_check=None, ignore_also=None, timeout=60,
                  maxfiles=None):
         '''
         see FilesAuditor for the arguments to the constructor
         '''
-        super(LocalHomesAuditor, self).__init__(audit_type,
+        super(LocalHomesAuditor, self).__init__(audit_type, confdir,
                                                 show_content, dirsizes,
                                                 depth, to_check, ignore_also,
                                                 timeout, maxfiles)

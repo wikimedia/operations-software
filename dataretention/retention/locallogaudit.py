@@ -2,8 +2,6 @@ import os
 import sys
 import glob
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.utils
 import retention.magic
 import retention.config
@@ -12,13 +10,13 @@ from retention.localfileaudit import LocalFilesAuditor
 import retention.fileutils
 
 class LocalLogsAuditor(LocalFilesAuditor):
-    def __init__(self, audit_type,
+    def __init__(self, audit_type, confdir=None,
                  oldest=False,
                  show_content=False, show_system_logs=False,
                  dirsizes=False, depth=2,
                  to_check=None, ignore_also=None,
                  timeout=60, maxfiles=None):
-        super(LocalLogsAuditor, self).__init__(audit_type,
+        super(LocalLogsAuditor, self).__init__(audit_type, confdir,
                                                show_content, dirsizes,
                                                depth, to_check, ignore_also,
                                                timeout, maxfiles)
@@ -85,7 +83,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     continue
                 if '*' in line:
                     log_group.extend(glob.glob(
-                        os.path.join(Config.cf['rotate_basedir'], line)))
+                        os.path.join(retention.config.cf['rotate_basedir'], line)))
                 else:
                     log_group.append(line)
             elif state == 'want_rbracket':
@@ -111,7 +109,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
 
     def get_logrotate_defaults(self):
         retention.config.set_up_conf()
-        contents = open(Config.cf['rotate_mainconf']).read()
+        contents = open(retention.config.cf['rotate_mainconf']).read()
         lines = contents.split('\n')
         skip = False
         freq = '-'
@@ -148,10 +146,10 @@ class LocalLogsAuditor(LocalFilesAuditor):
         rotated_logs = {}
         default_freq, default_keep = self.get_logrotate_defaults()
         rotated_logs.update(LocalLogsAuditor.parse_logrotate_contents(
-            open(Config.cf['rotate_mainconf']).read(),
+            open(retention.config.cf['rotate_mainconf']).read(),
             default_freq, default_keep))
-        for fname in os.listdir(Config.cf['rotate_basedir']):
-            pathname = os.path.join(Config.cf['rotate_basedir'], fname)
+        for fname in os.listdir(retention.config.cf['rotate_basedir']):
+            pathname = os.path.join(retention.config.cf['rotate_basedir'], fname)
             if os.path.isfile(pathname):
                 rotated_logs.update(LocalLogsAuditor.parse_logrotate_contents(
                     open(pathname).read(), default_freq, default_keep))
@@ -164,7 +162,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         # note that I also see my.cnf.s3 and we don't check those (yet)
         retention.config.set_up_conf()
         output = ''
-        for filename in Config.cf['mysqlconf']:
+        for filename in retention.config.cf['mysqlconf']:
             found = False
             try:
                 contents = open(filename).read()
@@ -217,7 +215,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     if not fields[1].isdigit():
                         continue
                     found = True
-                    if int(fields[1]) > Config.cf['cutoff']/86400:
+                    if int(fields[1]) > retention.config.cf['cutoff']/86400:
                         if output:
                             output = output + '\n'
                         output = output + ('WARNING: some mysql logs expired after %s days in %s'
@@ -264,7 +262,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
 
         for fname in all_files_sorted:
             if retention.fileutils.contains(all_files[fname].filetype,
-                                            Config.cf['ignored_types']):
+                                            retention.config.cf['ignored_types']):
                 continue
 
             if (self.oldest_only and

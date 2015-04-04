@@ -1,8 +1,6 @@
 import sys
 import json
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.utils
 import retention.magic
 from retention.fileinfo import LogInfo
@@ -11,14 +9,15 @@ from retention.remotefileauditor import RemoteFilesAuditor
 
 
 class RemoteLogsAuditor(RemoteFilesAuditor):
-    def __init__(self, hosts_expr, audit_type, prettyprint=False,
+    def __init__(self, hosts_expr, audit_type, confdir=None, prettyprint=False,
                  oldest=False,
                  show_content=False, show_system_logs=False,
                  dirsizes=False, summary_report=False, depth=2,
                  to_check=None, ignore_also=None,
                  timeout=60, maxfiles=None, store_filepath=None,
                  verbose=False):
-        super(RemoteLogsAuditor, self).__init__(hosts_expr, audit_type, prettyprint,
+        super(RemoteLogsAuditor, self).__init__(hosts_expr, audit_type,
+                                                confdir, prettyprint,
                                                 show_content, dirsizes,
                                                 summary_report, depth,
                                                 to_check, ignore_also, timeout,
@@ -26,12 +25,13 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
         self.oldest_only = oldest
         self.show_system_logs = show_system_logs
         if self.show_system_logs:
-            self.ignored['files'].pop("/var/log")
+            self.ignores.ignored['files'].pop("/var/log")
         self.display_from_dict = LogInfo.display_from_dict
 
     def get_audit_args(self):
         # fixme check if locallogauditor wants the oldest_only param
-        audit_args = [self.oldest_only,
+        audit_args = [self.confdir,
+                      self.oldest_only,
                       self.show_sample_content,
                       self.show_system_logs,
                       self.dirsizes,

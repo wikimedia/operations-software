@@ -5,8 +5,6 @@ import json
 import socket
 import runpy
 
-sys.path.append('/srv/audits/retention/scripts/')
-
 import retention.utils
 import retention.magic
 from retention.status import Status
@@ -16,7 +14,6 @@ import retention.config
 from retention.fileinfo import FileInfo
 from retention.utils import JsonHelper
 from retention.runner import Runner
-from retention.localfileaudit import LocalFilesAuditor
 import retention.ruleutils
 from retention.ignores import Ignores
 
@@ -70,7 +67,9 @@ class RemoteFilesAuditor(object):
     audit files across a set of remote hosts,
     in a specified set of directories
     '''
-    def __init__(self, hosts_expr, audit_type, prettyprint=False,
+    def __init__(self, hosts_expr, audit_type,
+                 confdir=None,
+                 prettyprint=False,
                  show_content=False, dirsizes=False, summary_report=False,
                  depth=2, to_check=None, ignore_also=None,
                  timeout=60, maxfiles=None,
@@ -80,6 +79,7 @@ class RemoteFilesAuditor(object):
         hosts_expr:   list or grain-based or wildcard expr for hosts
                       to be audited
         audit_type:   type of audit e.g. 'logs', 'homes'
+        confdir:      directory where the ignores.yaml file is stored,
         prettyprint:  nicely format the output display
         show_content: show the first line or so from problematic files
         dirsizes:     show only directories which have too many files to
@@ -108,6 +108,7 @@ class RemoteFilesAuditor(object):
 
         self.hosts_expr = hosts_expr
         self.audit_type = audit_type
+        self.confdir = confdir
         self.locations = audit_type + "_locations"
         self.prettyprint = prettyprint
         self.show_sample_content = show_content
@@ -153,7 +154,7 @@ class RemoteFilesAuditor(object):
         self.set_up_and_export_rule_store()
 
         self.ignores = Ignores(self.cdb)
-        self.ignores.set_up_ignored(self.ignore_also)
+        self.ignores.set_up_ignored(self.confdir, self.ignore_also)
         if self.verbose:
             self.ignores.show_ignored(retention.config.cf[self.locations])
 
@@ -164,7 +165,8 @@ class RemoteFilesAuditor(object):
         self.display_from_dict = FileInfo.display_from_dict
 
     def get_audit_args(self):
-        audit_args = [self.show_sample_content,
+        audit_args = [self.confdir,
+                      self.show_sample_content,
                       self.dirsizes,
                       self.depth - 1,
                       self.to_check,
