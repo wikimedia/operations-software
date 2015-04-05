@@ -1,9 +1,7 @@
 import sys
 
-import retention.utils
-import retention.magic
-from retention.localfileaudit import LocalFilesAuditor
-import retention.ignores
+from clouseau.retention.localfileaudit import LocalFilesAuditor
+import clouseau.retention.ignores
 
 class LocalHomesAuditor(LocalFilesAuditor):
     '''
@@ -28,6 +26,6 @@ class LocalHomesAuditor(LocalFilesAuditor):
         self.homes_owners = {}
 
         # FIXME where are these ever used???
-        local_ignores = retention.ignores.get_local_ignores(self.locations)
-        local_ignored_dirs, local_ignored_files = retention.ignores.process_local_ignores(
+        local_ignores = clouseau.retention.ignores.get_local_ignores(self.confdir, self.locations)
+        local_ignored_dirs, local_ignored_files = clouseau.retention.ignores.process_local_ignores(
             local_ignores, self.ignores.ignored)

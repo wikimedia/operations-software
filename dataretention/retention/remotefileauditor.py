@@ -3,19 +3,17 @@ import sys
 import time
 import json
 import socket
-import runpy
 
-import retention.utils
-import retention.magic
-from retention.status import Status
-from retention.saltclientplus import LocalClientPlus
-from retention.rule import Rule, RuleStore
-import retention.config
-from retention.fileinfo import FileInfo
-from retention.utils import JsonHelper
+import clouseau.retention.magic
+from clouseau.retention.status import Status
+from clouseau.retention.saltclientplus import LocalClientPlus
+from clouseau.retention.rule import RuleStore
+import clouseau.retention.config
+from clouseau.retention.fileinfo import FileInfo
+from clouseau.retention.utils import JsonHelper
 from retention.runner import Runner
-import retention.ruleutils
-from retention.ignores import Ignores
+import clouseau.retention.ruleutils
+from clouseau.retention.ignores import Ignores
 
 
 def get_dirs_toexamine(host_report):
@@ -127,8 +125,8 @@ class RemoteFilesAuditor(object):
         # need this for locally running jobs
         self.hostname = socket.getfqdn()
 
-        retention.config.set_up_conf()
-        self.cutoff = retention.config.cf['cutoff']
+        clouseau.retention.config.set_up_conf(confdir)
+        self.cutoff = clouseau.retention.config.cf['cutoff']
 
         client = LocalClientPlus()
         hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
@@ -137,29 +135,19 @@ class RemoteFilesAuditor(object):
 
         self.set_up_max_files(maxfiles)
 
-        self.perhost_raw = None
-        if os.path.exists('/srv/audits/retention/scripts/audit_files_perhost_config.py'):
-            try:
-                self.perhost_rules_from_file = runpy.run_path(
-                    '/srv/audits/retention/scripts/audit_files_perhost_config.py')['perhostcf']
-                self.perhost_raw = open(
-                    '/srv/audits/retention/scripts/audit_files_perhost_config.py').read()
-            except:
-                pass
-
-        self.write_rules_for_minion()
-
         self.cdb = RuleStore(self.store_filepath)
         self.cdb.store_db_init(self.expanded_hosts)
         self.set_up_and_export_rule_store()
 
-        self.ignores = Ignores(self.cdb)
-        self.ignores.set_up_ignored(self.confdir, self.ignore_also)
+        self.ignores = Ignores(self.confdir, self.cdb)
+        self.ignores.set_up_global_ignored(self.confdir, self.ignore_also)
         if self.verbose:
-            self.ignores.show_ignored(retention.config.cf[self.locations])
+            self.ignores.show_ignored(clouseau.retention.config.cf[self.locations])
+
+        self.perhost_ignores_from_file = self.ignores.get_perhost_ignores_from_file()
 
         self.today = time.time()
-        self.magic = retention.magic.magic_open(retention.magic.MAGIC_NONE)
+        self.magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
         self.magic.load()
         self.summary = None
         self.display_from_dict = FileInfo.display_from_dict
@@ -177,7 +165,9 @@ class RemoteFilesAuditor(object):
 
     def set_up_runner(self):
 
-        self.runner = Runner(self.hosts_expr,
+        self.runner = Runner(self.confdir,
+                             self.store_filepath,
+                             self.hosts_expr,
                              self.expanded_hosts,
                              self.audit_type,
                              self.get_audit_args(),
@@ -207,79 +197,16 @@ class RemoteFilesAuditor(object):
 
     def set_up_and_export_rule_store(self):
         hosts = self.cdb.store_db_list_all_hosts()
-        where_to_put = os.path.join(os.path.dirname(self.store_filepath),
-                                    "data_retention.d")
-        if not os.path.isdir(where_to_put):
-            os.makedirs(where_to_put, 0755)
+        destdir = os.path.join(os.path.dirname(self.store_filepath),
+                                   "data_retention.d")
+        if not os.path.isdir(destdir):
+            os.makedirs(destdir, 0755)
         for host in hosts:
-            nicepath = os.path.join(where_to_put, host + ".conf")
-            retention.ruleutils.export_rules(self.cdb, nicepath, host)
-
-    def get_perhost_rules_as_json(self):
-        '''
-        this reads from the data_retention.d directory files for the minions
-        on which the audit will be run, converts each host's rules to json
-        strings, and returns a hash of rules where keys are the hostname and
-        values are the list of rules on that host
-        '''
-        where_to_get = os.path.join(os.path.dirname(self.store_filepath),
-                                    "data_retention.d")
-        if not os.path.isdir(where_to_get):
-            os.mkdir(where_to_get, 0755)
-        # really? or just read each file and be done with it?
-        # also I would like to check the syntax cause paranoid.
-        rules = {}
-        self.cdb = RuleStore(self.store_filepath)
-        self.cdb.store_db_init(self.expanded_hosts)
-        for host in self.expanded_hosts:
-            rules[host] = []
-            nicepath = os.path.join(where_to_get, host + ".conf")
-            if os.path.exists(nicepath):
-                dir_rules = None
-                try:
-                    text = open(nicepath)
-                    exec(text)
-                except:
-                    continue
-                if dir_rules is not None:
-                    for status in Status.status_cf:
-                        if status in dir_rules:
-                            for entry in dir_rules[status]:
-                                if entry[0] != os.path.sep:
-                                    print ("WARNING: relative path in rule,"
-                                           "skipping:", entry)
-                                    continue
-                                if entry[-1] == os.path.sep:
-                                    entry = entry[:-1]
-                                    entry_type = retention.ruleutils.text_to_entrytype('dir')
-                                else:
-                                    entry_type = retention.ruleutils.text_to_entrytype('file')
-                                rule = retention.ruleutils.get_rule_as_json(
-                                    entry, entry_type, status)
-                                rules[host].append(rule)
-        return rules
-
-    def write_perhost_rules_normal_code(self, indent):
-        rules = self.get_perhost_rules_as_json()
-
-        for host in rules:
-            rulescode = "rules = {}\n\n"
-            rulescode += "rules['%s'] = [\n" % host
-            rulescode += (indent +
-                          (",\n%s" % (indent + indent)).join(rules[host]) + "\n")
-            rulescode += "]\n"
-
-            with open("/srv/salt/audits/retention/configs/%s_store.py" % host, "w+") as fp:
-                fp.write(rulescode)
-                fp.close()
-
-    def write_rules_for_minion(self):
-        indent = "    "
-        self.write_perhost_rules_normal_code(indent)
-        if self.perhost_raw is not None:
-            with open("/srv/salt/audits/retention/configs/allhosts_file.py", "w+") as fp:
-                fp.write(self.perhost_raw)
-                fp.close()
+            all_destpath = os.path.join(destdir, host + "_store.py")
+            clouseau.retention.ruleutils.export_rules(self.cdb, all_destpath, host)
+            good_destpath = os.path.join(destdir, host + "_store_good.py")
+            clouseau.retention.ruleutils.export_rules(self.cdb, good_destpath, host,
+                                                      Status.text_to_status('good'))
 
     def normalize(self, fname):
         '''
@@ -426,7 +353,7 @@ class RemoteFilesAuditor(object):
         hostlist = report.keys()
         for host in hostlist:
             try:
-                problem_rules = retention.ruleutils.get_rules(self.cdb, host, Status.text_to_status('problem'))
+                problem_rules = clouseau.retention.ruleutils.get_rules(self.cdb, host, Status.text_to_status('problem'))
             except:
                 print 'WARNING: problem retrieving problem rules for host', host
                 problem_rules = None
@@ -439,8 +366,8 @@ class RemoteFilesAuditor(object):
             if dirs_problem is not None:
                 dirs_problem = list(set(dirs_problem))
                 for dirname in dirs_problem:
-                    retention.ruleutils.do_add_rule(self.cdb, dirname,
-                                                    retention.ruleutils.text_to_entrytype('dir'),
+                    clouseau.retention.ruleutils.do_add_rule(self.cdb, dirname,
+                                                    clouseau.retention.ruleutils.text_to_entrytype('dir'),
                                                     Status.text_to_status('problem'), host)
 
             if dirs_skipped is not None:
@@ -449,6 +376,6 @@ class RemoteFilesAuditor(object):
                     if dirname in dirs_problem or dirname in existing_problems:
                         # problem report overrides 'too many to audit'
                         continue
-                    retention.ruleutils.do_add_rule(self.cdb, dirname,
-                                                    retention.ruleutils.text_to_entrytype('dir'),
+                    clouseau.retention.ruleutils.do_add_rule(self.cdb, dirname,
+                                                    clouseau.retention.ruleutils.text_to_entrytype('dir'),
                                                     Status.text_to_status('unreviewed'), host)

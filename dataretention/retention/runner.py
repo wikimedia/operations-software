@@ -1,19 +1,20 @@
+import os
 import sys
 
-sys.path.append('/srv/audits/retention/scripts/')
-
-from retention.saltclientplus import LocalClientPlus
-import retention.config
+from clouseau.retention.saltclientplus import LocalClientPlus
+import clouseau.retention.config
 
 class Runner(object):
     '''
     Manage running current script remotely via salt on one or more hosts
     '''
 
-    def __init__(self, hosts_expr, expanded_hosts,
+    def __init__(self, confdir, store_filepath, hosts_expr, expanded_hosts,
                  audit_type, auditor_args,
                  show_sample_content=False, to_check=None,
                  timeout=30, verbose=False):
+        self.confdir = confdir
+        self.store_filepath = store_filepath
         self.hosts_expr = hosts_expr
         self.expanded_hosts = expanded_hosts
         self.hosts, self.hosts_expr_type = Runner.get_hosts_expr_type(
@@ -24,7 +25,7 @@ class Runner(object):
         self.to_check = to_check
         self.timeout = timeout
         self.verbose = verbose
-        retention.config.set_up_conf()
+        clouseau.retention.config.set_up_conf(self.confdir)
 
     def get_auditfunction_name(self):
         if self.audit_type == 'root':
@@ -50,9 +51,9 @@ class Runner(object):
         # fixme instead of this we call the right salt module based on the
         # audit type and with the self.auditmodule_args which is a list
 
-        hostbatches = [self.expanded_hosts[i: i + retention.config.cf['batchsize']]
+        hostbatches = [self.expanded_hosts[i: i + clouseau.retention.config.cf['batchsize']]
                        for i in range(0, len(self.expanded_hosts),
-                                      retention.config.cf['batchsize'])]
+                                      clouseau.retention.config.cf['batchsize'])]
 
         result = {}
         for hosts in hostbatches:
@@ -60,24 +61,12 @@ class Runner(object):
                 sys.stderr.write("INFO: running on hosts\n")
                 sys.stderr.write(','.join(hosts) + '\n')
 
-            # try to work around a likely race condition in zmq/salt
-            # time.sleep(5)
-
-            # step one: have them pick up the config files
-            # fixme only copy if exists, check returns
-            new_result = client.cmd_full_return(hosts, 'cp.get_file',
-                                                ['salt://audits/retention/configs/{{grains.fqdn}}_store.py',
-                                                 "/srv/audits/retention/configs/{{grains.fqdn}}_store.cf",
-                                                 'template=jinja'], expr_form='list')
-            # fixme only copy if exists, check returns
-            # fixme this content should be ordered by host instead of by ignore-list type
-            # and split into separate files just as the previous files are, and actually be in one file
-            # with one copy total per client
-            new_result = client.cmd_full_return(hosts, 'cp.get_file',
-                                                ['salt://audits/retention/configs/allhosts_file.py',
-                                                 "/srv/audits/retention/configs/allhosts_file.cf",
-                                                 'template=jinja'], expr_form='list')
-
+            path = os.path.join(os.path.dirname(self.store_filepath),
+                                   "data_retention.d")
+            contents = clouseau.retention.ignores.prep_good_rules_tosend(path, hosts)
+            if contents:
+                new_result = client.cmd_full_return(hosts, 'cp.recv', [contents, os.path.join(self.confdir, 'fromstore')],
+                                                    expr_form='list')
             # step two: run the appropriate salt audit module function
             new_result = client.cmd(hosts, "retentionaudit.%s" % self.get_auditfunction_name(), self.auditmodule_args,
                                     expr_form='list', timeout=self.timeout)

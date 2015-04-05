@@ -2,9 +2,8 @@ import json
 import logging
 
 from salt.client import LocalClient
-import retention.utils
-from retention.utils import JsonHelper
-from retention.fileinfo import EntryInfo
+from clouseau.retention.utils import JsonHelper
+from clouseau.retention.fileinfo import EntryInfo
 
 log = logging.getLogger(__name__)
 

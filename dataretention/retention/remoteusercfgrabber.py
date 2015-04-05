@@ -2,13 +2,7 @@ import json
 import salt.client
 import salt.utils.yamlloader
 
-import retention.remotefileauditor
-import retention.utils
-from retention.utils import JsonHelper
-import retention.fileutils
-import retention.ruleutils
-import retention.cliutils
-import retention.config
+from clouseau.retention.utils import JsonHelper
 
 
 class RemoteUserCfGrabber(object):
@@ -16,8 +10,9 @@ class RemoteUserCfGrabber(object):
     retrieval and display dirs / files listed as to
     be ignored in per-user lists on remote host
     '''
-    def __init__(self, host, timeout, audit_type):
+    def __init__(self, host, timeout, audit_type, confdir):
         self.host = host
+        self.confdir = confdir
         self.timeout = timeout
         self.audit_type = audit_type
         self.locations = audit_type + "_locations"
@@ -34,7 +29,7 @@ class RemoteUserCfGrabber(object):
         local_ignores = {}
 
         client = salt.client.LocalClient()
-        module_args = [self.timeout, self.audit_type]
+        module_args = [self.confdir, self.timeout, self.audit_type]
 
         result = client.cmd([self.host], "retentionaudit.retrieve_usercfs",
                             module_args, expr_form='list',

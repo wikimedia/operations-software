@@ -1,12 +1,7 @@
 import os
-import sys
 import readline
 
-import retention.remotefileauditor
-import retention.utils
-import retention.fileutils
-import retention.ruleutils
-import retention.cliutils
+import clouseau.retention.cliutils
 
 class Completion(object):
     '''
@@ -52,11 +47,11 @@ class Completion(object):
                 return host_todo
             else:
                 print "Please choose one of the following hosts:"
-                retention.cliutils.print_columns(self.cenv.hostlist, 4)
+                clouseau.retention.cliutils.print_columns(self.cenv.hostlist, 4)
 
     def dir_completion(self, text, state):
         if self.cenv.cwdir is None:
-            dirs_problem_to_depth = [retention.cliutils.get_path_prefix(
+            dirs_problem_to_depth = [clouseau.retention.cliutils.get_path_prefix(
                 d, self.max_depth_top_level) for d in self.cenv.problem_dirs]
             dirs_skipped = [s for s in self.cenv.skipped_dirs
                             if s not in dirs_problem_to_depth]

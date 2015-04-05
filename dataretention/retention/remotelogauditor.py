@@ -1,10 +1,8 @@
 import sys
 import json
 
-import retention.utils
-import retention.magic
-from retention.fileinfo import LogInfo
-from retention.utils import JsonHelper
+from clouseau.retention.fileinfo import LogInfo
+from clouseau.retention.utils import JsonHelper
 from retention.remotefileauditor import RemoteFilesAuditor
 
 

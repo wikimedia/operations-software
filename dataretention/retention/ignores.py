@@ -1,14 +1,38 @@
 import os
 import sys
-import runpy
 import salt.client
 import salt.utils.yamlloader
 
-from retention.status import Status
-import retention.utils
-import retention.fileutils
-import retention.ruleutils
-import retention.config
+from clouseau.retention.status import Status
+import clouseau.retention.utils
+import clouseau.retention.fileutils
+import clouseau.retention.ruleutils
+import clouseau.retention.config
+
+def prep_good_rules_tosend(dirname, hosts):
+    '''
+    on the master:
+
+    prepare a dict of file paths vs contents of good
+    rules, for use by salt cp.recv
+    (sending these files to the minions)
+
+    this method expects the good rules to have
+    previously been exported from the rules store
+    '''
+    results = {}
+    if not hosts:
+        return results
+    for host in hosts:
+        path = os.path.join(dirname, host + '_store_good.py')
+        if os.path.exists(path):
+            try:
+                results[path] = open(path).read()
+            except:
+                # if we can't get the file contents for some reason,
+                # make sure this file isn't in the dict
+                results.pop(path, None)
+    return results
 
 def expand_ignored_dirs(basedir, ignored):
     '''
@@ -52,7 +76,7 @@ def dir_is_ignored(dirname, ignored):
         os.path.dirname(dirname), ignored)
     if dirname in expanded_dirs:
         return True
-    if retention.fileutils.wildcard_matches(dirname, wildcard_dirs):
+    if clouseau.retention.fileutils.wildcard_matches(dirname, wildcard_dirs):
         return True
     return False
 
@@ -67,15 +91,15 @@ def file_is_ignored(fname, basedir, ignored):
     basename = os.path.basename(fname)
 
     if 'prefixes' in ignored:
-        if retention.fileutils.startswith(basename, ignored['prefixes']):
+        if clouseau.retention.fileutils.startswith(basename, ignored['prefixes']):
             return True
 
     if 'extensions' in ignored:
         if '*' in ignored['extensions']:
-            if retention.fileutils.endswith(basename, ignored['extensions']['*']):
+            if clouseau.retention.fileutils.endswith(basename, ignored['extensions']['*']):
                 return True
         if basedir in ignored['extensions']:
-            if retention.fileutils.endswith(
+            if clouseau.retention.fileutils.endswith(
                     basename, ignored['extensions'][basedir]):
                 return True
 
@@ -83,35 +107,31 @@ def file_is_ignored(fname, basedir, ignored):
         if basename in ignored['files']:
             return True
         if '*' in ignored['files']:
-            if retention.fileutils.endswith(basename, ignored['files']['*']):
+            if clouseau.retention.fileutils.endswith(basename, ignored['files']['*']):
                 return True
 
         if '/' in ignored['files']:
             if fname in ignored['files']['/']:
                 return True
-            if retention.fileutils.wildcard_matches(
+            if clouseau.retention.fileutils.wildcard_matches(
                     fname, [w for w in ignored['files']['/'] if '*' in w]):
                 return True
 
         if basedir in ignored['files']:
-            if retention.fileutils.endswith(basename, ignored['files'][basedir]):
+            if clouseau.retention.fileutils.endswith(basename, ignored['files'][basedir]):
                 return True
     return False
 
-def get_home_dirs(locations):
+def get_home_dirs(confdir, locations):
     '''
     get a list of home directories where the root location(s) for home are
     specified in the Config class (see 'home_locations'), by reading
     these root location dirs and grabbing all subdirectory names from them
     '''
-    retention.config.set_up_conf()
+    clouseau.retention.config.set_up_conf(confdir)
     home_dirs = []
 
-#    filep = open('/home/ariel/src/wmf/git-ops-software/software/dataretention/retention/junk', 'w+')
-#    filep.write('INFO: ' + ','.join(dir('retention.config')))
-#    filep.close()
-#    print 'INFO:', dir('retention.config')
-    for location in retention.config.cf[locations]:
+    for location in clouseau.retention.config.cf[locations]:
         if not os.path.isdir(location):
             continue
         home_dirs.extend([os.path.join(location, d)
@@ -119,14 +139,14 @@ def get_home_dirs(locations):
                           if os.path.isdir(os.path.join(location, d))])
     return home_dirs
 
-def get_local_ignores(locations):
+def get_local_ignores(confdir, locations):
     '''
     read a list of absolute paths from /home/blah/.data_retention
     for all blah.  Dirs are specified by op sep at the end ('/')
     and files without.
     '''
     local_ignores = {}
-    home_dirs = get_home_dirs(locations)
+    home_dirs = get_home_dirs(confdir, locations)
     for hdir in home_dirs:
         local_ignores[hdir] = []
         if os.path.exists(os.path.join(hdir, ".data_retention")):
@@ -185,21 +205,21 @@ class Ignores(object):
     on a given host
     '''
 
-    def __init__(self, cdb):
+    def __init__(self, confdir, cdb):
+        self.confdir = confdir
         self.cdb = cdb
-        self.perhost_rules_from_file = None
         if cdb is not None:
             self.hosts = self.cdb.store_db_list_all_hosts()
         else:
             self.hosts = None
 
+        self.perhost_ignores_from_file = None
         self.perhost_ignores = {}
-        self.perhost_ignores_from_rules = {}
-        self.perhost_rules_from_store = {}
-        self.get_perhost_cf_from_file()
+        self.ignores_from_rules = {}
+        self.process_perhost_ignores_from_file()
         self.ignored = {}
 
-    def set_up_ignored(self, confdir, ignore_also=None):
+    def set_up_global_ignored(self, confdir, ignore_also=None):
         '''
         collect up initial list of files/dirs to skip during audit
         '''
@@ -210,7 +230,7 @@ class Ignores(object):
         self.ignored['extensions'] = {}
 
         if confdir is not None:
-            configfile = os.path.join(confdir, 'ignored.yaml')
+            configfile = os.path.join(confdir, 'global_ignored.yaml')
             if os.path.exists(configfile):
                 try:
                     contents = open(configfile).read()
@@ -239,94 +259,107 @@ class Ignores(object):
                             self.ignored['files']['/'] = []
                         self.ignored['files']['/'].append(path)
 
-    def get_perhost_from_rules(self, hosts=None):
+    def get_ignores_from_rules_for_hosts(self, hosts=None):
         if hosts == None:
             hosts = self.hosts
         for host in hosts:
-            self.perhost_rules_from_store = retention.ruleutils.get_rules(
+            local_rules_from_store_db = clouseau.retention.ruleutils.get_rules(
                 self.cdb, host, Status.text_to_status('good'))
 
-            if self.perhost_rules_from_store is not None:
-                if host not in self.perhost_ignores_from_rules:
-                    self.perhost_ignores_from_rules[host] = {}
-                    self.perhost_ignores_from_rules[host]['dirs'] = {}
-                    self.perhost_ignores_from_rules[host]['dirs']['/'] = []
-                    self.perhost_ignores_from_rules[host]['files'] = {}
-                    self.perhost_ignores_from_rules[host]['files']['/'] = []
+            if local_rules_from_store_db is not None:
+                if host not in self.ignores_from_rules:
+                    self.ignores_from_rules[host] = {}
+                    self.ignores_from_rules[host]['dirs'] = {}
+                    self.ignores_from_rules[host]['dirs']['/'] = []
+                    self.ignores_from_rules[host]['files'] = {}
+                    self.ignores_from_rules[host]['files']['/'] = []
 
-                if (self.perhost_rules_from_file is not None and
-                        'ignored_dirs' in self.perhost_rules_from_file and
-                        host in self.perhost_rules_from_file['ignored_dirs']):
-                    for path in self.perhost_rules_from_file['ignored_dirs'][host]:
+                if (self.perhost_ignores_from_file is not None and
+                        'ignored_dirs' in self.perhost_ignores_from_file and
+                        host in self.perhost_ignores_from_file['ignored_dirs']):
+                    for path in self.perhost_ignores_from_file['ignored_dirs'][host]:
                         if (path.startswith('/') and
-                                path not in self.perhost_ignores_from_rules[host][
+                                path not in self.ignores_from_rules[host][
                                     'dirs']['/']):
                             if path[-1] == '/':
                                 path = path[:-1]
-                            self.perhost_ignores_from_rules[host][
+                            self.ignores_from_rules[host][
                                 'dirs']['/'].append(path)
-                if (self.perhost_rules_from_file is not None and
-                        'ignored_files' in self.perhost_rules_from_file and
-                        host in self.perhost_rules_from_file['ignored_files']):
-                    for path in self.perhost_rules_from_file['ignored_files'][host]:
+                if (self.perhost_ignores_from_file is not None and
+                        'ignored_files' in self.perhost_ignores_from_file and
+                        host in self.perhost_ignores_from_file['ignored_files']):
+                    for path in self.perhost_ignores_from_file['ignored_files'][host]:
                         if (path.startswith('/') and
-                                path not in self.perhost_ignores_from_rules[
+                                path not in self.ignores_from_rules[
                                     host]['files']['/']):
-                            self.perhost_ignores_from_rules[host]['files']['/'].append(path)
+                            self.ignores_from_rules[host]['files']['/'].append(path)
 
-    def get_perhost_cf_from_file(self):
-        if os.path.exists('audit_files_perhost_config.py'):
+    def get_perhost_ignores_from_file(self):
+        '''
+        get the lists of files and dirs to be ignored,
+        from the perhost_ignored file, for all hosts
+        in file
+        '''
+        perhost_ignores = None
+        configfile = os.path.join(self.confdir, 'perhost_ignored.yaml')
+        if os.path.exists(configfile):
             try:
-                self.perhost_rules_from_file = runpy.run_path(
-                    'audit_files_perhost_config.py')['perhostcf']
+                contents = open(configfile).read()
+                yamlcontents = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+                perhost_ignores = yamlcontents['perhostcf']
             except:
-                self.perhost_rules_from_file = None
+                perhost_ignores = None
+        return perhost_ignores
 
-        if self.perhost_rules_from_file is None:
+    def process_perhost_ignores_from_file(self):
+        '''
+        add to ignored dirs and files lists the entries
+        we get from the perhost_ignored file for each
+        host in file
+        '''
+        self.perhost_ignores_from_file = self.get_perhost_ignores_from_file()
+        if self.perhost_ignores_from_file is None:
             return
 
-        if 'ignored_dirs' in self.perhost_rules_from_file:
-            for host in self.perhost_rules_from_file['ignored_dirs']:
+        if 'ignored_dirs' in self.perhost_ignores_from_file:
+            for host in self.perhost_ignores_from_file['ignored_dirs']:
                 if host not in self.perhost_ignores:
                     self.perhost_ignores[host] = {}
                 self.perhost_ignores[host]['dirs'] = {}
                 self.perhost_ignores[host]['dirs']['/'] = [
                     (lambda path: path[:-1] if path[-1] == '/'
                      else path)(p)
-                    for p in self.perhost_rules_from_file[
+                    for p in self.perhost_ignores_from_file[
                             'ignored_dirs'][host]]
-        if 'ignored_files' in self.perhost_rules_from_file:
-            for host in self.perhost_rules_from_file['ignored_files']:
+        if 'ignored_files' in self.perhost_ignores_from_file:
+            for host in self.perhost_ignores_from_file['ignored_files']:
                 if host not in self.perhost_ignores:
                     self.perhost_ignores[host] = {}
                 self.perhost_ignores[host]['files'] = {}
                 self.perhost_ignores[host]['files']['/'] = (
-                    self.perhost_rules_from_file['ignored_files'][host])
+                    self.perhost_ignores_from_file['ignored_files'][host])
 
-    def add_perhost_rules_to_ignored(self, host):
+    def add_rules_to_ignored(self, rules):
         '''
-        add dirs/files to be skipped during audit based
-        on rules in the rule store db
+        add dirs/files to be ignored, based on rules
+        from the rulestore passed in as an arg
         '''
         if '/' not in self.ignored['dirs']:
             self.ignored['dirs']['/'] = []
         if '/' not in self.ignored['files']:
             self.ignored['files']['/'] = []
-        if host not in self.perhost_rules_from_store:
+
+        if 'good' not in rules:
             return
 
-        for rule in self.perhost_rules_from_store[host]:
-            path = os.path.join(rule['basedir'], rule['name'])
-            if rule['status'] == 'good':
-                if retention.ruleutils.entrytype_to_text(rule['type']) == 'dir':
-                    if path not in self.ignored['dirs']['/']:
-                        self.ignored['dirs']['/'].append(path)
-                elif retention.ruleutils.entrytype_to_text(rule['type']) == 'file':
-                    if path not in self.ignored['files']['/']:
-                        self.ignored['files']['/'].append(path)
-                else:
-                    # some other random type, don't care
-                    continue
+        for path in rules['good']:
+            if path.endswith('/'):
+                path = path[:-1]
+                if path not in self.ignored['dirs']['/']:
+                    self.ignored['dirs']['/'].append(path)
+            else:
+                if path not in self.ignored['files']['/']:
+                    self.ignored['files']['/'].append(path)
 
     def show_ignored(self, basedirs):
         sys.stderr.write(

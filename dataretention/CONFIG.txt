@@ -1,0 +1,43 @@
+The data_auditor script requires the following config files:
+
+config.yaml           -- general configuration settings
+allhosts_ignored.yaml -- list of files/dirs/extentions
+                         that will be ignored on all hosts
+perhost_ignored.yaml  -- list of ignored dirs and files
+                         per host (in addition to any rules
+		         that might be stored in the sqlite db,
+                         for which see below)
+
+These should be in yaml format and stored in the config directory,
+/srv/audits/retention/configs by default, on the salt master
+and all minions.
+
+In addition it maintains an sqlite db for storing the status rules
+for files and directories for each host, by default located
+in /etc/data_retention/dataretention_rules.sq3 on the salt
+master.
+
+Text files generated from the sq3 database are stored in
+files named <fqdn>_store.conf for each host, on the salt master,
+by default in the directory /etc/data_retention/data_retention.d
+These files can be used to regenerate the sq3 database if
+something should happen to it.
+
+Yaml files also generated from the sq3 database are stored in
+files named <fqdn>_store_good.conf for each host, on the salt master,
+by default in the directory /srv/audits/retention/configs/fromstore
+These files should be synced out to all salt minions every time
+they are updated, which would be every time that the rules for
+'good' files/dirs are changed on any host, via the interactive
+mode to data_auditor or via the rulestore script.  If the
+salt-cp feature of data_auditor is enabled, this will be
+done automatically by the script via salt-cp; you should only
+rely on this method if the size of the files is less than 100K.
+However, the directory /srv/audits/retention/configs/fromstore
+must already exist on the minions.
+
+
+
+
+
+

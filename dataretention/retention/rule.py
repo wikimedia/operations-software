@@ -4,8 +4,8 @@ import re
 import json
 import traceback
 import sqlite3
-from retention.saltclientplus import LocalClientPlus
-from retention.status import Status
+from clouseau.retention.saltclientplus import LocalClientPlus
+from clouseau.retention.status import Status
 
 def to_unicode(param):
     '''                                                                                                                                                             

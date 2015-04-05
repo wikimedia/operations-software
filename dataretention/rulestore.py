@@ -6,16 +6,16 @@ import os
 import sys
 import getopt
 
-from retention.saltclientplus import LocalClientPlus
-import retention.utils
-import retention.ruleutils
-from retention.rule import Rule, RuleStore
-from retention.status import Status
+from clouseau.retention.saltclientplus import LocalClientPlus
+import clouseau.retention.utils
+import clouseau.retention.ruleutils
+from clouseau.retention.rule import Rule, RuleStore
+from clouseau.retention.status import Status
 
 def usage(message=None):
     if message:
         sys.stderr.write(message + "\n")
-    usage_message = """Usage: rulestore.py --host <hostname>
+    usage_message = """Usage: rulestore.py --hosts <hostexpr>
              --action <action> [--path <path>] [--status <status>]
              [--rulestore <rulestore-path>]
              [--dryrun] [--help]
@@ -39,14 +39,14 @@ def usage(message=None):
 
     All options may also be specified in their short form
     i.e. -a instead of --action, by using the first letter
-    of the option.
+    of the option, except for --host which has the abbrev H.
 """
     sys.stderr.write(usage_message)
     sys.exit(1)
 
-def check_args(host, action, status):
-    if host is None:
-        usage("Mandatory 'host' argument not specified")
+def check_args(hosts, action, status):
+    if hosts is None:
+        usage("Mandatory 'hosts' argument not specified")
 
     if action is None:
         usage("Mandatory 'action' argument not specified")
@@ -64,7 +64,7 @@ def do_action(cdb, action, hosts, status, path, dryrun):
         if path and path[-1] == os.path.sep:
             path = path[:-1]
         for host in hosts:
-            retention.ruleutils.show_rules(cdb, host, status, prefix=path)
+            clouseau.retention.ruleutils.show_rules(cdb, host, status, prefix=path)
 
     elif action == 'delete':
         if path and path[-1] == os.path.sep:
@@ -75,13 +75,13 @@ def do_action(cdb, action, hosts, status, path, dryrun):
                 print "would remove rule for %s in %s" % (path, hosts)
             else:
                 for host in hosts:
-                    retention.ruleutils.do_remove_rule(cdb, path, host)
+                    clouseau.retention.ruleutils.do_remove_rule(cdb, path, host)
         elif status:
             if dryrun:
                 print "would remove rules for status %s in %s" % (status, hosts)
             else:
                 for host in hosts:
-                    retention.ruleutils.do_remove_rules(cdb, status, host)
+                    clouseau.retention.ruleutils.do_remove_rules(cdb, status, host)
 
     elif action == 'add':
         if status is None:
@@ -90,20 +90,20 @@ def do_action(cdb, action, hosts, status, path, dryrun):
             usage('path must be specified to add a rule')
 
         if path[-1] == os.path.sep:
-            rtype = retention.ruleutils.text_to_entrytype('dir')
+            rtype = clouseau.retention.ruleutils.text_to_entrytype('dir')
             path = path[:-1]
         else:
-            rtype = retention.ruleutils.text_to_entrytype('file')
+            rtype = clouseau.retention.ruleutils.text_to_entrytype('file')
 
         if dryrun:
             print "would add rule for %s in %s with status %s of type %s" % (
                 hosts, path, status, rtype)
 
         for host in hosts:
-            retention.ruleutils.do_add_rule(cdb, path, rtype, status, host)
+            clouseau.retention.ruleutils.do_add_rule(cdb, path, rtype, status, host)
 
 def main():
-    host = None
+    hosts = None
     action = None
     path = None
     status = None
@@ -112,16 +112,16 @@ def main():
 
     try:
         (options, remainder) = getopt.gnu_getopt(
-            sys.argv[1:], "h:a:p:s:r:dh",
-            ["host=", "action=", "path=",
+            sys.argv[1:], "H:a:p:s:r:dh",
+            ["hosts=", "action=", "path=",
              "status=", "dryrun", "help"])
 
     except getopt.GetoptError as err:
         usage("Unknown option specified: " + str(err))
 
     for (opt, val) in options:
-        if opt in ["-h", "--host"]:
-            host = val
+        if opt in ["-H", "--hosts"]:
+            hosts = val
         elif opt in ["-a", "--action"]:
             action = val
         elif opt in ["-p", "--path"]:
@@ -140,7 +140,7 @@ def main():
     if len(remainder) > 0:
         usage("Unknown option specified: <%s>" % remainder[0])
 
-    check_args(host, action, status)
+    check_args(hosts, action, status)
 
     if not os.path.exists(store_filepath):
         usage('no such rulestore at %s' % store_filepath)
@@ -148,13 +148,12 @@ def main():
     cdb = RuleStore(store_filepath)
     cdb.store_db_init(None)
 
-    hosts, htype = retention.utils.get_hosts_expr_type(host)
-
+    hosts, htype = clouseau.retention.utils.get_hosts_expr_type(hosts)
     # if we are given one host, check that the host has a table or whine
     if htype == 'glob' and '*' not in hosts:
-        if not retention.ruleutils.check_host_table_exists(cdb, host):
-            usage('no such host in rule store, %s' % host)
-    elif htype == 'grain':
+        if not clouseau.retention.ruleutils.check_host_table_exists(cdb, hosts):
+            usage('no such host in rule store, %s' % hosts)
+    if htype == 'grain' or htype == 'glob':
         client = LocalClientPlus()
         hosts = client.cmd_expandminions(hosts, "test.ping", expr_form=htype)
     do_action(cdb, action, hosts, status, path, dryrun)

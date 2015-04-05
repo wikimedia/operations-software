@@ -3,11 +3,6 @@ import sys
 import readline
 import atexit
 
-import retention.remotefileauditor
-import retention.utils
-import retention.fileutils
-import retention.ruleutils
-
 
 def init_readline_hist():
     readline.parse_and_bind("tab: complete")

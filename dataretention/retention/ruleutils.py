@@ -2,9 +2,13 @@ import os
 import sys
 import json
 import traceback
-from retention.status import Status
-import retention.rule
-from retention.rule import Rule, RuleStore
+from clouseau.retention.status import Status
+import clouseau.retention.rule
+from clouseau.retention.rule import Rule, RuleStore
+import salt.utils.yamlloader
+from salt.utils.yamldumper import SafeOrderedDumper
+import yaml
+
 
 def get_rules_for_entries(cdb, path, path_entries, host, quiet=False):
     rules = get_rules_for_path(cdb, path, host, True)
@@ -23,19 +27,6 @@ def get_rules_for_entries(cdb, path, path_entries, host, quiet=False):
         for rule in uniq_sorted:
             print rule
     return uniq_sorted
-
-def format_rules_for_export(rules_list, indent_count):
-    if len(rules_list) == 0:
-        return "[]"
-
-    spaces = " " * 4
-    indent = spaces * indent_count
-    return ("[\n" + indent + spaces +
-            (",\n" + indent + spaces).join(
-                ["'" + rule['path'].replace("'", r"\'") + "'"
-                 for rule in rules_list]
-            )
-            + "\n" + indent + "]")
 
 def import_rule_list(cdb, entries, status, host):
     '''
@@ -64,20 +55,6 @@ def import_rule_list(cdb, entries, status, host):
             sys.stderr.write("Couldn't add rule for %s to rule store\n" %
                              entry)
 
-def import_handle_status(line):
-    '''
-    see if the line passed is a status def line
-    returns status found (if any) and next state
-    '''
-    for stat in Status.status_cf:
-        result = Status.status_cf[stat][1].match(line)
-        if result is not None:
-            if "]" in result.group(0):
-                return None, Rule.STATE_EXPECT_STATUS
-            else:
-                return stat, Rule.STATE_EXPECT_ENTRIES
-    return None, None
-
 def import_rules(cdb, rules_path, host):
     # we don't toss all existing rules, these get merged into
     # the rules already in the rules store
@@ -85,8 +62,9 @@ def import_rules(cdb, rules_path, host):
     # it is possible to bork the list of files by deliberately
     # including a file/dir with a newline in the name; this will
     # just mean that your rule doesn't cover the files/dirs you want.
+
     try:
-        rules_text = open(rules_path).read()
+        contents = open(rules_path).read()
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         sys.stderr.write(repr(traceback.format_exception(
@@ -94,70 +72,13 @@ def import_rules(cdb, rules_path, host):
         sys.stderr.write("Couldn't read rules from %s.\n" % rules_path)
         return
 
-    lines = rules_text.split("\n")
-    state = Rule.STATE_START
-    rules = {}
-    active = None
-    for line in lines:
-        if Rule.comment_expr.match(line) or Rule.blank_expr.match(line):
-            continue
-        elif state == Rule.STATE_START:
-            if not Rule.first_line_expected.match(line):
-                print "unexpected line in rules file, wanted "
-                print "'dir_rules = ...', aborting:"
-                print line
-                return
-            else:
-                state = Rule.STATE_EXPECT_STATUS
-        elif state == Rule.STATE_EXPECT_STATUS:
-            if Rule.last_line_expected.match(line):
-                # done parsing file
-                break
-            active, state = import_handle_status(line)
-            if state == Rule.STATE_EXPECT_STATUS:
-                continue
-            elif state == Rule.STATE_EXPECT_ENTRIES:
-                rules[active] = []
-            elif state is None:
-                # not a status with empty list, not a status
-                # expecting entries on following lines, bail
-                print "unexpected line in rules file, aborting:"
-                print line
-                return
-        elif state == Rule.STATE_EXPECT_ENTRIES:
-            if Rule.entry_expr.match(line):
-                result = Rule.entry_expr.match(line)
-                rules[active].append(result.group(1))
-            elif Rule.end_entries_expr.match(line):
-                active = None
-                state = Rule.STATE_EXPECT_STATUS
-            else:
-                active, state = import_handle_status(line)
-                if state == Rule.STATE_EXPECT_STATUS:
-                    # end of entries with crap syntax, we forgive
-                    continue
-                elif state == Rule.STATE_EXPECT_ENTRIES:
-                    # found a status line with empty list.
-                    # so end of these entries ayways
-                    state = Rule.STATE_EXPECT_STATUS
-                    continue
-                elif state is None:
-                    # not an entry, not a status, not end of entries
-                    print "unexpected line in rules file, wanted entry, "
-                    print "status or entry end marker, aborting:"
-                    print line
-                    return
-        else:
-            print "unexpected line in rules file, aborting:"
-            print line
-            return
-
+    yaml_contents = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
     for status in Status.status_cf:
-        if status in rules:
+        if status in yaml_contents:
             import_rule_list(
-                cdb, rules[status],
+                cdb, yaml_contents[status],
                 Status.status_cf[status][0], host)
-
+    
 def do_remove_rule(cdb, path, host):
     cdb.store_db_delete({'basedir': os.path.dirname(path),
                          'name': os.path.basename(path)},
@@ -191,8 +112,6 @@ def normalize_path(path, ptype):
     return path
 
 def export_rules(cdb, rules_path, host, status=None):
-    # would be nice to be able to only export some rules. whatever
-
     rules = get_rules(cdb, host, status)
     sorted_rules = {}
     for stext in Status.STATUS_TEXTS:
@@ -200,19 +119,20 @@ def export_rules(cdb, rules_path, host, status=None):
     for rule in rules:
         if rule['status'] in Status.STATUS_TEXTS:
             rule['path'] = normalize_path(rule['path'], rule['type'])
-            sorted_rules[rule['status']].append(rule)
+            sorted_rules[rule['status']].append(rule['path'])
         else:
             continue
 
-    output = "dir_rules = {\n"
+    rules_by_status = {}
     for status in Status.STATUS_TEXTS:
-        output += "    '%s': %s,\n" % (
-            status, format_rules_for_export(sorted_rules[status], 2))
-    output += "}\n"
+        rules_by_status[status] = sorted_rules[status]
     try:
-        filep = open(rules_path, "w")
-        filep.write("# -*- coding: utf-8 -*-\n")
-        filep.write(output)
+        filep = open(rules_path, "w+")
+        contents = yaml.dump(rules_by_status,
+                             line_break='\n',
+                             default_flow_style=False,
+                             Dumper=SafeOrderedDumper)
+        filep.write(contents)
         filep.close()
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -235,8 +155,8 @@ def text_to_entrytype(fullname):
 def row_to_rule(row):
     # ('/home/ariel/wmf/security', '/home/ariel/wmf/security/openjdk6', 'D', 'G')
     (basedir, name, entrytype, status) = row
-    basedir = retention.rule.from_unicode(basedir)
-    name = retention.rule.from_unicode(name)
+    basedir = clouseau.retention.rule.from_unicode(basedir)
+    name = clouseau.retention.rule.from_unicode(name)
     rule = {'path': os.path.join(basedir, name),
             'type': entrytype_to_text(entrytype),
             'status': Status.status_to_text(status)}
@@ -377,10 +297,3 @@ def get_prefixes(path):
             prefix = os.path.join(prefix, field)
             prefixes.append(prefix)
     return prefixes
-
-def get_rule_as_json(path, ptype, status):
-    rule = {'basedir': os.path.dirname(path),
-            'name': os.path.basename(path),
-            'type': ptype,
-            'status': status}
-    return json.dumps(rule)

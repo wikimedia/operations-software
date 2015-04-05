@@ -1,18 +1,19 @@
 import os
 import salt.utils.yamlloader
 
-cf = {}
+cf = None
 
-def set_up_conf():
+def set_up_conf(confdir):
     global cf
 
-    if cf:
+    if cf is not None:
         return
 
-    print "INFO: about to parse config yaml"
-    if os.path.exists('/srv/salt/audits/retention/configs/config.yaml'):
+    configfile = os.path.join(confdir, 'config.yaml')
+    if os.path.exists(configfile):
+        cf = {}
         try:
-            contents = open('/srv/salt/audits/retention/configs/config.yaml').read()
+            contents = open(configfile).read()
             yamlcontents = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
             # fixme do I need this or will a direct assign get it?
             for key in yamlcontents:

@@ -2,7 +2,6 @@ import sys
 import getopt
 
 from retention.cli import CommandLine
-#from retention.auditor import HomesAuditor
 from retention.remotefileauditor import RemoteFilesAuditor
 from retention.remotelogauditor import RemoteLogsAuditor
 from retention.remotehomeauditor import RemoteHomesAuditor
@@ -40,7 +39,7 @@ Options:
                         'logs' or 'homes'; this may not be specified with
                         the 'info' option.
     confdir     (-d) -- path to dir where ignores.yaml is located
-                        default: /srv/salt/audits/retention/configs
+                        default: /srv/audits/retention/configs
     target      (-t) -- for local runs, this must be 'localhost' or '127.0.1'
                         for remote hosts, this should be a host expression
                         recognizable by salt, in the following format:
@@ -110,7 +109,7 @@ For 'logs' audit type:
 def main():
     hosts_expr = None
     audit_type = None
-    confdir = '/srv/salt/audits/retention/configs'
+    confdir = '/srv/audits/retention/configs'
     files_to_check = None
     prettyprint = False
     show_sample_content = False
@@ -252,7 +251,7 @@ def main():
                                       timeout, maxfiles, store_filepath, verbose)
         report, ignored = logsaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(store_filepath, timeout, audit_type, hosts_expr)
+            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, hosts_expr)
             cmdline.run(report, ignored)
 
     elif audit_type == 'root':
@@ -264,7 +263,7 @@ def main():
                                         timeout, maxfiles, store_filepath, verbose)
         report, ignored = filesaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(store_filepath, timeout, audit_type, hosts_expr)
+            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, hosts_expr)
             cmdline.run(report, ignored)
 
     elif audit_type == 'homes':
@@ -276,7 +275,7 @@ def main():
                                         timeout, maxfiles, store_filepath, verbose)
         report, ignored = homesaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(store_filepath, timeout, audit_type, hosts_expr)
+            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, hosts_expr)
             cmdline.run(report, ignored)
 
 if __name__ == '__main__':

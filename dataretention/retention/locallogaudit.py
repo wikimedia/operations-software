@@ -1,13 +1,11 @@
 import os
-import sys
 import glob
 
-import retention.utils
-import retention.magic
-import retention.config
-from retention.fileinfo import LogInfo, LogUtils
-from retention.localfileaudit import LocalFilesAuditor
-import retention.fileutils
+import clouseau.retention.utils
+import clouseau.retention.config
+from clouseau.retention.fileinfo import LogInfo, LogUtils
+from clouseau.retention.localfileaudit import LocalFilesAuditor
+import clouseau.retention.fileutils
 
 class LocalLogsAuditor(LocalFilesAuditor):
     def __init__(self, audit_type, confdir=None,
@@ -24,8 +22,9 @@ class LocalLogsAuditor(LocalFilesAuditor):
         self.oldest_only = oldest
         self.show_system_logs = show_system_logs
         if self.show_system_logs:
-            self.ignored['files'].pop("/var/log")
+            self.ignores.ignored['files'].pop("/var/log")
         self.display_from_dict = LogInfo.display_from_dict
+        clouseau.retention.config.set_up_conf(self.confdir)
 
     @staticmethod
     def get_rotated_freq(rotated):
@@ -55,10 +54,9 @@ class LocalLogsAuditor(LocalFilesAuditor):
             keep = None
         return keep
 
-    @staticmethod
-    def parse_logrotate_contents(contents,
+    def parse_logrotate_contents(self, contents,
                                  default_freq='-', default_keep='-'):
-        retention.config.set_up_conf()
+        clouseau.retention.config.set_up_conf(self.confdir)
         lines = contents.split('\n')
         state = 'want_lbracket'
         logs = {}
@@ -83,7 +81,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     continue
                 if '*' in line:
                     log_group.extend(glob.glob(
-                        os.path.join(retention.config.cf['rotate_basedir'], line)))
+                        os.path.join(clouseau.retention.config.cf['rotate_basedir'], line)))
                 else:
                     log_group.append(line)
             elif state == 'want_rbracket':
@@ -108,8 +106,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         return logs
 
     def get_logrotate_defaults(self):
-        retention.config.set_up_conf()
-        contents = open(retention.config.cf['rotate_mainconf']).read()
+        contents = open(clouseau.retention.config.cf['rotate_mainconf']).read()
         lines = contents.split('\n')
         skip = False
         freq = '-'
@@ -142,16 +139,15 @@ class LocalLogsAuditor(LocalFilesAuditor):
         gather all names of log files from logrotate
         config files
         '''
-        retention.config.set_up_conf()
         rotated_logs = {}
         default_freq, default_keep = self.get_logrotate_defaults()
-        rotated_logs.update(LocalLogsAuditor.parse_logrotate_contents(
-            open(retention.config.cf['rotate_mainconf']).read(),
+        rotated_logs.update(self.parse_logrotate_contents(
+            open(clouseau.retention.config.cf['rotate_mainconf']).read(),
             default_freq, default_keep))
-        for fname in os.listdir(retention.config.cf['rotate_basedir']):
-            pathname = os.path.join(retention.config.cf['rotate_basedir'], fname)
+        for fname in os.listdir(clouseau.retention.config.cf['rotate_basedir']):
+            pathname = os.path.join(clouseau.retention.config.cf['rotate_basedir'], fname)
             if os.path.isfile(pathname):
-                rotated_logs.update(LocalLogsAuditor.parse_logrotate_contents(
+                rotated_logs.update(self.parse_logrotate_contents(
                     open(pathname).read(), default_freq, default_keep))
         return rotated_logs
 
@@ -160,9 +156,8 @@ class LocalLogsAuditor(LocalFilesAuditor):
         check how long mysql logs are kept around
         '''
         # note that I also see my.cnf.s3 and we don't check those (yet)
-        retention.config.set_up_conf()
         output = ''
-        for filename in retention.config.cf['mysqlconf']:
+        for filename in clouseau.retention.config.cf['mysqlconf']:
             found = False
             try:
                 contents = open(filename).read()
@@ -197,15 +192,15 @@ class LocalLogsAuditor(LocalFilesAuditor):
 
                     # add these files to ignore list; a one line report on
                     # mysql log expiry configuration is sufficient
-                    if datadir not in self.ignored['files']:
-                        self.ignored['files'][datadir] = ignore_these
+                    if datadir not in self.ignores.ignored['files']:
+                        self.ignores.ignored['files'][datadir] = ignore_these
                     else:
-                        self.ignored['files'][datadir].extend(ignore_these)
+                        self.ignores.ignored['files'][datadir].extend(ignore_these)
                     # skip the subdirectories in here, they will be full of mysql dbs
-                    if datadir not in self.ignored['dirs']:
-                        self.ignored['files'][datadir] = ['*']
+                    if datadir not in self.ignores.ignored['dirs']:
+                        self.ignores.ignored['files'][datadir] = ['*']
                     else:
-                        self.ignored['files'][datadir].append('*')
+                        self.ignores.ignored['files'][datadir].append('*')
 
                 if line.startswith('expire_logs_days'):
                     fields = line.split('=', 1)
@@ -215,7 +210,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     if not fields[1].isdigit():
                         continue
                     found = True
-                    if int(fields[1]) > retention.config.cf['cutoff']/86400:
+                    if int(fields[1]) > clouseau.retention.config.cf['cutoff']/86400:
                         if output:
                             output = output + '\n'
                         output = output + ('WARNING: some mysql logs expired after %s days in %s'
@@ -231,13 +226,12 @@ class LocalLogsAuditor(LocalFilesAuditor):
         note that no summary report is done for a  single host,
         for logs we summarize across hosts
         '''
-        retention.config.set_up_conf()
         mysql_issues = self.check_mysqlconf()
         result = []
         if mysql_issues:
             result.append(mysql_issues)
 
-        open_files = retention.fileutils.get_open_files()
+        open_files = clouseau.retention.fileutils.get_open_files()
         rotated = self.find_rotated_logs()
 
         all_files = {}
@@ -261,8 +255,8 @@ class LocalLogsAuditor(LocalFilesAuditor):
                                    for fname in all_files]) + 2
 
         for fname in all_files_sorted:
-            if retention.fileutils.contains(all_files[fname].filetype,
-                                            retention.config.cf['ignored_types']):
+            if clouseau.retention.fileutils.contains(all_files[fname].filetype,
+                                            clouseau.retention.config.cf['ignored_types']):
                 continue
 
             if (self.oldest_only and

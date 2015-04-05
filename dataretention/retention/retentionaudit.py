@@ -3,11 +3,11 @@ import logging
 
 log = logging.getLogger(__name__)
 
-from retention.localfileaudit import LocalFilesAuditor
-from retention.locallogaudit import LocalLogsAuditor
-from retention.localhomeaudit import LocalHomesAuditor
-from retention.localexaminer import LocalFileExaminer, LocalDirExaminer
-from retention.localusercfgrabber import LocalUserCfGrabber
+from clouseau.retention.localfileaudit import LocalFilesAuditor
+from clouseau.retention.locallogaudit import LocalLogsAuditor
+from clouseau.retention.localhomeaudit import LocalHomesAuditor
+from clouseau.retention.localexaminer import LocalFileExaminer, LocalDirExaminer
+from clouseau.retention.localusercfgrabber import LocalUserCfGrabber
 
 def fileaudit_host(confdir,show_content, dirsizes, depth,
                    to_check, ignore_also, timeout,
@@ -56,7 +56,7 @@ def examine_dir(path, batchno, batchsize,
     result = dexaminer.run()
     return result
 
-def retrieve_usercfs(timeout, audit_type):
-    ucfsretriever = LocalUserCfGrabber(timeout, audit_type)
+def retrieve_usercfs(confdir, timeout, audit_type):
+    ucfsretriever = LocalUserCfGrabber(confdir, timeout, audit_type)
     result = ucfsretriever.run()
     return result

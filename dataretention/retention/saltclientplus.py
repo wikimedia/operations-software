@@ -39,6 +39,7 @@ class LocalClientPlus(salt.client.LocalClient):
                            timeout, **kwargs)
 
         if not job:
+            print "WARNING: failed to get any valid minions from", tgt
             return []
         else:
             time.sleep(3)

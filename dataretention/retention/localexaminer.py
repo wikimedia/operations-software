@@ -3,9 +3,8 @@ import stat
 import json
 import logging
 
-import retention.utils
-from retention.utils import JsonHelper
-from retention.fileinfo import FileInfo, EntryInfo
+from clouseau.retention.utils import JsonHelper
+from clouseau.retention.fileinfo import FileInfo, EntryInfo
 
 log = logging.getLogger(__name__)
 
