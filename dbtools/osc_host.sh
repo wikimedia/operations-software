@@ -205,6 +205,7 @@ for db in "${dblist[@]}"; do
 		--dry-run \
 		--alter-foreign-keys-method=none --force \
 		--nocheck-replication-filters \
+		--no-version-check \
 		$ptdryargs \
 		--alter "$altersql" \
 		D=$db,t=$table,h=$host,P=$port,u=$user >/dev/null
@@ -217,6 +218,7 @@ for db in "${dblist[@]}"; do
 				--execute \
 				--alter-foreign-keys-method=none --force \
 				--nocheck-replication-filters \
+				--no-version-check \
 				$ptargs \
 				--alter "$altersql" \
 				D=$db,t=$table,h=$host,P=$port,u=$user
