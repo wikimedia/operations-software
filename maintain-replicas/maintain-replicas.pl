@@ -83,8 +83,9 @@ my @fullviews = (
     "sites", "site_stats", "tag_summary", "templatelinks", "transcode", "updatelog", "updates",
     "user_daily_contribs", "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log",
     "wikilove_log", 'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
-    'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wbs_propertypairs',
+    'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wb_changes_subscription',
     'wb_entity_per_page', 'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
+    'wbc_entity_usage', 'wbs_propertypairs',
 );
 
 my %customviews = (
@@ -505,7 +506,7 @@ foreach my $slice (sort keys %slices) {
             twiddle;
             my $source = $customviews{$view}->{'source'};
             my @sources;
-            
+
             next if ($customviews{$view}->{'limit'}//1) > ($db{$dbk}->{'size'}//1);
 
             my $q = "SELECT table_name FROM information_schema.views "
