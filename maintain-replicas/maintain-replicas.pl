@@ -382,11 +382,6 @@ for my $family ("wikibooks", "wikidata", "wikinews", "wikiquote", "wikisource",
     dbprop $family, "family", "$family";
 }
 
-$db{'centralauth'} = {
-    'family' => 'centralauth',
-    'slice' => 's7',
-};
-
 # Sadly, case sensitivity of titles isn't in a .dblist, nor is it
 # exposed through the API so we have to hardcode it here to match
 # what is in InitialiseSettings.php
