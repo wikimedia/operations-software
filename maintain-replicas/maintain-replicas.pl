@@ -370,7 +370,6 @@ dbprop "medium", "size", 2;
 dbprop "large", "size", 3;
 dbprop "private", "private", 1;
 dbprop "special", "family", "special";
-dbprop "echowikis", "has_echo", 1;
 dbprop "flaggedrevs", "has_flaggedrevs", 1;
 dbprop "visualeditor-default", "has_visualeditor", 1;
 dbprop "wikidataclient", "has_wikidata", 1;
@@ -545,7 +544,7 @@ foreach my $slice (sort keys %slices) {
         size numeric(1) NOT NULL DEFAULT 1,
         slice text NOT NULL,
         is_closed numeric(1) NOT NULL DEFAULT 0,
-        has_echo numeric(1) NOT NULL DEFAULT 0,
+        has_echo numeric(1) NOT NULL DEFAULT 1,
         has_flaggedrevs numeric(1) NOT NULL DEFAULT 0,
         has_visualeditor numeric(1) NOT NULL DEFAULT 0,
         has_wikidata numeric(1) NOT NULL DEFAULT 0,
@@ -581,7 +580,6 @@ foreach my $slice (sort keys %slices) {
             'slice' => quote($db->{'slice'}.".labsdb"),
             'family' => quote('wikipedia'),
         );
-        $fields{'has_echo'} = '1' if $db->{'has_echo'};
         $fields{'has_flaggedrevs'} = '1' if $db->{'has_flaggedrevs'};
         $fields{'has_visualeditor'} = '1' if $db->{'has_visualeditor'};
         $fields{'has_wikidata'} = '1' if $db->{'has_wikidata'};
