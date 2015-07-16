@@ -329,6 +329,10 @@ my %customviews = (
                     up_property, up_value',
         'where' => 'user_id=up_user and up_property like pw_property', },
 
+    'watchlist_counts' => {
+        'source' => 'watchlist',
+        'view'   => 'select count(*) as wl_count, wl_namespace, wl_title',
+        'group'  => 'wl_namespace, wl_title having wl_count >= 30', },
 );
 
 my $dbuser;
@@ -536,6 +540,7 @@ foreach my $slice (sort keys %slices) {
                . $customviews{$view}->{'view'}
                . " FROM " . join(',', @sources);
             $q .= " WHERE " . $customviews{$view}->{'where'} if defined $customviews{$view}->{'where'};
+            $q .= " GROUP BY " . $customviews{$view}->{'group'} if defined $customviews{$view}->{'group'};
             $q =~ s/\s+/ /g;
             $q .= ";";
             sql($q);
