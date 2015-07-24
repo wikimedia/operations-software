@@ -377,7 +377,8 @@ for my $slice ('s1', 's2', 's3', 's4', 's5', 's6', 's7') {
     dbprop $slice, "slice", $slice;
 }
 for my $family ("wikibooks", "wikidata", "wikinews", "wikiquote", "wikisource",
-                "wikiversity", "wikivoyage", "wiktionary", "wikimania", "wikimedia") {
+                "wikiversity", "wikivoyage", "wiktionary", "wikimania", "wikimedia",
+                "wikipedia") {
     dbprop $family, "family", "$family";
 }
 
