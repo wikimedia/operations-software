@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import json
 import socket
@@ -126,13 +125,14 @@ class RemoteFilesAuditor(object):
         self.hostname = socket.getfqdn()
 
         clouseau.retention.config.set_up_conf(confdir)
-        self.cutoff = clouseau.retention.config.cf['cutoff']
+        self.cutoff = clouseau.retention.config.conf['cutoff']
 
         client = LocalClientPlus()
         hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
         self.expanded_hosts = client.cmd_expandminions(
             hosts, "test.ping", expr_form=expr_type)
 
+        self.MAX_FILES = maxfiles
         self.set_up_max_files(maxfiles)
 
         self.cdb = RuleStore(self.store_filepath)
@@ -142,7 +142,7 @@ class RemoteFilesAuditor(object):
         self.ignores = Ignores(self.confdir, self.cdb)
         self.ignores.set_up_global_ignored(self.confdir, self.ignore_also)
         if self.verbose:
-            self.ignores.show_ignored(clouseau.retention.config.cf[self.locations])
+            self.ignores.show_ignored(clouseau.retention.config.conf[self.locations])
 
         self.perhost_ignores_from_file = self.ignores.get_perhost_ignores_from_file()
 
@@ -151,6 +151,7 @@ class RemoteFilesAuditor(object):
         self.magic.load()
         self.summary = None
         self.display_from_dict = FileInfo.display_from_dict
+        self.runner = None
 
     def get_audit_args(self):
         audit_args = [self.confdir,
@@ -198,7 +199,7 @@ class RemoteFilesAuditor(object):
     def set_up_and_export_rule_store(self):
         hosts = self.cdb.store_db_list_all_hosts()
         destdir = os.path.join(os.path.dirname(self.store_filepath),
-                                   "data_retention.d")
+                               "data_retention.d")
         if not os.path.isdir(destdir):
             os.makedirs(destdir, 0755)
         for host in hosts:
@@ -367,8 +368,8 @@ class RemoteFilesAuditor(object):
                 dirs_problem = list(set(dirs_problem))
                 for dirname in dirs_problem:
                     clouseau.retention.ruleutils.do_add_rule(self.cdb, dirname,
-                                                    clouseau.retention.ruleutils.text_to_entrytype('dir'),
-                                                    Status.text_to_status('problem'), host)
+                                                             clouseau.retention.ruleutils.text_to_entrytype('dir'),
+                                                             Status.text_to_status('problem'), host)
 
             if dirs_skipped is not None:
                 dirs_skipped = list(set(dirs_skipped))
@@ -377,5 +378,5 @@ class RemoteFilesAuditor(object):
                         # problem report overrides 'too many to audit'
                         continue
                     clouseau.retention.ruleutils.do_add_rule(self.cdb, dirname,
-                                                    clouseau.retention.ruleutils.text_to_entrytype('dir'),
-                                                    Status.text_to_status('unreviewed'), host)
+                                                             clouseau.retention.ruleutils.text_to_entrytype('dir'),
+                                                             Status.text_to_status('unreviewed'), host)

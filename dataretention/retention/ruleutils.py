@@ -1,6 +1,5 @@
 import os
 import sys
-import json
 import traceback
 from clouseau.retention.status import Status
 import clouseau.retention.rule
@@ -78,7 +77,7 @@ def import_rules(cdb, rules_path, host):
             import_rule_list(
                 cdb, yaml_contents[status],
                 Status.status_cf[status][0], host)
-    
+
 def do_remove_rule(cdb, path, host):
     cdb.store_db_delete({'basedir': os.path.dirname(path),
                          'name': os.path.basename(path)},

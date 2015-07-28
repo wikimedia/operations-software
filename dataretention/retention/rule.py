@@ -1,15 +1,12 @@
 import os
-import sys
 import re
-import json
-import traceback
 import sqlite3
 from clouseau.retention.saltclientplus import LocalClientPlus
 from clouseau.retention.status import Status
 
 def to_unicode(param):
-    '''                                                                                                                                                             
-    convert a parameter to unicode if it is not already                                                                                                             
+    '''
+    convert a parameter to unicode if it is not already
     '''
     newparam = param
     if not isinstance(param, unicode):
@@ -22,8 +19,8 @@ def to_unicode(param):
     return newparam
 
 def from_unicode(param):
-    '''                                                                                                                                                             
-    convert a parameter from unicode back to bytes it is not already                                                                                                
+    '''
+    convert a parameter from unicode back to bytes it is not already
     '''
     newparam = param
     if isinstance(param, unicode):
@@ -365,4 +362,3 @@ class RuleStore(object):
                 hosts.append(table[len(self.TABLE + "_"):].
                              replace('__', '-').replace('_', '.'))
         return hosts
-

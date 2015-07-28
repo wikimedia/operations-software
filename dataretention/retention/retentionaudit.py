@@ -1,7 +1,4 @@
 # salt module
-import logging
-
-log = logging.getLogger(__name__)
 
 from clouseau.retention.localfileaudit import LocalFilesAuditor
 from clouseau.retention.locallogaudit import LocalLogsAuditor
@@ -9,7 +6,7 @@ from clouseau.retention.localhomeaudit import LocalHomesAuditor
 from clouseau.retention.localexaminer import LocalFileExaminer, LocalDirExaminer
 from clouseau.retention.localusercfgrabber import LocalUserCfGrabber
 
-def fileaudit_host(confdir,show_content, dirsizes, depth,
+def fileaudit_host(confdir, show_content, dirsizes, depth,
                    to_check, ignore_also, timeout,
                    maxfiles):
     fauditor = LocalFilesAuditor('root', confdir, show_content,

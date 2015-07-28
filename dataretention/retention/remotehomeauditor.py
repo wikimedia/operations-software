@@ -1,5 +1,4 @@
 import os
-import sys
 
 from retention.remotefileauditor import RemoteFilesAuditor
 
@@ -86,7 +85,7 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
         if not item['path'].startswith('/home/'):
             return
 
-        empty, home, user, rest = item['path'].split(os.path.sep, 3)
+        _, home, user, _ = item['path'].split(os.path.sep, 3)
         home_dir = os.path.join(os.path.sep, home, user)
         if home_dir not in self.homes_owners:
             try:
@@ -97,5 +96,3 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
 
         if item['owner'] != self.homes_owners[home_dir]:
             summary[dirname][group]['odd_owner'] += 1
-
-

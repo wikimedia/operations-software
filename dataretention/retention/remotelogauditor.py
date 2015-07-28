@@ -1,4 +1,3 @@
-import sys
 import json
 
 from clouseau.retention.fileinfo import LogInfo

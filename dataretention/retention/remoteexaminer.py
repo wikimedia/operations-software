@@ -1,11 +1,8 @@
 import json
-import logging
 
 from salt.client import LocalClient
 from clouseau.retention.utils import JsonHelper
 from clouseau.retention.fileinfo import EntryInfo
-
-log = logging.getLogger(__name__)
 
 class RemoteFileExaminer(object):
     '''
@@ -45,7 +42,7 @@ class RemoteDirExaminer(object):
     def __init__(self, path, host, batchno=1, batchsize=300, timeout=20,
                  prettyprint=False):
         self.path = path
-        self.st = None
+        self.stat = None
         self.host = host
         self.timeout = timeout
         self.batchno = batchno

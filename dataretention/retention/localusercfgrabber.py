@@ -25,5 +25,6 @@ class LocalUserCfGrabber(object):
 
         local_ignores = clouseau.retention.ignores.get_local_ignores(self.confdir, self.locations)
         output = json.dumps(local_ignores)
-        print output
+        if not quiet:
+            print output
         return output

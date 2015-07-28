@@ -36,14 +36,14 @@ class RemoteUserCfGrabber(object):
                             timeout=self.timeout)
 
         if self.host in result:
-            input = result[self.host]
+            input_text = result[self.host]
             try:
                 local_ignores = json.loads(
-                    input, object_hook=JsonHelper.decode_dict)
+                    input_text, object_hook=JsonHelper.decode_dict)
             except:
                 print "WARNING: failed to get local ignores on host",
                 print self.host,
-                print "got this:", input
+                print "got this:", input_text
                 local_ignores = {}
 
         if not quiet:

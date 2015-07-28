@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import socket
 import stat
@@ -7,7 +6,6 @@ import locale
 import salt.utils.yamlloader
 
 import clouseau.retention.magic
-from clouseau.retention.rule import Rule
 import clouseau.retention.config
 from clouseau.retention.fileinfo import FileInfo
 import clouseau.retention.fileutils
@@ -70,7 +68,7 @@ class LocalFilesAuditor(object):
         self.hostname = socket.getfqdn()
 
         clouseau.retention.config.set_up_conf(self.confdir)
-        self.cutoff = clouseau.retention.config.cf['cutoff']
+        self.cutoff = clouseau.retention.config.conf['cutoff']
 
         self.local_rules_from_store_exported = None
         self.perhost_ignores_from_file = None
@@ -215,7 +213,7 @@ class LocalFilesAuditor(object):
         return todo
 
     def process_files_from_path(self, location, base, files, count,
-                                results, checklink=True):
+                                results):
         '''
         arguments:
             location: the location being checked
@@ -225,7 +223,7 @@ class LocalFilesAuditor(object):
             results: the result set
         '''
 
-        for fname, st in files:
+        for fname, fstat in files:
             path = os.path.join(base, fname)
             if self.file_is_wanted(path, location):
                 count += 1
@@ -237,7 +235,7 @@ class LocalFilesAuditor(object):
                     return count
                 # for dirsizes option we don't collect or report files
                 if not self.dirsizes:
-                    results.append((path, st))
+                    results.append((path, fstat))
         return count
 
     def walk_nolinks(self, top):
@@ -250,7 +248,7 @@ class LocalFilesAuditor(object):
 
         try:
             names = os.listdir(top)
-        except os.error, err:
+        except os.error:
             return
 
         dirs, files = [], []
@@ -272,8 +270,8 @@ class LocalFilesAuditor(object):
 
         for name in dirs:
             new_path = os.path.join(top, name)
-            for x in self.walk_nolinks(new_path):
-                yield x
+            for result in self.walk_nolinks(new_path):
+                yield result
 
     def process_one_dir(self, location, subdirpath, depth, results):
         '''
@@ -320,15 +318,14 @@ class LocalFilesAuditor(object):
             if self.dirs_to_check is not None:
                 paths[:] = [p for p in paths
                             if clouseau.retention.fileutils.dirtree_check(os.path.join(base, p),
-                                                                 self.dirs_to_check)]
+                                                                          self.dirs_to_check)]
             paths[:] = [p for p in paths if
                         (not clouseau.retention.fileutils.startswithpath(os.path.join(
                             base, p), expanded_dirs) and
                          not clouseau.retention.fileutils.wildcard_matches(os.path.join(
                              base, p), wildcard_dirs, exact=False))]
             count = self.process_files_from_path(location, base, files,
-                                                 count, temp_results,
-                                                 checklink=False)
+                                                 count, temp_results)
             if count > self.MAX_FILES:
                 return
 
@@ -336,7 +333,7 @@ class LocalFilesAuditor(object):
 
     def find_all_files(self):
         results = []
-        for location in clouseau.retention.config.cf[self.locations]:
+        for location in clouseau.retention.config.conf[self.locations]:
             dirs_to_do = self.get_dirs_to_do(location)
             if location.count(os.path.sep) >= self.depth + 1:
                 # do the run at least once
@@ -366,9 +363,9 @@ class LocalFilesAuditor(object):
         all_files = {}
         files = self.find_all_files()
 
-        for (f, st) in files:
-            all_files[f] = FileInfo(f, self.magic, st)
-            all_files[f].load_file_info(self.today, self.cutoff, open_files)
+        for (fname, fstat) in files:
+            all_files[fname] = FileInfo(fname, self.magic, fstat)
+            all_files[fname].load_file_info(self.today, self.cutoff, open_files)
 
         all_files_sorted = sorted(all_files, key=lambda f: all_files[f].path)
         result = []
@@ -379,7 +376,7 @@ class LocalFilesAuditor(object):
 
         for fname in all_files_sorted:
             if (not clouseau.retention.fileutils.contains(all_files[fname].filetype,
-                                                 clouseau.retention.config.cf['ignored_types'])
+                                                          clouseau.retention.config.conf['ignored_types'])
                     and not all_files[fname].is_empty):
                 result.append(all_files[fname].format_output(
                     self.show_sample_content, False,

@@ -13,18 +13,20 @@ class EntryInfo(object):
     '''
     def __init__(self, path):
         self.path = path
-        self.st = None
+        self.stat = None
         self.start_content = None
         self.is_binary = None
         self.entry_dict = None
+        self.json = None
+        self.is_empty = None
 
     def get_stats(self):
-        if self.st is None:
+        if self.stat is None:
             try:
-                self.st = os.stat(self.path)
+                self.stat = os.stat(self.path)
             except:
                 return None
-        return self.st
+        return self.stat
 
     def get_mtime_formatted(self):
         '''
@@ -32,14 +34,14 @@ class EntryInfo(object):
         and return it, or None on error
         '''
         self.get_stats()
-        if self.st is not None:
-            return time.ctime(self.st.st_mtime)
+        if self.stat is not None:
+            return time.ctime(self.stat.st_mtime)
         else:
             return ""
 
     def get_start_content(self, num_lines=1):
         '''
-        get up to the first 1000 characters or the first line from the file
+        get up to the first n*1000 characters or the first n lines from the file
         if not already loaded, and return them, or None on error
         this also sets is_empty to the correct value, as a side effect,
         if not already set
@@ -49,7 +51,7 @@ class EntryInfo(object):
             try:
                 filep = gzip.open(self.path, "rb")
                 lines = ""
-                for count in range(0, num_lines):
+                for _ in range(0, num_lines):
                     line = filep.readline(1000)
                     if line == "":
                         break
@@ -121,8 +123,8 @@ class EntryInfo(object):
         get file owner if not already loaded, and return it, or -1 on error
         '''
         self.get_stats()
-        if self.st is not None:
-            return self.st.st_uid
+        if self.stat is not None:
+            return self.stat.st_uid
         else:
             return -1
 
@@ -137,13 +139,13 @@ class EntryInfo(object):
             self.entry_dict = {}
             self.entry_dict['path'] = self.path
             self.entry_dict['owner'] = self.get_owner()
-            self.entry_dict['size'] = self.st[stat.ST_SIZE]
+            self.entry_dict['size'] = self.stat[stat.ST_SIZE]
             self.entry_dict['mtime'] = self.get_mtime_formatted()
-            if stat.S_ISLNK(self.st.st_mode):
+            if stat.S_ISLNK(self.stat.st_mode):
                 self.entry_dict['type'] = 'link'
-            elif stat.S_ISDIR(self.st.st_mode):
+            elif stat.S_ISDIR(self.stat.st_mode):
                 self.entry_dict['type'] = 'dir'
-            elif stat.S_ISREG(self.st.st_mode):
+            elif stat.S_ISREG(self.stat.st_mode):
                 self.entry_dict['type'] = 'file'
             else:
                 self.entry_dict['type'] = 'unknown'
@@ -256,7 +258,7 @@ class FileInfo(EntryInfo):
         '''
         super(FileInfo, self).__init__(path)
         self.name = os.path.basename(self.path)
-        self.st = statinfo
+        self.stat = statinfo
         self.filetype = None
         self.is_empty = None
         self.is_open = None
@@ -271,8 +273,8 @@ class FileInfo(EntryInfo):
         and return it, or None on error
         '''
         self.get_stats()
-        if self.st is not None:
-            return self.st.st_ctime
+        if self.stat is not None:
+            return self.stat.st_ctime
         else:
             return None
 
@@ -282,8 +284,8 @@ class FileInfo(EntryInfo):
         and return it, or None on error
         '''
         self.get_stats()
-        if self.st is not None:
-            return self.st.st_mtime
+        if self.stat is not None:
+            return self.stat.st_mtime
         else:
             return None
 
@@ -353,9 +355,9 @@ class FileInfo(EntryInfo):
 
             self.get_ctime()
             self.get_mtime()
-            if self.st is not None:
-                age = max(from_time - self.st.st_ctime,
-                          from_time - self.st.st_mtime)
+            if self.stat is not None:
+                age = max(from_time - self.stat.st_ctime,
+                          from_time - self.stat.st_mtime)
             else:
                 age = None
 
@@ -460,10 +462,10 @@ class FileInfo(EntryInfo):
                            'old': FileInfo.bool_to_string(self.get_is_old()),
                            'type': self.get_filetype(),
                            'binary': self.get_is_binary(),
-                           'stat': FileInfo.stat_to_dict(self.st),
+                           'stat': FileInfo.stat_to_dict(self.stat),
                            'entrydate': self.entrydate}
         if ((not self.is_binary and 'data' not in self.filetype and
-            'binary' not in self.filetype) and
+             'binary' not in self.filetype) and
                 self.start_content is not None):
             self.entry_dict['content'] = self.start_content
         return self.entry_dict
@@ -503,7 +505,7 @@ class FileInfo(EntryInfo):
                                             prettyprint, path_justify)
 
     @staticmethod
-    def fileinfo_from_dict(self, item, fromtime=None):
+    def fileinfo_from_dict(item, fromtime=None):
         '''
         this is the inverse of produce_dict, returning a new
         FileInfo object
@@ -512,7 +514,7 @@ class FileInfo(EntryInfo):
             fromtime = time.time()
         # fixme - eh? what's broken?
         finfo = FileInfo(item['path'], magic=None, statinfo=None)
-        finfo.st = item['stat']
+        finfo.stat = item['stat']
         finfo.filetype = item['filetype']
         if 'content' in item:
             finfo.start_content = item['content']

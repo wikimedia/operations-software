@@ -1,5 +1,4 @@
 import os
-import sys
 import readline
 import atexit
 
@@ -48,8 +47,8 @@ def print_columns(items, cols):
                 count = len(unicode(text, 'utf-8'))
             except:
                 count = len(text)
-            if len(text) > max_len[col]:
-                max_len[col] = len(text)
+            if count > max_len[col]:
+                max_len[col] = count
 
     for row in range(0, num_rows):
         for col in range(0, cols):

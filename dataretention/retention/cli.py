@@ -361,7 +361,7 @@ class CommandLine(object):
         return contents
 
     def get_basedir_from_path(self, path):
-        for location in clouseau.retention.config.cf[self.locations]:
+        for location in clouseau.retention.config.conf[self.locations]:
             if path == location or path.startswith(location + os.path.sep):
                 return location
         # fixme is this really the right fallback? check it

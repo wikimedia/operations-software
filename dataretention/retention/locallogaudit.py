@@ -81,7 +81,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     continue
                 if '*' in line:
                     log_group.extend(glob.glob(
-                        os.path.join(clouseau.retention.config.cf['rotate_basedir'], line)))
+                        os.path.join(clouseau.retention.config.conf['rotate_basedir'], line)))
                 else:
                     log_group.append(line)
             elif state == 'want_rbracket':
@@ -106,7 +106,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         return logs
 
     def get_logrotate_defaults(self):
-        contents = open(clouseau.retention.config.cf['rotate_mainconf']).read()
+        contents = open(clouseau.retention.config.conf['rotate_mainconf']).read()
         lines = contents.split('\n')
         skip = False
         freq = '-'
@@ -142,10 +142,10 @@ class LocalLogsAuditor(LocalFilesAuditor):
         rotated_logs = {}
         default_freq, default_keep = self.get_logrotate_defaults()
         rotated_logs.update(self.parse_logrotate_contents(
-            open(clouseau.retention.config.cf['rotate_mainconf']).read(),
+            open(clouseau.retention.config.conf['rotate_mainconf']).read(),
             default_freq, default_keep))
-        for fname in os.listdir(clouseau.retention.config.cf['rotate_basedir']):
-            pathname = os.path.join(clouseau.retention.config.cf['rotate_basedir'], fname)
+        for fname in os.listdir(clouseau.retention.config.conf['rotate_basedir']):
+            pathname = os.path.join(clouseau.retention.config.conf['rotate_basedir'], fname)
             if os.path.isfile(pathname):
                 rotated_logs.update(self.parse_logrotate_contents(
                     open(pathname).read(), default_freq, default_keep))
@@ -157,7 +157,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         '''
         # note that I also see my.cnf.s3 and we don't check those (yet)
         output = ''
-        for filename in clouseau.retention.config.cf['mysqlconf']:
+        for filename in clouseau.retention.config.conf['mysqlconf']:
             found = False
             try:
                 contents = open(filename).read()
@@ -210,7 +210,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     if not fields[1].isdigit():
                         continue
                     found = True
-                    if int(fields[1]) > clouseau.retention.config.cf['cutoff']/86400:
+                    if int(fields[1]) > clouseau.retention.config.conf['cutoff']/86400:
                         if output:
                             output = output + '\n'
                         output = output + ('WARNING: some mysql logs expired after %s days in %s'
@@ -219,7 +219,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                 if output:
                     output = output + '\n'
                 output = output + 'WARNING: some mysql logs never expired in ' + filename
-        return(output)
+        return output
 
     def do_local_audit(self):
         '''
@@ -237,10 +237,10 @@ class LocalLogsAuditor(LocalFilesAuditor):
         all_files = {}
         files = self.find_all_files()
 
-        for (f, st) in files:
-            all_files[f] = LogInfo(f, self.magic, st)
-            all_files[f].load_file_info(self.today, self.cutoff,
-                                        open_files, rotated)
+        for (fname, stat) in files:
+            all_files[fname] = LogInfo(fname, self.magic, stat)
+            all_files[fname].load_file_info(self.today, self.cutoff,
+                                            open_files, rotated)
 
         all_files_sorted = sorted(all_files,
                                   key=lambda f: all_files[f].path)
@@ -256,7 +256,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
 
         for fname in all_files_sorted:
             if clouseau.retention.fileutils.contains(all_files[fname].filetype,
-                                            clouseau.retention.config.cf['ignored_types']):
+                                                     clouseau.retention.config.conf['ignored_types']):
                 continue
 
             if (self.oldest_only and

@@ -131,7 +131,7 @@ def get_home_dirs(confdir, locations):
     clouseau.retention.config.set_up_conf(confdir)
     home_dirs = []
 
-    for location in clouseau.retention.config.cf[locations]:
+    for location in clouseau.retention.config.conf[locations]:
         if not os.path.isdir(location):
             continue
         home_dirs.extend([os.path.join(location, d)

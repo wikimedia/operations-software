@@ -1,12 +1,9 @@
 import os
 import stat
 import json
-import logging
 
 from clouseau.retention.utils import JsonHelper
 from clouseau.retention.fileinfo import FileInfo, EntryInfo
-
-log = logging.getLogger(__name__)
 
 
 class LocalFileExaminer(object):
@@ -39,7 +36,7 @@ class DirContents(object):
     '''
     def __init__(self, path, batchno=1, batchsize=50, prettyprint=False):
         self.path = path
-        self.st = None
+        self.stat = None
         self.full_contents = None
         self.batch_contents = None
         self.batch_entryinfo = None
@@ -53,12 +50,12 @@ class DirContents(object):
         '''
         if path is None:
             path = self.path
-        if self.st is None:
+        if self.stat is None:
             try:
-                self.st = os.stat(self.path)
+                self.stat = os.stat(self.path)
             except:
                 return None
-        return self.st
+        return self.stat
 
     def read_dir_batch(self):
         '''
@@ -90,11 +87,11 @@ class DirContents(object):
     def get_contents(self):
         if self.batch_contents is None:
             self.get_dir_stats()
-            if self.st is None:
+            if self.stat is None:
                 return "dir stat failed"
-            if stat.S_ISLNK(self.st.st_mode):
+            if stat.S_ISLNK(self.stat.st_mode):
                 return "link"
-            if not stat.S_ISDIR(self.st.st_mode):
+            if not stat.S_ISDIR(self.stat.st_mode):
                 return "not dir"
             self.read_dir_batch()
             if self.batch_contents is None:
@@ -148,7 +145,7 @@ class DirContents(object):
             output.append(self.display_json(entry))
         output = '\n'.join(output)
         return output
-            
+
 
 class LocalDirExaminer(object):
     '''
@@ -156,7 +153,7 @@ class LocalDirExaminer(object):
     '''
     def __init__(self, path, batchno=1, batchsize=300, timeout=20, quiet=False):
         self.path = path
-        self.st = None
+        self.stat = None
         self.timeout = timeout
         self.batchno = batchno
         self.batchsize = batchsize
@@ -171,7 +168,7 @@ class LocalDirExaminer(object):
         maybe we want to fix that
         '''
 
-        print ('WARNING: trying to get directory contents')
+        print 'WARNING: trying to get directory contents'
         dcont = DirContents(self.path, self.batchno, self.batchsize, False)
         result = dcont.get_contents()
         if result != 'ok':
@@ -181,6 +178,6 @@ class LocalDirExaminer(object):
         else:
             dcont.get_batch_entryinfo()
             output = dcont.show_batch()
+            if not self.quiet:
+                print output
             return output
-
-

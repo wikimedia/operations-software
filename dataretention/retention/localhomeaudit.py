@@ -1,5 +1,3 @@
-import sys
-
 from clouseau.retention.localfileaudit import LocalFilesAuditor
 import clouseau.retention.ignores
 
