@@ -99,7 +99,6 @@ class Completion(object):
         prompt user for host in self.hostlist,
         with tab completion
         '''
-
         readline.set_completer(self.dir_completion)
         dir_todo = raw_input("Directory (blank to exit): ")
         dir_todo = dir_todo.strip()

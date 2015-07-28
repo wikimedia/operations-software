@@ -29,6 +29,7 @@ class CurrentEnv(object):
         self.cwdir = path
         self.problem_dirs = problems
         self.skipped_dirs = skipped
+        self.prompt = ''
 
     def clear(self):
         self.host = None
@@ -43,6 +44,14 @@ class CurrentEnv(object):
     def set_reported_dirs(self, problems, skipped):
         self.problem_dirs = problems
         self.skipped_dirs = skipped
+
+    def set_prompt(self):
+        if self.cwdir is None:
+            self.prompt = "> "
+        elif len(self.cwdir) < 15:
+            self.prompt = self.cwdir + ">"
+        else:
+            self.prompt = "..." + self.cwdir[-12:] + ">"
 
 
 class CurrentDirContents(object):
@@ -304,7 +313,8 @@ class CommandLine(object):
 
     def get_menu_entry(self, choices, default, text):
         self.cmpl.set_choices_completion(choices, default)
-        command = raw_input(text + " [%s]: " % default)
+        self.cenv.set_prompt()
+        command = raw_input(self.cenv.prompt + ' ' + text + " [%s]: " % default)
         command = command.strip()
         if command == "":
             command = default
@@ -400,15 +410,6 @@ class CommandLine(object):
             return False
 
         return True
-
-    # fixme use this (also make it have first + last, more helpful prolly)
-    def set_prompt(self):
-        if self.cenv.cwdir is None:
-            self.prompt = "> "
-        elif len(self.cenv.cwdir) < 10:
-            self.prompt = self.cenv.cwdir + ">"
-        else:
-            self.prompt = "..." + self.cenv.cwdir[-7:] + ">"
 
     def get_entries_from_wildcard(self, file_expr):
         '''
@@ -532,7 +533,7 @@ class CommandLine(object):
                     return True
                 elif status[0].upper() in Status.STATUSES:
                     clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, status[0].upper(),
-                                                   prefix=prefix)
+                                                            prefix=prefix)
                     return True
         elif command == 'D' or command == 'd':
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
@@ -541,8 +542,8 @@ class CommandLine(object):
         elif command == 'C' or command == 'c':
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
             clouseau.retention.ruleutils.get_rules_for_entries(self.cdb, self.cenv.cwdir,
-                                                      self.dircontents.entries_dict,
-                                                      self.cenv.host)
+                                                               self.dircontents.entries_dict,
+                                                               self.cenv.host)
             return True
         elif command == 'R' or command == 'r':
             # fixme need different completer here I think, that
@@ -639,7 +640,8 @@ class CommandLine(object):
             while True:
                 # prompt user for dir to descend
                 readline.set_completer(self.cmpl.dir_completion)
-                directory = raw_input("directory name (empty to quit): ")
+                self.cenv.set_prompt()
+                directory = raw_input(self.cenv.prompt + ' ' + "directory name (empty to quit): ")
                 directory = directory.strip()
                 if directory == '':
                     return command
@@ -654,14 +656,14 @@ class CommandLine(object):
                     self.cenv.cwdir = os.path.join(self.cenv.cwdir,
                                                    directory)
                     self.dircontents.clear()
-                    self.set_prompt()
+                    self.cenv.set_prompt()
                     print 'Now at', self.cenv.cwdir
                     return True
         elif command == 'U' or command == 'u':
             if self.cenv.cwdir != self.basedir:
                 self.cenv.cwdir = os.path.dirname(self.cenv.cwdir)
                 self.dircontents.clear()
-                self.set_prompt()
+                self.cenv.set_prompt()
                 print 'Now at', self.cenv.cwdir
             else:
                 print 'Already at top', self.cenv.cwdir
@@ -741,8 +743,8 @@ class CommandLine(object):
                 # this option is invoked on a directory so
                 # type is dir every time
                 clouseau.retention.ruleutils.do_add_rule(self.cdb, dir_path,
-                                                clouseau.retention.ruleutils.text_to_entrytype('dir'),
-                                                command, self.cenv.host)
+                                                         clouseau.retention.ruleutils.text_to_entrytype('dir'),
+                                                         command, self.cenv.host)
                 return None
             elif command == 'Q' or command == 'q':
                 return None
