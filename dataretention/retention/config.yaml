@@ -8,6 +8,14 @@ homes_locations:
   - /home
   - /data/db20/home
 
+# directories where system logs
+# are usually located; thes directories
+# shuld be listed in ignored.yaml
+# with a list of log files to skip
+# such as messages, syslog, etc
+systemlogs:
+  - /var/log
+
 rotate_basedir: /etc/logrotate.d
 rotate_mainconf: /etc/logrotate.conf
 

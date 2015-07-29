@@ -21,8 +21,7 @@ class RemoteFileExaminer(object):
         '''
         client = LocalClient()
         module_args = [self.path,
-                       self.num_lines,
-                       self.timeout]
+                       self.num_lines]
 
         result = client.cmd([self.host],
                             "retentionaudit.examine_file",
@@ -61,8 +60,7 @@ class RemoteDirExaminer(object):
         while True:
             client = LocalClient()
             module_args = [self.path, self.batchno,
-                           self.batchsize, self.timeout,
-                           quiet]
+                           self.batchsize, quiet]
 
             result = client.cmd([self.host],
                                 "retentionaudit.examine_dir",

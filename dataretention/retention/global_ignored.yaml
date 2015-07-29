@@ -126,8 +126,9 @@ ignored_dirs:
 
 
 ignored_prefixes:
-  - .bash_
-  - .xauth
+  "*":
+    - .bash_
+    - .xauth
 
 ignored_files:
   "*":
@@ -199,7 +200,7 @@ ignored_files:
     - .vimrc
     - .Xauthority
     - .zshrc
-    - .zsh_history"],
+    - .zsh_history
 
   /var/log:
     - alternatives.log

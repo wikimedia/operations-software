@@ -1,7 +1,6 @@
 import os
 import time
 import json
-import socket
 
 import clouseau.retention.magic
 from clouseau.retention.status import Status
@@ -12,7 +11,6 @@ from clouseau.retention.fileinfo import FileInfo
 from clouseau.retention.utils import JsonHelper
 from retention.runner import Runner
 import clouseau.retention.ruleutils
-from clouseau.retention.ignores import Ignores
 
 
 def get_dirs_toexamine(host_report):
@@ -76,7 +74,7 @@ class RemoteFilesAuditor(object):
         hosts_expr:   list or grain-based or wildcard expr for hosts
                       to be audited
         audit_type:   type of audit e.g. 'logs', 'homes'
-        confdir:      directory where the ignores.yaml file is stored,
+        confdir:      directory where the yaml config files are stored
         prettyprint:  nicely format the output display
         show_content: show the first line or so from problematic files
         dirsizes:     show only directories which have too many files to
@@ -115,14 +113,9 @@ class RemoteFilesAuditor(object):
         self.to_check = to_check
 
         self.ignore_also = ignore_also
-        if self.ignore_also is not None:
-            self.ignore_also = self.ignore_also.split(',')
         self.timeout = timeout
         self.store_filepath = store_filepath
         self.verbose = verbose
-
-        # need this for locally running jobs
-        self.hostname = socket.getfqdn()
 
         clouseau.retention.config.set_up_conf(confdir)
         self.cutoff = clouseau.retention.config.conf['cutoff']
@@ -139,13 +132,6 @@ class RemoteFilesAuditor(object):
         self.cdb.store_db_init(self.expanded_hosts)
         self.set_up_and_export_rule_store()
 
-        self.ignores = Ignores(self.confdir, self.cdb)
-        self.ignores.set_up_global_ignored(self.confdir, self.ignore_also)
-        if self.verbose:
-            self.ignores.show_ignored(clouseau.retention.config.conf[self.locations])
-
-        self.perhost_ignores_from_file = self.ignores.get_perhost_ignores_from_file()
-
         self.today = time.time()
         self.magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
         self.magic.load()
@@ -159,8 +145,7 @@ class RemoteFilesAuditor(object):
                       self.dirsizes,
                       self.depth - 1,
                       self.to_check,
-                      ",".join(self.ignore_also) if self.ignore_also is not None else None,
-                      self.timeout,
+                      self.ignore_also,
                       self.MAX_FILES]
         return audit_args
 
@@ -203,9 +188,9 @@ class RemoteFilesAuditor(object):
         if not os.path.isdir(destdir):
             os.makedirs(destdir, 0755)
         for host in hosts:
-            all_destpath = os.path.join(destdir, host + "_store.py")
+            all_destpath = os.path.join(destdir, host + "_store.yaml")
             clouseau.retention.ruleutils.export_rules(self.cdb, all_destpath, host)
-            good_destpath = os.path.join(destdir, host + "_store_good.py")
+            good_destpath = os.path.join(destdir, host + "_store_good.yaml")
             clouseau.retention.ruleutils.export_rules(self.cdb, good_destpath, host,
                                                       Status.text_to_status('good'))
 
@@ -348,7 +333,7 @@ class RemoteFilesAuditor(object):
                         print "no output from host", host
         # add some results to rule store
         self.update_status_rules_from_report(result)
-        return result, self.ignores.ignored
+        return result
 
     def update_status_rules_from_report(self, report):
         hostlist = report.keys()

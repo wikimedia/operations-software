@@ -12,7 +12,7 @@ class LocalHomesAuditor(LocalFilesAuditor):
 
     def __init__(self, audit_type, confdir=None,
                  show_content=False, dirsizes=False,
-                 depth=2, to_check=None, ignore_also=None, timeout=60,
+                 depth=2, to_check=None, ignore_also=None,
                  maxfiles=None):
         '''
         see FilesAuditor for the arguments to the constructor
@@ -20,10 +20,9 @@ class LocalHomesAuditor(LocalFilesAuditor):
         super(LocalHomesAuditor, self).__init__(audit_type, confdir,
                                                 show_content, dirsizes,
                                                 depth, to_check, ignore_also,
-                                                timeout, maxfiles)
-        self.homes_owners = {}
+                                                maxfiles)
 
-        # FIXME where are these ever used???
-        local_ignores = clouseau.retention.ignores.get_local_ignores(self.confdir, self.locations)
-        local_ignored_dirs, local_ignored_files = clouseau.retention.ignores.process_local_ignores(
-            local_ignores, self.ignores.ignored)
+        # pick up user-created local configs of files/dirs in their homedirs to ignore
+        local_ignore_info = clouseau.retention.ignores.get_local_ignores(self.confdir, self.locations)
+        local_ignores = clouseau.retention.ignores.process_local_ignores(local_ignore_info)
+        self.ignored = self.ignores.merge([self.ignored, local_ignores])

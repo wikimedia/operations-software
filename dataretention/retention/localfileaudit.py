@@ -3,7 +3,6 @@ import time
 import socket
 import stat
 import locale
-import salt.utils.yamlloader
 
 import clouseau.retention.magic
 import clouseau.retention.config
@@ -21,7 +20,7 @@ class LocalFilesAuditor(object):
     def __init__(self, audit_type, confdir=None,
                  show_content=False, dirsizes=False,
                  depth=2, to_check=None, ignore_also=None,
-                 timeout=60, maxfiles=None):
+                 maxfiles=None):
         '''
         audit_type:   type of audit e.g. 'logs', 'homes'
         confdir:      dir path where yaml config files are kept
@@ -40,7 +39,6 @@ class LocalFilesAuditor(object):
         ignore_also:  comma-separated list of dirs (must end in '/') and/or
                       files that will be skipped in addition to the ones
                       in the config, rules, etc.
-        timeout:      salt timeout for running remote commands
         maxfiles:     how many files in a directory tree is too many to audit
                       (at which point we warn about that and move on)
         '''
@@ -51,34 +49,21 @@ class LocalFilesAuditor(object):
         self.show_sample_content = show_content
         self.dirsizes = dirsizes
         self.depth = depth + 1  # actually count of path separators in dirname
-        self.to_check = to_check
-
         self.filenames_to_check = None
         self.dirs_to_check = None
-        self.set_up_to_check()
-
-        self.ignore_also = ignore_also
-        if self.ignore_also is not None:
-            self.ignore_also = self.ignore_also.split(',')
-        self.timeout = timeout
-
-        self.ignores = Ignores(self.confdir, None)
-        self.ignores.set_up_global_ignored(self.confdir)
-
-        self.hostname = socket.getfqdn()
+        self.set_up_to_check(to_check)
 
         clouseau.retention.config.set_up_conf(self.confdir)
-        self.cutoff = clouseau.retention.config.conf['cutoff']
 
-        self.local_rules_from_store_exported = None
-        self.perhost_ignores_from_file = None
-        self.set_up_ignored()
+        if ignore_also is not None:
+            ignore_also = ignore_also.split(',')
+        ignore_also_ignoreds = clouseau.retention.ignores.convert_ignore_also_to_ignores(ignore_also)
+        self.ignores = Ignores(self.confdir)
+        ignored_from_export = clouseau.retention.ignores.get_ignored_from_exported_rules(self.confdir)
+        hostname = socket.getfqdn()
 
-        self.today = time.time()
-        self.magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
-        self.magic.load()
-        self.summary = None
-        self.display_from_dict = FileInfo.display_from_dict
+        self.ignored = self.ignores.merge([ignore_also_ignoreds, ignored_from_export], hostname)
+
         self.MAX_FILES = maxfiles
         self.set_up_max_files()
 
@@ -99,12 +84,12 @@ class LocalFilesAuditor(object):
             else:
                 self.MAX_FILES = 100
 
-    def set_up_to_check(self):
+    def set_up_to_check(self, to_check):
         '''
         turn the to_check arg into lists of dirs and files to check
         '''
-        if self.to_check is not None:
-            check_list = self.to_check.split(',')
+        if to_check is not None:
+            check_list = to_check.split(',')
             self.filenames_to_check = [fname for fname in check_list
                                        if not fname.startswith(os.sep)]
             if not len(self.filenames_to_check):
@@ -112,34 +97,6 @@ class LocalFilesAuditor(object):
             self.dirs_to_check = [d.rstrip(os.path.sep) for d in check_list
                                   if d.startswith(os.sep)]
 
-    def set_up_ignored(self):
-        fromstore_file = os.path.join(self.confdir, 'fromstore', self.hostname + "_store_good.py")
-        if os.path.exists(fromstore_file):
-            contents = open(fromstore_file).read()
-            self.local_rules_from_store_exported = salt.utils.yamlloader.load(
-                contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
-        else:
-            self.local_rules_from_store_exported = None
-
-        self.perhost_ignores_from_file = self.ignores.get_perhost_ignores_from_file()
-
-        if self.local_rules_from_store_exported is not None:
-            self.ignores.add_rules_to_ignored(self.local_rules_from_store_exported)
-
-        if (self.perhost_ignores_from_file is not None and
-                'ignored_dirs' in self.perhost_ignores_from_file):
-            if '/' not in self.ignores.ignored['dirs']:
-                self.ignores.ignored['dirs']['/'] = []
-            if self.hostname in self.perhost_ignores_from_file['ignored_dirs']:
-                for path in self.perhost_ignores_from_file[
-                        'ignored_dirs'][self.hostname]:
-                    if path.startswith('/'):
-                        self.ignores.ignored['dirs']['/'].append(path)
-            if '*' in self.perhost_ignores_from_file['ignored_dirs']:
-                for path in self.perhost_ignores_from_file[
-                        'ignored_dirs'][self.hostname]:
-                    if path.startswith('/'):
-                        self.ignores.ignored['dirs']['/'].append(path)
 
     def normalize(self, fname):
         '''
@@ -159,7 +116,7 @@ class LocalFilesAuditor(object):
         '''
         fname = self.normalize(fname)
 
-        if clouseau.retention.ignores.file_is_ignored(fname, basedir, self.ignores.ignored):
+        if clouseau.retention.ignores.file_is_ignored(fname, basedir, self.ignored):
             return False
 
         if (self.filenames_to_check is not None and
@@ -171,7 +128,7 @@ class LocalFilesAuditor(object):
     def get_subdirs_to_do(self, dirname, dirname_depth, todo):
 
         locale.setlocale(locale.LC_ALL, '')
-        if clouseau.retention.ignores.dir_is_ignored(dirname, self.ignores.ignored):
+        if clouseau.retention.ignores.dir_is_ignored(dirname, self.ignored):
             return todo
         if clouseau.retention.fileutils.dir_is_wrong_type(dirname):
             return todo
@@ -285,7 +242,7 @@ class LocalFilesAuditor(object):
             if not clouseau.retention.fileutils.dirtree_check(subdirpath, self.dirs_to_check):
                 return
 
-        if clouseau.retention.ignores.dir_is_ignored(subdirpath, self.ignores.ignored):
+        if clouseau.retention.ignores.dir_is_ignored(subdirpath, self.ignored):
             return True
 
         count = 0
@@ -314,7 +271,7 @@ class LocalFilesAuditor(object):
         temp_results = []
         for base, paths, files in self.walk_nolinks(subdirpath):
             expanded_dirs, wildcard_dirs = clouseau.retention.ignores.expand_ignored_dirs(
-                base, self.ignores.ignored)
+                base, self.ignored)
             if self.dirs_to_check is not None:
                 paths[:] = [p for p in paths
                             if clouseau.retention.fileutils.dirtree_check(os.path.join(base, p),
@@ -363,9 +320,14 @@ class LocalFilesAuditor(object):
         all_files = {}
         files = self.find_all_files()
 
+        magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
+        magic.load()
+        today = time.time()
         for (fname, fstat) in files:
-            all_files[fname] = FileInfo(fname, self.magic, fstat)
-            all_files[fname].load_file_info(self.today, self.cutoff, open_files)
+            all_files[fname] = FileInfo(fname, magic, fstat)
+            all_files[fname].load_file_info(today,
+                                            clouseau.retention.config.conf['cutoff'],
+                                            open_files)
 
         all_files_sorted = sorted(all_files, key=lambda f: all_files[f].path)
         result = []
@@ -375,8 +337,9 @@ class LocalFilesAuditor(object):
                                    for fname in all_files]) + 2
 
         for fname in all_files_sorted:
-            if (not clouseau.retention.fileutils.contains(all_files[fname].filetype,
-                                                          clouseau.retention.config.conf['ignored_types'])
+            if (not clouseau.retention.fileutils.contains(
+                    all_files[fname].filetype,
+                    clouseau.retention.config.conf['ignored_types'])
                     and not all_files[fname].is_empty):
                 result.append(all_files[fname].format_output(
                     self.show_sample_content, False,

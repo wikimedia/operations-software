@@ -3,7 +3,7 @@ import sys
 import traceback
 from clouseau.retention.status import Status
 import clouseau.retention.rule
-from clouseau.retention.rule import Rule, RuleStore
+from clouseau.retention.rule import RuleStore
 import salt.utils.yamlloader
 from salt.utils.yamldumper import SafeOrderedDumper
 import yaml
@@ -140,14 +140,14 @@ def export_rules(cdb, rules_path, host, status=None):
         sys.stderr.write("Couldn't save rules into %s.\n" % rules_path)
 
 def entrytype_to_text(abbrev):
-    if abbrev in Rule.TYPES:
-        return Rule.TYPES_TO_TEXT[abbrev]
+    if abbrev in RuleStore.TYPES:
+        return RuleStore.TYPES_TO_TEXT[abbrev]
     else:
         return None
 
 def text_to_entrytype(fullname):
-    for key in Rule.TYPES_TO_TEXT:
-        if Rule.TYPES_TO_TEXT[key] == fullname:
+    for key in RuleStore.TYPES_TO_TEXT:
+        if RuleStore.TYPES_TO_TEXT[key] == fullname:
             return key
     return None
 

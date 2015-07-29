@@ -29,7 +29,7 @@ class RemoteUserCfGrabber(object):
         local_ignores = {}
 
         client = salt.client.LocalClient()
-        module_args = [self.confdir, self.timeout, self.audit_type]
+        module_args = [self.confdir, self.audit_type]
 
         result = client.cmd([self.host], "retentionaudit.retrieve_usercfs",
                             module_args, expr_form='list',

@@ -6,9 +6,8 @@ class LocalUserCfGrabber(object):
     retrieval and display dirs / files listed as to
     be ignored in per-user lists on local host
     '''
-    def __init__(self, confdir, timeout, audit_type='homes'):
+    def __init__(self, confdir, audit_type='homes'):
         self.confdir = confdir
-        self.timeout = timeout
         self.audit_type = audit_type
         self.locations = audit_type + "_locations"
 

@@ -229,7 +229,7 @@ def main():
         fileexam.run()
         sys.exit(0)
     elif getuserconfs:
-        getconfs = RemoteUserCfGrabber(hosts_expr, timeout, 'homes')
+        getconfs = RemoteUserCfGrabber(hosts_expr, timeout, 'homes', confdir)
         getconfs.run()
         sys.exit(0)
 
@@ -249,10 +249,10 @@ def main():
                                       show_system_logs,
                                       summary_report, depth, files_to_check, ignore_also,
                                       timeout, maxfiles, store_filepath, verbose)
-        report, ignored = logsaudit.audit_hosts()
+        report = logsaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, hosts_expr)
-            cmdline.run(report, ignored)
+            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, ignore_also, hosts_expr)
+            cmdline.run(report)
 
     elif audit_type == 'root':
         filesaudit = RemoteFilesAuditor(hosts_expr, audit_type, confdir,
@@ -261,10 +261,10 @@ def main():
                                         summary_report,
                                         depth, files_to_check, ignore_also,
                                         timeout, maxfiles, store_filepath, verbose)
-        report, ignored = filesaudit.audit_hosts()
+        report = filesaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, hosts_expr)
-            cmdline.run(report, ignored)
+            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, ignore_also, hosts_expr)
+            cmdline.run(report)
 
     elif audit_type == 'homes':
         homesaudit = RemoteHomesAuditor(hosts_expr, audit_type, confdir,
@@ -273,10 +273,10 @@ def main():
                                         summary_report,
                                         depth, files_to_check, ignore_also,
                                         timeout, maxfiles, store_filepath, verbose)
-        report, ignored = homesaudit.audit_hosts()
+        report = homesaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, hosts_expr)
-            cmdline.run(report, ignored)
+            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, ignore_also, hosts_expr)
+            cmdline.run(report)
 
 if __name__ == '__main__':
     main()

@@ -21,8 +21,6 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                                                 maxfiles, store_filepath, verbose)
         self.oldest_only = oldest
         self.show_system_logs = show_system_logs
-        if self.show_system_logs:
-            self.ignores.ignored['files'].pop("/var/log")
         self.display_from_dict = LogInfo.display_from_dict
 
     def get_audit_args(self):
@@ -34,8 +32,7 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                       self.dirsizes,
                       self.depth - 1,
                       self.to_check,
-                      ",".join(self.ignore_also) if self.ignore_also is not None else None,
-                      self.timeout,
+                      self.ignore_also,
                       self.MAX_FILES]
         return audit_args
 

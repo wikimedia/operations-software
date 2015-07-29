@@ -34,7 +34,6 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
                       self.depth - 1,
                       self.to_check,
                       ",".join(self.ignore_also) if self.ignore_also is not None else None,
-                      self.timeout,
                       self.MAX_FILES]
         return audit_args
 

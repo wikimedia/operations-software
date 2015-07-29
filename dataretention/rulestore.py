@@ -9,7 +9,7 @@ import getopt
 from clouseau.retention.saltclientplus import LocalClientPlus
 import clouseau.retention.utils
 import clouseau.retention.ruleutils
-from clouseau.retention.rule import Rule, RuleStore
+from clouseau.retention.rule import RuleStore
 from clouseau.retention.status import Status
 
 def usage(message=None):

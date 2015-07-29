@@ -32,25 +32,6 @@ def from_unicode(param):
             newparam = param
     return newparam
 
-class Rule(object):
-    '''
-    manage rules, i.e. tuples (status, abspath, type)
-    '''
-
-    first_line_expected = re.compile(r'^\s*dir_rules\s*=\s*{\s*$')
-    last_line_expected = re.compile(r'^\s*}\s*')
-    blank_expr = re.compile(r'^\s*$')
-    comment_expr = re.compile(r'^#.*$')
-    entry_expr = re.compile(r"^\s*'(.*)'\s*,?\s*$")
-    end_entries_expr = re.compile(r"^\s*],?\s*$")
-
-    TYPES_TO_TEXT = {'D': 'dir', 'F': 'file', 'L': 'link', 'U': 'unknown'}
-    TYPES = TYPES_TO_TEXT.keys()
-
-    STATE_START = 0
-    STATE_EXPECT_STATUS = 1
-    STATE_EXPECT_ENTRIES = 2
-
 
 class RuleStore(object):
     '''
@@ -78,6 +59,9 @@ class RuleStore(object):
     in this store; files or directories without entries will be treated as
     though they have U status (unknown)
     '''
+
+    TYPES_TO_TEXT = {'D': 'dir', 'F': 'file', 'L': 'link', 'U': 'unknown'}
+    TYPES = TYPES_TO_TEXT.keys()
 
     def __init__(self, storename):
         '''
@@ -186,7 +170,7 @@ class RuleStore(object):
                                % (field, params[field]))
                     err = True
                 elif ftype == 'text':
-                    if field == 'type' and params[field] not in Rule.TYPES:
+                    if field == 'type' and params[field] not in RuleStore.TYPES:
                         if show:
                             print "WARNING: bad type %s specified" % params[field]
                             err = True

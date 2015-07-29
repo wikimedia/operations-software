@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import json
 import readline
 import traceback
@@ -197,19 +196,19 @@ class CommandLine(object):
     # todo: down and up should check you really are (descending,
     # ascending path)
 
-    def __init__(self, confdir, store_filepath, timeout, audit_type, hosts_expr=None):
+    def __init__(self, confdir, store_filepath, timeout, audit_type, ignore_also=None, hosts_expr=None):
         self.confdir = confdir
+
         self.cdb = RuleStore(store_filepath)
         self.cdb.store_db_init(None)
+
         self.timeout = timeout
         self.audit_type = audit_type
         self.locations = audit_type + "_locations"
         self.hosts_expr = hosts_expr
 
-        self.host = None
-        self.today = time.strftime("%Y%m%d", time.gmtime())
         self.basedir = None
-        self.prompt = None
+
         clouseau.retention.cliutils.init_readline_hist()
         # this is arbitrary, can tweak it later
         # how many levels down we keep in our list of
@@ -222,19 +221,28 @@ class CommandLine(object):
         # fixme completely wrong
         self.batchno = 1
 
-        self.ignored = None
-        self.local_ignores = None
+        clouseau.retention.config.set_up_conf(self.confdir)
 
-        self.ignores = Ignores(self.confdir, self.cdb)
-        self.ignores.get_ignores_from_rules_for_hosts()
+        # duplicate all the ignores except for the uh
+        # ones specific to a host. those will be done
+        # at host choice time
+        # this includes rules, we will do those at host choice time too
+        # we want: global, perhost, ignore_also (if there were any)
+
+        self.local_ignored = None
+        self.ignores = Ignores(self.confdir)
+        self.ignored_from_rulestore = {}
+        self.ignored_also = clouseau.retention.ignores.convert_ignore_also_to_ignores(ignore_also)
+
         self.dircontents = CurrentDirContents(self.timeout)
         self.cenv = CurrentEnv()
         self.cmpl = Completion(self.dircontents, self.cenv, self.max_depth_top_level)
-        clouseau.retention.config.set_up_conf(self.confdir)
 
     def do_one_host(self, host, report):
         self.set_host(host)
-        self.ignores.get_ignores_from_rules_for_hosts([host])
+        results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [host])
+        if host in results:
+            self.ignored_from_rulestore[host] = results[host]
 
         if host not in report:
             dirs_problem = None
@@ -268,15 +276,13 @@ class CommandLine(object):
                     self.cenv.cwdir = None
                     self.do_one_directory(dir_todo)
 
-    def run(self, report, ignored):
+    def run(self, report):
         '''
         call with full report output (not summary) across
         hosts, this will permit the user to examine
         directories and files of specified hosts and
         add/update rules for those dirs and files
         '''
-        self.ignored = ignored
-
         self.cenv.set_hosts(report.keys())
         while True:
             host_todo = self.cmpl.prompt_for_host()
@@ -284,10 +290,14 @@ class CommandLine(object):
                 print "exiting at user request"
                 break
             else:
-                local_ign = RemoteUserCfGrabber(host_todo, self.timeout, self.audit_type, self.confdir)
-                self.local_ignores = local_ign.run(True)
-                local_ignored_dirs, local_ignored_files = clouseau.retention.ignores.process_local_ignores(
-                    self.local_ignores, self.ignored)
+                usercfgrab = RemoteUserCfGrabber(host_todo, self.timeout, self.audit_type, self.confdir)
+                to_convert = usercfgrab.run(True)
+                self.local_ignored = clouseau.retention.ignores.process_local_ignores(to_convert)
+
+                results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [host_todo])
+                if host_todo in results:
+                    self.ignored_from_rulestore[host_todo] = results[host_todo]
+
                 self.do_one_host(host_todo, report)
 
     def set_host(self, host):
@@ -308,7 +318,7 @@ class CommandLine(object):
                 break
 
     def get_do_command(self, path):
-        command = self.show_menu(path, 'top')
+        command = self.show_menu('top')
         return self.do_command(command, 'top', path)
 
     def get_menu_entry(self, choices, default, text):
@@ -320,7 +330,7 @@ class CommandLine(object):
             command = default
         return command
 
-    def show_menu(self, path, level):
+    def show_menu(self, level):
         if level == 'top':
             text = ("S(set status)/E(examine directory)/"
                     "Filter directory listings/"
@@ -373,41 +383,20 @@ class CommandLine(object):
             path = LocalLogsAuditor.normalize(path)
 
         if entrytype == 'file':
-            if clouseau.retention.ignores.file_is_ignored(path, basedir, self.ignored):
-                return False
-
-            # check perhost file
-            if self.cenv.host in self.ignores.perhost_ignores:
-                if clouseau.retention.ignores.file_is_ignored(
-                        path, basedir,
-                        self.ignores.perhost_ignores[self.cenv.host]):
-                    return False
-
-            # check perhost rules
-            if self.cenv.host in self.ignores.perhost_ignores_from_rules:
-                if clouseau.retention.ignores.file_is_ignored(
-                        path, basedir,
-                        self.ignores.perhost_ignores_from_rules[self.cenv.host]):
-                    return False
-
-        elif entrytype == 'dir':
-            if clouseau.retention.ignores.dir_is_ignored(path, self.ignored):
-                return False
-
-            # check perhost file
-            if self.cenv.host in self.ignores.perhost_ignores:
-                if clouseau.retention.ignores.dir_is_ignored(
-                        path, self.ignores.perhost_ignores[self.cenv.host]):
-                    return False
-
-            # check perhost rules
-            if self.cenv.host in self.ignores.perhost_ignores_from_rules:
-                if clouseau.retention.ignores.dir_is_ignored(
-                        path, self.ignores.perhost_ignores_from_rules[self.cenv.host]):
-                    return False
+            checker = clouseau.retention.ignores.file_is_ignored
         else:
-            # unknown type, I guess we skip it then
-            return False
+            checker = clouseau.retention.ignores.dir_is_ignored
+
+            for ignored in [self.ignores.global_ignored,
+                            self.ignored_also]:
+                if checker(path, basedir, ignored):
+                    return False
+
+            for ignored in [self.ignores.perhost_ignored,
+                            self.ignored_from_rulestore]:
+                if self.cenv.host in ignored:
+                    if checker(path, basedir, ignored[self.cenv.host]):
+                        return False
 
         return True
 
@@ -503,8 +492,9 @@ class CommandLine(object):
 
             clouseau.retention.ruleutils.do_add_rule(self.cdb, path, filetype, status, self.cenv.host)
             # update the ignores list since we have a new rule
-            self.ignores.perhost_ignores_from_rules = {}
-            self.ignores.get_ignores_from_rules_for_hosts([self.cenv.host])
+            results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
+            if self.cenv.host in results:
+                self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
             return True
         elif command == 'S' or command == 's':
             default = Status.text_to_status('problem')
@@ -559,8 +549,9 @@ class CommandLine(object):
                 path = path[:-1]
             clouseau.retention.ruleutils.do_remove_rule(self.cdb, path, self.cenv.host)
             # update the ignores list since we removed a rule
-            self.ignores.perhost_ignores_from_rules = {}
-            self.ignores.get_ignores_from_rules_for_hosts([self.cenv.host])
+            results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
+            if self.cenv.host in results:
+                self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
             return True
         elif command == 'I' or command == 'i':
             readline.set_completer(None)
@@ -680,7 +671,7 @@ class CommandLine(object):
         elif command == 'R' or command == 'r':
             continuing = True
             while continuing:
-                command = self.show_menu(self.cenv.cwdir, 'rule')
+                command = self.show_menu('rule')
                 continuing = self.do_command(command, 'rule', self.cenv.cwdir)
             return True
         elif command == 'M' or command == 'm':
@@ -696,7 +687,7 @@ class CommandLine(object):
         if command == 'S' or command == 's':
             continuing = True
             while continuing:
-                command = self.show_menu(dir_path, 'status')
+                command = self.show_menu('status')
                 continuing = self.do_command(command, 'status', dir_path)
             return True
         elif command == 'E' or command == 'e':
@@ -705,7 +696,7 @@ class CommandLine(object):
             while continuing:
                 # fixme this should let the user page through batches,
                 # not use '1' every time
-                command = self.show_menu(self.cenv.cwdir, 'examine')
+                command = self.show_menu('examine')
                 continuing = self.do_command(command, 'examine',
                                              self.cenv.cwdir)
             return True
@@ -718,7 +709,7 @@ class CommandLine(object):
         elif command == 'R' or command == 'r':
             continuing = True
             while continuing:
-                command = self.show_menu(self.cenv.cwdir, 'rule')
+                command = self.show_menu('rule')
                 continuing = self.do_command(command, 'rule', self.cenv.cwdir)
             return True
         elif command == 'Q' or command == 'q':

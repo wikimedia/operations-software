@@ -7,53 +7,50 @@ from clouseau.retention.localexaminer import LocalFileExaminer, LocalDirExaminer
 from clouseau.retention.localusercfgrabber import LocalUserCfGrabber
 
 def fileaudit_host(confdir, show_content, dirsizes, depth,
-                   to_check, ignore_also, timeout,
+                   to_check, ignore_also,
                    maxfiles):
     fauditor = LocalFilesAuditor('root', confdir, show_content,
                                  dirsizes, depth, to_check,
-                                 ignore_also, timeout,
-                                 maxfiles)
+                                 ignore_also, maxfiles)
     result = fauditor.do_local_audit()
     return result
 
 def logaudit_host(confdir, oldest, show_content, show_system_logs,
                   dirsizes, depth,
-                  to_check, ignore_also, timeout,
+                  to_check, ignore_also,
                   maxfiles):
     lauditor = LocalLogsAuditor('logs', confdir, oldest, show_content,
                                 show_system_logs,
                                 dirsizes, depth, to_check,
-                                ignore_also, timeout,
-                                maxfiles)
+                                ignore_also, maxfiles)
     result = lauditor.do_local_audit()
     return result
 
 def homeaudit_host(confdir, show_content,
                    dirsizes, depth,
-                   to_check, ignore_also, timeout,
+                   to_check, ignore_also,
                    maxfiles):
     hauditor = LocalHomesAuditor('homes', confdir, show_content,
                                  dirsizes, depth, to_check,
-                                 ignore_also, timeout,
-                                 maxfiles)
+                                 ignore_also, maxfiles)
     result = hauditor.do_local_audit()
     return result
 
 def examine_file(path, num_lines,
-                 timeout, quiet=False):
+                 quiet=False):
     fexaminer = LocalFileExaminer(path, num_lines,
-                                  timeout, quiet)
+                                  quiet)
     result = fexaminer.run()
     return result
 
 def examine_dir(path, batchno, batchsize,
-                timeout, quiet=False):
+                quiet=False):
     dexaminer = LocalDirExaminer(path, batchno,
-                                 batchsize, timeout, quiet)
+                                 batchsize, quiet)
     result = dexaminer.run()
     return result
 
-def retrieve_usercfs(confdir, timeout, audit_type):
-    ucfsretriever = LocalUserCfGrabber(confdir, timeout, audit_type)
+def retrieve_usercfs(confdir, audit_type):
+    ucfsretriever = LocalUserCfGrabber(confdir, audit_type)
     result = ucfsretriever.run()
     return result

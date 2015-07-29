@@ -1,11 +1,14 @@
 import os
 import glob
+import socket
+import time
 
 import clouseau.retention.utils
 import clouseau.retention.config
 from clouseau.retention.fileinfo import LogInfo, LogUtils
 from clouseau.retention.localfileaudit import LocalFilesAuditor
 import clouseau.retention.fileutils
+import clouseau.retention.magic
 
 class LocalLogsAuditor(LocalFilesAuditor):
     def __init__(self, audit_type, confdir=None,
@@ -13,18 +16,19 @@ class LocalLogsAuditor(LocalFilesAuditor):
                  show_content=False, show_system_logs=False,
                  dirsizes=False, depth=2,
                  to_check=None, ignore_also=None,
-                 timeout=60, maxfiles=None):
+                 maxfiles=None):
         super(LocalLogsAuditor, self).__init__(audit_type, confdir,
                                                show_content, dirsizes,
                                                depth, to_check, ignore_also,
-                                               timeout, maxfiles)
+                                               maxfiles)
 
         self.oldest_only = oldest
         self.show_system_logs = show_system_logs
         if self.show_system_logs:
-            self.ignores.ignored['files'].pop("/var/log")
+            for path in clouseau.retention.config.conf['systemlogs']:
+                self.ignored['files'].pop(path, None)
+
         self.display_from_dict = LogInfo.display_from_dict
-        clouseau.retention.config.set_up_conf(self.confdir)
 
     @staticmethod
     def get_rotated_freq(rotated):
@@ -155,7 +159,10 @@ class LocalLogsAuditor(LocalFilesAuditor):
         '''
         check how long mysql logs are kept around
         '''
+        mysql_ignores = clouseau.retention.ignores.init_ignored()
+
         # note that I also see my.cnf.s3 and we don't check those (yet)
+        hostname = socket.getfqdn()
         output = ''
         for filename in clouseau.retention.config.conf['mysqlconf']:
             found = False
@@ -182,25 +189,24 @@ class LocalLogsAuditor(LocalFilesAuditor):
                         datadir = datadir[:-1]
                     # we can skip all bin logs, relay logs, and pid files in this
                     # directory. anything else should get looked at.
-                    if '.' in self.hostname:
-                        hostname = self.hostname.split('.')[0]
-                    else:
-                        hostname = self.hostname
+                    if '.' in hostname:
+                        hostname = hostname.split('.')[0]
                     ignore_these = [hostname + '-bin', hostname + '-relay-bin',
                                     hostname + '.pid', hostname + '-bin.index',
                                     hostname + '-relay-bin.index']
 
                     # add these files to ignore list; a one line report on
                     # mysql log expiry configuration is sufficient
-                    if datadir not in self.ignores.ignored['files']:
-                        self.ignores.ignored['files'][datadir] = ignore_these
+
+                    if datadir not in mysql_ignores['files']:
+                        mysql_ignores['files'][datadir] = ignore_these
                     else:
-                        self.ignores.ignored['files'][datadir].extend(ignore_these)
+                        mysql_ignores['files'][datadir].extend(ignore_these)
                     # skip the subdirectories in here, they will be full of mysql dbs
-                    if datadir not in self.ignores.ignored['dirs']:
-                        self.ignores.ignored['files'][datadir] = ['*']
+                    if datadir not in mysql_ignores['dirs']:
+                        mysql_ignores['files'][datadir] = ['*']
                     else:
-                        self.ignores.ignored['files'][datadir].append('*')
+                        mysql_ignores['files'][datadir].append('*')
 
                 if line.startswith('expire_logs_days'):
                     fields = line.split('=', 1)
@@ -219,6 +225,9 @@ class LocalLogsAuditor(LocalFilesAuditor):
                 if output:
                     output = output + '\n'
                 output = output + 'WARNING: some mysql logs never expired in ' + filename
+
+        self.ignored = self.ignores.merge([self.ignored, mysql_ignores])
+
         return output
 
     def do_local_audit(self):
@@ -237,9 +246,12 @@ class LocalLogsAuditor(LocalFilesAuditor):
         all_files = {}
         files = self.find_all_files()
 
+        magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
+        magic.load()
+        today = time.time()
         for (fname, stat) in files:
-            all_files[fname] = LogInfo(fname, self.magic, stat)
-            all_files[fname].load_file_info(self.today, self.cutoff,
+            all_files[fname] = LogInfo(fname, magic, stat)
+            all_files[fname].load_file_info(today, clouseau.retention.config.conf['cutoff'],
                                             open_files, rotated)
 
         all_files_sorted = sorted(all_files,

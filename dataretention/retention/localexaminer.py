@@ -10,9 +10,8 @@ class LocalFileExaminer(object):
     '''
     retrieval and display of file contents on local host
     '''
-    def __init__(self, path, num_lines, timeout=20, quiet=False):
+    def __init__(self, path, num_lines, quiet=False):
         self.path = path
-        self.timeout = timeout
         self.num_lines = num_lines
         self.quiet = quiet
 
@@ -151,10 +150,9 @@ class LocalDirExaminer(object):
     '''
     retrieval and display of directory contents on local host
     '''
-    def __init__(self, path, batchno=1, batchsize=300, timeout=20, quiet=False):
+    def __init__(self, path, batchno=1, batchsize=300, quiet=False):
         self.path = path
         self.stat = None
-        self.timeout = timeout
         self.batchno = batchno
         self.batchsize = batchsize
         self.quiet = quiet
