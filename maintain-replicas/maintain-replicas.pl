@@ -487,6 +487,9 @@ foreach my $slice (sort keys %slices) {
 
     $| = 1;
     foreach my $dbk (keys %db) {
+        my $db = $db{$dbk};
+        next if defined $db->{'deleted'};
+        next if defined $db->{'private'};
         sql("CREATE DATABASE ${dbk}_p;") if sql("SHOW DATABASES LIKE '${dbk}_p';") == 0;
         print "Views for ${dbk}: ";
         foreach my $view (@fullviews) {
