@@ -9,6 +9,7 @@ from clouseau.retention.rule import RuleStore
 import retention.remotefileauditor
 from clouseau.retention.locallogaudit import LocalLogsAuditor
 from clouseau.retention.fileinfo import FileInfo
+import clouseau.retention.fileinfo
 from clouseau.retention.utils import JsonHelper
 import clouseau.retention.config
 from retention.remoteexaminer import RemoteDirExaminer, RemoteFileExaminer
@@ -105,6 +106,22 @@ class CurrentDirContents(object):
 #                sys.stderr.write(repr(traceback.format_exception(
 #                    exc_type, exc_value, exc_traceback)))
 
+    def filter_items(self, filtertype, check_not_ignored):
+        keys = self.entries_dict.keys()
+        if filtertype == 'file':
+            types = ['file']
+        elif filtertype == 'dir':
+            types = ['dir']
+        else:
+            types = ['dir', 'file']
+        items = []
+        for ftype in types:
+            items = items + (sorted(
+                item for item in keys
+                if (self.entries_dict[item]['type'] == ftype and
+                    check_not_ignored(self.entries_dict[item]['path'],
+                                      self.entries_dict[item]['type'], ftype))))
+        return items
 
     def show(self, host, path, batchno, filtertype, check_not_ignored, force=False):
         self.get(host, path, batchno, force)
@@ -112,33 +129,7 @@ class CurrentDirContents(object):
         # fixme this 50 is pretty arbitrary oh well
         justify = 50
 
-        keys = self.entries_dict.keys()
-        if filtertype == 'file':
-            items = (sorted(
-                item for item in keys
-                if self.entries_dict[item]['type'] == 'file'))
-        elif filtertype == 'dir':
-            items = (sorted(
-                item for item in keys
-                if self.entries_dict[item]['type'] == 'dir'))
-        elif filtertype == 'all':
-            items = sorted(
-                item for item in keys
-                if self.entries_dict[item]['type'] == 'dir')
-            items = items + sorted(
-                item for item in keys
-                if self.entries_dict[item]['type'] == 'file')
-        elif filtertype == 'check':
-            items = sorted(
-                item for item in keys
-                if self.entries_dict[item]['type'] == 'dir'
-                and check_not_ignored(self.entries_dict[item]['path'],
-                                      self.entries_dict[item]['type']))
-            items = items + sorted(
-                item for item in keys
-                if self.entries_dict[item]['type'] == 'file'
-                and check_not_ignored(self.entries_dict[item]['path'],
-                                      self.entries_dict[item]['type']))
+        items = self.filter_items(filtertype, check_not_ignored)
 
         page = 1
         num_per_page = 50  # another arbitrary value
@@ -159,7 +150,7 @@ class CurrentDirContents(object):
                     # fixme why do we have an empty item I wonder
                     continue
                 try:
-                    result = FileInfo.format_pretty_output_from_dict(
+                    result = clouseau.retention.fileinfo.format_pretty_output_from_dict(
                         self.entries_dict[item], path_justify=justify)
                 except:
                     print "item is", item
@@ -256,8 +247,7 @@ class CommandLine(object):
             print "No problem dirs and no skipped dirs on this host"
         else:
             dirs_problem_to_depth = [clouseau.retention.cliutils.get_path_prefix(
-                d, self.max_depth_top_level)
-                                     for d in dirs_problem]
+                d, self.max_depth_top_level) for d in dirs_problem]
             dirs_skipped = [s for s in dirs_skipped
                             if s not in dirs_problem_to_depth]
             relevant_dirs = (sorted(list(set(dirs_problem_to_depth)))
@@ -377,7 +367,16 @@ class CommandLine(object):
         # fixme is this really the right fallback? check it
         return '/'
 
-    def entry_is_not_ignored(self, path, entrytype):
+    def entry_is_not_ignored(self, path, entrytype, do_check):
+        '''
+        see if the given entry is in NOT in the ingored lists and return
+        True if so, False otherwise
+        we only do this check if the do_check argment is set to 'check';
+        otherwise we default to True
+        '''
+        if do_check != 'check':
+            return True
+
         basedir = self.get_basedir_from_path(path)
         if self.audit_type == 'logs' and entrytype == 'file':
             path = LocalLogsAuditor.normalize(path)
@@ -452,135 +451,144 @@ class CommandLine(object):
             clouseau.retention.ruleutils.do_add_rule(self.cdb, file_expr, filetype, status, self.cenv.host)
         return True
 
+    def do_add_rule(self):
+        # fixme need different completer here I think, that
+        # completes relative to self.cwdir
+        readline.set_completer(None)
+        path = raw_input("path or wildcard expr in rule (empty to quit): ")
+        path = path.strip()
+        if path == '':
+            return True
+        default = Status.text_to_status('good')
+        self.cmpl.set_choices_completion(Status.STATUSES + ['Q'], default)
+        while True:
+            statuses_text = Status.get_statuses_prompt(", ")
+            status = raw_input(statuses_text + " Q(quit)) [%s]: " %
+                               default)
+            status = status.strip()
+            if status == "":
+                status = default
+            if status[0].upper() in Status.STATUSES:
+                status = status[0].upper()
+                break
+            elif status == 'q' or status == 'Q':
+                return None
+            else:
+                print "Unknown status type"
+                continue
+
+        # fixme should check that any wildcard is only one and only
+        # in the last component... someday
+
+        if path[0] != os.path.sep:
+            path = os.path.join(self.cenv.cwdir, path)
+        if path[-1] == os.path.sep:
+            path = path[:-1]
+            filetype = clouseau.retention.ruleutils.text_to_entrytype('dir')
+        else:
+            filetype = clouseau.retention.ruleutils.text_to_entrytype('file')
+
+        clouseau.retention.ruleutils.do_add_rule(self.cdb, path, filetype, status, self.cenv.host)
+        # update the ignores list since we have a new rule
+        results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
+        if self.cenv.host in results:
+            self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
+        return True
+
+    def do_show_rules_with_status(self):
+        default = Status.text_to_status('problem')
+        self.cmpl.set_choices_completion(['A'] + Status.STATUSES + ['Q'], default)
+        while True:
+            statuses_text = Status.get_statuses_prompt(", ")
+            status = raw_input("status type A(all), " + statuses_text +
+                               ", Q(quit)) [%s]: " % default)
+            status = status.strip()
+            if status == "":
+                status = default
+
+            if status == 'q' or status == 'Q':
+                return None
+            elif status[0].upper() not in ['A'] + Status.STATUSES:
+                print "Unknown status type"
+                continue
+
+            readline.set_completer(None)
+            prefix = raw_input("starting with prefix? [/]: ")
+            prefix = prefix.strip()
+            if prefix == "":
+                prefix = "/"
+            if status == 'a' or status == 'A':
+                clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, prefix=prefix)
+                return True
+            elif status[0].upper() in Status.STATUSES:
+                clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, status[0].upper(),
+                                                        prefix=prefix)
+                return True
+
+    def do_remove_rule(self):
+        # fixme need different completer here I think, that
+        # completes relative to self.cwdir
+        readline.set_completer(None)
+        path = raw_input("path or wildcard expr in rule (empty to quit): ")
+        path = path.strip()
+        if path == '':
+            return True
+        elif path[0] != os.path.sep:
+            path = os.path.join(self.cenv.cwdir, path)
+        if path[-1] == os.path.sep:
+            path = path[:-1]
+        clouseau.retention.ruleutils.do_remove_rule(self.cdb, path, self.cenv.host)
+        # update the ignores list since we removed a rule
+        results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
+        if self.cenv.host in results:
+            self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
+        return True
+
+    def get_rules_path(self):
+        readline.set_completer(None)
+        rules_path = raw_input("full path to rules file (empty to quit): ")
+        rules_path = rules_path.strip()
+        if rules_path == '':
+            return rules_path
+        if not clouseau.retention.cliutils.check_rules_path(rules_path):
+            print "bad rules file path specified, aborting"
+            return ''
+        return rules_path
+
     def do_rule(self, command):
         if command == 'A' or command == 'a':
-            # fixme need different completer here I think, that
-            # completes relative to self.cwdir
-            readline.set_completer(None)
-            path = raw_input("path or wildcard expr in rule (empty to quit): ")
-            path = path.strip()
-            if path == '':
-                return True
-            default = Status.text_to_status('good')
-            self.cmpl.set_choices_completion(Status.STATUSES + ['Q'], default)
-            while True:
-                statuses_text = Status.get_statuses_prompt(", ")
-                status = raw_input(statuses_text + " Q(quit)) [%s]: " %
-                                   default)
-                status = status.strip()
-                if status == "":
-                    status = default
-                if status[0].upper() in Status.STATUSES:
-                    status = status[0].upper()
-                    break
-                elif status == 'q' or status == 'Q':
-                    return None
-                else:
-                    print "Unknown status type"
-                    continue
-
-            # fixme should check that any wildcard is only one and only
-            # in the last component... someday
-
-            if path[0] != os.path.sep:
-                path = os.path.join(self.cenv.cwdir, path)
-            if path[-1] == os.path.sep:
-                path = path[:-1]
-                filetype = clouseau.retention.ruleutils.text_to_entrytype('dir')
-            else:
-                filetype = clouseau.retention.ruleutils.text_to_entrytype('file')
-
-            clouseau.retention.ruleutils.do_add_rule(self.cdb, path, filetype, status, self.cenv.host)
-            # update the ignores list since we have a new rule
-            results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
-            if self.cenv.host in results:
-                self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
-            return True
+            result = self.do_add_rule()
         elif command == 'S' or command == 's':
-            default = Status.text_to_status('problem')
-            self.cmpl.set_choices_completion(['A'] + Status.STATUSES + ['Q'], default)
-            while True:
-                statuses_text = Status.get_statuses_prompt(", ")
-                status = raw_input("status type A(all), " + statuses_text +
-                                   ", Q(quit)) [%s]: " % default)
-                status = status.strip()
-                if status == "":
-                    status = default
-
-                if status == 'q' or status == 'Q':
-                    return None
-                elif status[0].upper() not in ['A'] + Status.STATUSES:
-                    print "Unknown status type"
-                    continue
-
-                readline.set_completer(None)
-                prefix = raw_input("starting with prefix? [/]: ")
-                prefix = prefix.strip()
-                if prefix == "":
-                    prefix = "/"
-                if status == 'a' or status == 'A':
-                    clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, prefix=prefix)
-                    return True
-                elif status[0].upper() in Status.STATUSES:
-                    clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, status[0].upper(),
-                                                            prefix=prefix)
-                    return True
+            result = self.do_show_rules_with_status()
         elif command == 'D' or command == 'd':
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
             clouseau.retention.ruleutils.get_rules_for_path(self.cdb, self.cenv.cwdir, self.cenv.host)
-            return True
+            result = True
         elif command == 'C' or command == 'c':
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
             clouseau.retention.ruleutils.get_rules_for_entries(self.cdb, self.cenv.cwdir,
                                                                self.dircontents.entries_dict,
                                                                self.cenv.host)
-            return True
+            result = True
         elif command == 'R' or command == 'r':
-            # fixme need different completer here I think, that
-            # completes relative to self.cwdir
-            readline.set_completer(None)
-            path = raw_input("path or wildcard expr in rule (empty to quit): ")
-            path = path.strip()
-            if path == '':
-                return True
-            elif path[0] != os.path.sep:
-                path = os.path.join(self.cenv.cwdir, path)
-            if path[-1] == os.path.sep:
-                path = path[:-1]
-            clouseau.retention.ruleutils.do_remove_rule(self.cdb, path, self.cenv.host)
-            # update the ignores list since we removed a rule
-            results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
-            if self.cenv.host in results:
-                self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
-            return True
+            result = self.do_remove_rule()
         elif command == 'I' or command == 'i':
-            readline.set_completer(None)
-            rules_path = raw_input("full path to rules file (empty to quit): ")
-            rules_path = rules_path.strip()
-            if rules_path == '':
-                return True
-            if not clouseau.retention.cliutils.check_rules_path(rules_path):
-                print "bad rules file path specified, aborting"
-            else:
+            rules_path = self.get_rules_path()
+            if rules_path != '':
                 clouseau.retention.ruleutils.import_rules(self.cdb, rules_path, self.cenv.host)
-            return True
+            result = True
         elif command == 'E' or command == 'e':
-            readline.set_completer(None)
-            rules_path = raw_input("full path to rules file (empty to quit): ")
-            rules_path = rules_path.strip()
-            if rules_path == '':
-                return True
-            if not clouseau.retention.cliutils.check_rules_path(rules_path):
-                print "bad rules file path specified, aborting"
-            else:
+            rules_path = self.get_rules_path()
+            if rules_path != '':
                 clouseau.retention.ruleutils.export_rules(self.cdb, rules_path, self.cenv.host)
-            return True
+            result = True
         elif command == 'Q' or command == 'q':
             print "quitting this level"
-            return None
+            result = None
         else:
             clouseau.retention.cliutils.show_help('rule')
-            return True
+            result = True
+        return result
 
     def do_file_contents(self):
         # fixme need a different completer here... meh
@@ -626,30 +634,32 @@ class CommandLine(object):
                 print "Unknown filter type"
                 continue
 
+    def do_dir_descend(self, command):
+        while True:
+            # prompt user for dir to descend
+            readline.set_completer(self.cmpl.dir_completion)
+            self.cenv.set_prompt()
+            directory = raw_input(self.cenv.prompt + ' ' + "directory name (empty to quit): ")
+            directory = directory.strip()
+            if directory == '':
+                return command
+            if directory[-1] == os.path.sep:
+                directory = directory[:-1]
+            if (directory[0] == '/' and
+                    not directory.startswith(self.cenv.cwdir + os.path.sep)):
+                print 'New directory is not a subdirectory of',
+                print self.cenv.cwdir, "skipping"
+            else:
+                self.cenv.cwdir = os.path.join(self.cenv.cwdir,
+                                               directory)
+                self.dircontents.clear()
+                self.cenv.set_prompt()
+                print 'Now at', self.cenv.cwdir
+                return True
+
     def do_examine(self, command):
         if command == 'D' or command == 'd':
-            while True:
-                # prompt user for dir to descend
-                readline.set_completer(self.cmpl.dir_completion)
-                self.cenv.set_prompt()
-                directory = raw_input(self.cenv.prompt + ' ' + "directory name (empty to quit): ")
-                directory = directory.strip()
-                if directory == '':
-                    return command
-                if directory[-1] == os.path.sep:
-                    directory = directory[:-1]
-                if (directory[0] == '/' and
-                        not directory.startswith(self.cenv.cwdir +
-                                                 os.path.sep)):
-                    print 'New directory is not a subdirectory of',
-                    print self.cenv.cwdir, "skipping"
-                else:
-                    self.cenv.cwdir = os.path.join(self.cenv.cwdir,
-                                                   directory)
-                    self.dircontents.clear()
-                    self.cenv.set_prompt()
-                    print 'Now at', self.cenv.cwdir
-                    return True
+            return self.do_dir_descend(command)
         elif command == 'U' or command == 'u':
             if self.cenv.cwdir != self.basedir:
                 self.cenv.cwdir = os.path.dirname(self.cenv.cwdir)
@@ -658,38 +668,39 @@ class CommandLine(object):
                 print 'Now at', self.cenv.cwdir
             else:
                 print 'Already at top', self.cenv.cwdir
-            return True
+            result = True
         elif command == 'E' or command == 'e':
             self.dircontents.show(self.cenv.host, self.cenv.cwdir, 1, self.filtertype, self.entry_is_not_ignored)
-            return True
+            result = True
         elif command == 'C' or command == 'c':
             self.do_file_contents()
-            return True
+            result = True
         elif command == 'F' or command == 'f':
             self.do_filter()
-            return True
+            result = True
         elif command == 'R' or command == 'r':
             continuing = True
             while continuing:
                 command = self.show_menu('rule')
                 continuing = self.do_command(command, 'rule', self.cenv.cwdir)
-            return True
+            result = True
         elif command == 'M' or command == 'm':
-            return self.do_mark()
+            result = self.do_mark()
         elif command == 'Q' or command == 'q' or command == '':
             print "quitting this level"
-            return None
+            result = None
         else:
             clouseau.retention.cliutils.show_help('examine')
-            return True
+            result = True
+        return result
 
     def do_top(self, command, dir_path):
+        result = True
         if command == 'S' or command == 's':
             continuing = True
             while continuing:
                 command = self.show_menu('status')
                 continuing = self.do_command(command, 'status', dir_path)
-            return True
         elif command == 'E' or command == 'e':
             self.dircontents.show(self.cenv.host, self.cenv.cwdir, 1, self.filtertype, self.entry_is_not_ignored)
             continuing = True
@@ -699,36 +710,34 @@ class CommandLine(object):
                 command = self.show_menu('examine')
                 continuing = self.do_command(command, 'examine',
                                              self.cenv.cwdir)
-            return True
         elif command == 'F' or command == 'f':
             self.do_filter()
-            return True
         elif command == 'I' or command == 'i':
             # do nothing
-            return command
+            result = command
         elif command == 'R' or command == 'r':
             continuing = True
             while continuing:
                 command = self.show_menu('rule')
                 continuing = self.do_command(command, 'rule', self.cenv.cwdir)
-            return True
         elif command == 'Q' or command == 'q':
-            return None
+            result = None
         else:
             clouseau.retention.cliutils.show_help('top')
-            return True
+        return result
 
     def do_command(self, command, level, dir_path):
+        result = None
         if self.basedir is None:
             self.basedir = dir_path
         if self.cenv.cwdir is None:
             self.cenv.cwdir = dir_path
 
         if command is None:
-            return
+            return None
 
         if level == 'top':
-            return self.do_top(command, dir_path)
+            result = self.do_top(command, dir_path)
         elif level == 'status':
             if command in Status.STATUSES:
                 # this option is invoked on a directory so
@@ -741,10 +750,9 @@ class CommandLine(object):
                 return None
             else:
                 clouseau.retention.cliutils.show_help(level)
-                return True
+                result = True
         elif level == 'examine':
-            return self.do_examine(command)
+            result = self.do_examine(command)
         elif level == 'rule':
-            return self.do_rule(command)
-        else:
-            return None
+            result = self.do_rule(command)
+        return result

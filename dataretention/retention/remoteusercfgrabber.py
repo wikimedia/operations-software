@@ -50,4 +50,3 @@ class RemoteUserCfGrabber(object):
             print local_ignores
 
         return local_ignores
-

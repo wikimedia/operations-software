@@ -3,6 +3,26 @@ import json
 from clouseau.retention.fileinfo import LogInfo
 from clouseau.retention.utils import JsonHelper
 from retention.remotefileauditor import RemoteFilesAuditor
+import retention.remotefileauditor
+
+def summarize_log_issues(log_items, host, logs):
+    for item in log_items:
+        log_name = item['normalized']
+        if not item['normalized'] in logs:
+            logs[log_name] = {}
+            logs[log_name]['old'] = set()
+            logs[log_name]['maybe_old'] = set()
+            logs[log_name]['unrot'] = set()
+            logs[log_name]['notifempty'] = set()
+        if item['old'] == 'T':
+            logs[log_name]['old'].add(host)
+        elif item['old'] == '-':
+            logs[log_name]['maybe_old'].add(host)
+        if item['rotated'].startswith('F'):
+            logs[log_name]['unrot'].add(host)
+        if item['notifempty'] == 'T':
+            logs[log_name]['notifempty'].add(host)
+    return logs
 
 
 class RemoteLogsAuditor(RemoteFilesAuditor):
@@ -45,16 +65,11 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
         for host in all_hosts:
             output = None
             if audit_results[host]:
+                output = []
                 try:
                     lines = audit_results[host].split('\n')
-                    output = []
                     for line in lines:
-                        if line == "":
-                            continue
-                        elif (line.startswith("WARNING:") or
-                              line.startswith("INFO:")):
-                            print 'host:', host
-                            print line
+                        if retention.remotefileauditor.display_summary_line(line, 'host', host):
                             continue
                         output.append(json.loads(
                             line, object_hook=JsonHelper.decode_dict))
@@ -67,22 +82,8 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                     continue
             if output is None:
                 continue
-            for item in output:
-                log_name = item['normalized']
-                if not item['normalized'] in logs:
-                    logs[log_name] = {}
-                    logs[log_name]['old'] = set()
-                    logs[log_name]['maybe_old'] = set()
-                    logs[log_name]['unrot'] = set()
-                    logs[log_name]['notifempty'] = set()
-                if item['old'] == 'T':
-                    logs[log_name]['old'].add(host)
-                elif item['old'] == '-':
-                    logs[log_name]['maybe_old'].add(host)
-                if item['rotated'].startswith('F'):
-                    logs[log_name]['unrot'].add(host)
-                if item['notifempty'] == 'T':
-                    logs[log_name]['notifempty'].add(host)
+            logs = summarize_log_issues(output, host, logs)
+
         sorted_lognames = sorted(logs.keys())
         for logname in sorted_lognames:
             old_count = len(logs[logname]['old'])
@@ -157,5 +158,3 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                                        path_justify, norm_justify)
         except:
             print "WARNING: failed to load json from host:", result
-
-

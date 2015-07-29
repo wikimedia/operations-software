@@ -370,37 +370,20 @@ class Ignores(object):
                         result[igntype][item] = list(set(result[igntype][item] + ign[igntype][item]))
         return result
 
-    def show_ignored(self, basedirs, ignored, headertext=None):
+    def show_ignored(self, basedirs, ignored, igntype, text):
+        sys.stderr.write("INFO: Ignoring " + text + " :\n")
+        for basedir in ignored[igntype]:
+            if basedir in basedirs or basedir == '*' or basedir == '/':
+                sys.stderr.write(
+                    "INFO: " + ','.join(ignored[igntype][basedir])
+                    + " in " + basedir + '\n')
+
+    def show_ignoreds(self, basedirs, ignoreds, headertext=None):
         if headertext:
             sys.stderr.write("INFO: " + headertext + '\n')
 
-        if 'dirs' in ignored:
-            sys.stderr.write("INFO: Ignoring the following directories:\n")
-            for basedir in ignored['dirs']:
-                if basedir in basedirs or basedir == '*' or basedir == '/':
-                    sys.stderr.write(
-                        "INFO: " + ','.join(ignored['dirs'][basedir])
-                        + " in " + basedir + '\n')
-
-        if 'files' in ignored:
-            sys.stderr.write("INFO: Ignoring the following files:\n")
-            for basedir in ignored['files']:
-                if basedir in basedirs or basedir == '*' or basedir == '/':
-                    sys.stderr.write(
-                        "INFO: " + ','.join(ignored['files'][basedir])
-                        + " in " + basedir + '\n')
-
-        if 'prefixes' in ignored:
-            sys.stderr.write(
-                "INFO: Ignoring files starting with the following:\n")
-            sys.stderr.write(
-                "INFO: " + ','.join(ignored['prefixes']) + '\n')
-
-        if 'extensions' in ignored:
-            sys.stderr.write(
-                "INFO: Ignoring files ending with the following:\n")
-            for basedir in ignored['extensions']:
-                if basedir in basedirs or basedir == '*':
-                    sys.stderr.write("INFO: " + ','.join(
-                        ignored['extensions'][basedir])
-                                     + " in " + basedir + '\n')
+        for ignored in ignoreds:
+            self.show_ignored(basedirs, ignored, 'dirs', 'the following directories')
+            self.show_ignored(basedirs, ignored, 'files', 'the following files')
+            self.show_ignored(basedirs, ignored, 'prefixes', 'files starting with the following')
+            self.show_ignored(basedirs, ignored, 'extensions', 'files ending with the following')

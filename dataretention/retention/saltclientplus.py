@@ -49,4 +49,3 @@ class LocalClientPlus(salt.client.LocalClient):
                 for host in resp:
                     hosts.append(host)
             return list(set(hosts))
-

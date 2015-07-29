@@ -102,6 +102,9 @@ def show_help(level):
 
 def show_pager(current_page, num_items, num_per_page):
     readline.set_completer(None)
+    num_pages = num_items / num_per_page
+    if num_items % num_per_page:
+        num_pages += 1
     while True:
         to_show = raw_input("P(prev)/N(next)/F(first)/"
                             "L(last)/<num>(go to page num)/Q(quit) [N]: ")
@@ -111,49 +114,33 @@ def show_pager(current_page, num_items, num_per_page):
 
         if to_show == 'P' or to_show == 'p':
             # prev page
-            if current_page > 1:
-                return current_page - 1
-            else:
-                return current_page
-
+            result = current_page - 1
+            break
         elif to_show == 'N' or to_show == 'n':
             # next page
-            num_pages = num_items / num_per_page
-            if num_items % num_per_page:
-                num_pages += 1
-            if current_page < num_pages:
-                return current_page + 1
-            else:
-                return current_page
-
+            result = current_page + 1
+            break
         elif to_show == 'F' or to_show == 'f':
             # first page
-            return 1
-
-        elif to_show == 'L' or 'to_show' == 'l':
+            result = 1
+            break
+        elif to_show == 'L' or to_show == 'l':
             # last page
-            num_pages = num_items / num_per_page
-            if num_items % num_per_page:
-                num_pages += 1
-            return num_pages
-
+            result = num_pages
+            break
         elif to_show.isdigit():
-            desired_page = int(to_show)
-            num_pages = num_items / num_per_page
-            if num_items % num_per_page:
-                num_pages += 1
-
-            if desired_page < 1:
-                return 1
-            elif desired_page > num_pages:
-                return num_pages
-            else:
-                return desired_page
-
+            result = int(to_show)
+            break
         elif to_show == 'Q' or to_show == 'q':
             return None
         else:
             print "unknown option"
+
+    if result < 1:
+        result = 1
+    elif result > num_pages:
+        result = num_pages
+    return result
 
 def check_rules_path(rules_path):
     # sanity check on the path, let's not read/write
@@ -161,4 +148,3 @@ def check_rules_path(rules_path):
 
     # fixme write this
     return True
-

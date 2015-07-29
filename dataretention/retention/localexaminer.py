@@ -4,6 +4,7 @@ import json
 
 from clouseau.retention.utils import JsonHelper
 from clouseau.retention.fileinfo import FileInfo, EntryInfo
+import clouseau.retention.fileinfo
 
 
 class LocalFileExaminer(object):
@@ -134,7 +135,7 @@ class DirContents(object):
         except:
             print json_text
             return json_text
-        output = FileInfo.format_pretty_output_from_dict(item, path_justify=50)
+        output = clouseau.retention.fileinfo.format_pretty_output_from_dict(item, path_justify=50)
         print output
         return output
 

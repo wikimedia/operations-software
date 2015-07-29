@@ -216,7 +216,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                     if not fields[1].isdigit():
                         continue
                     found = True
-                    if int(fields[1]) > clouseau.retention.config.conf['cutoff']/86400:
+                    if int(fields[1]) > clouseau.retention.config.conf['cutoff'] / 86400:
                         if output:
                             output = output + '\n'
                         output = output + ('WARNING: some mysql logs expired after %s days in %s'
@@ -267,6 +267,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                                    for fname in all_files]) + 2
 
         for fname in all_files_sorted:
+            fage = all_files[fname].get_age()
             if clouseau.retention.fileutils.contains(all_files[fname].filetype,
                                                      clouseau.retention.config.conf['ignored_types']):
                 continue
@@ -274,10 +275,10 @@ class LocalLogsAuditor(LocalFilesAuditor):
             if (self.oldest_only and
                     all_files[fname].normalized == last_log_normalized):
                 # still doing the same group of logs
-                if all_files[fname].age <= age:
+                if fage <= age:
                     continue
                 else:
-                    age = all_files[fname].age
+                    age = fage
                     last_log = fname
             else:
                 if last_log:
@@ -288,7 +289,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
                 # starting new set of logs (maybe first set)
                 last_log_normalized = all_files[fname].normalized
                 last_log = fname
-                age = all_files[fname].age
+                age = fage
 
         if last_log:
             result.append(all_files[last_log].format_output(

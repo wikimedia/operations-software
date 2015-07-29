@@ -97,7 +97,6 @@ class LocalFilesAuditor(object):
             self.dirs_to_check = [d.rstrip(os.path.sep) for d in check_list
                                   if d.startswith(os.sep)]
 
-
     def normalize(self, fname):
         '''
         subclasses may want to do something different, see

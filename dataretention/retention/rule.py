@@ -1,5 +1,4 @@
 import os
-import re
 import sqlite3
 from clouseau.retention.saltclientplus import LocalClientPlus
 from clouseau.retention.status import Status

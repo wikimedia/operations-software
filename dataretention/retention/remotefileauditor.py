@@ -1,5 +1,4 @@
 import os
-import time
 import json
 
 import clouseau.retention.magic
@@ -8,10 +7,23 @@ from clouseau.retention.saltclientplus import LocalClientPlus
 from clouseau.retention.rule import RuleStore
 import clouseau.retention.config
 from clouseau.retention.fileinfo import FileInfo
+import clouseau.retention.fileinfo
 from clouseau.retention.utils import JsonHelper
 from retention.runner import Runner
 import clouseau.retention.ruleutils
 
+def display_summary_line(line, prompt=None, message=None):
+    if line == "":
+        return True
+    elif (line.startswith("WARNING:") or
+          line.startswith("INFO:")):
+        if prompt is not None:
+            print prompt + ": ",
+        if message is not None:
+            print message
+        print line
+        return True
+    return False
 
 def get_dirs_toexamine(host_report):
     '''
@@ -46,11 +58,11 @@ def get_dirs_toexamine(host_report):
             print "WARNING: failed to load json for", json_entry
             continue
         if 'empty' in entry:
-            empty = FileInfo.string_to_bool(entry['empty'])
+            empty = clouseau.retention.fileinfo.string_to_bool(entry['empty'])
             if empty:
                 continue
         if 'old' in entry:
-            old = FileInfo.string_to_bool(entry['old'])
+            old = clouseau.retention.fileinfo.string_to_bool(entry['old'])
             if old is None or old:
                 if os.path.dirname(entry['path']) not in dirs_problem:
                     dirs_problem.add(os.path.dirname(entry['path']))
@@ -118,7 +130,6 @@ class RemoteFilesAuditor(object):
         self.verbose = verbose
 
         clouseau.retention.config.set_up_conf(confdir)
-        self.cutoff = clouseau.retention.config.conf['cutoff']
 
         client = LocalClientPlus()
         hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
@@ -132,7 +143,6 @@ class RemoteFilesAuditor(object):
         self.cdb.store_db_init(self.expanded_hosts)
         self.set_up_and_export_rule_store()
 
-        self.today = time.time()
         self.magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
         self.magic.load()
         self.summary = None
@@ -270,15 +280,10 @@ class RemoteFilesAuditor(object):
             print "host:", host
 
             if result[host]:
-                self.summary = {}
                 try:
                     lines = result[host].split('\n')
                     for line in lines:
-                        if line == '':
-                            continue
-                        if (line.startswith("WARNING:") or
-                                line.startswith("INFO:")):
-                            print line
+                        if display_summary_line(line):
                             continue
                         else:
                             try:
