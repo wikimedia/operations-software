@@ -64,7 +64,7 @@ class LocalFilesAuditor(object):
 
         self.ignored = self.ignores.merge([ignore_also_ignoreds, ignored_from_export], hostname)
 
-        self.MAX_FILES = maxfiles
+        self.max_files = maxfiles
         self.set_up_max_files()
 
     def set_up_max_files(self):
@@ -78,11 +78,11 @@ class LocalFilesAuditor(object):
         their filetype, etc; processing then goes much quicker
         '''
 
-        if self.MAX_FILES is None:
+        if self.max_files is None:
             if self.dirsizes:
-                self.MAX_FILES = 1000
+                self.max_files = 1000
             else:
-                self.MAX_FILES = 100
+                self.max_files = 100
 
     def set_up_to_check(self, to_check):
         '''
@@ -183,7 +183,7 @@ class LocalFilesAuditor(object):
             path = os.path.join(base, fname)
             if self.file_is_wanted(path, location):
                 count += 1
-                if count > self.MAX_FILES:
+                if count > self.max_files:
                     if self.dirsizes:
                         self.warn_dirsize(base)
                     else:
@@ -282,7 +282,7 @@ class LocalFilesAuditor(object):
                              base, p), wildcard_dirs, exact=False))]
             count = self.process_files_from_path(location, base, files,
                                                  count, temp_results)
-            if count > self.MAX_FILES:
+            if count > self.max_files:
                 return
 
         results.extend(temp_results)
@@ -311,7 +311,7 @@ class LocalFilesAuditor(object):
     def warn_dirsize(self, path):
         fields = path.split(os.path.sep)
         print ("WARNING: directory %s has more than %d files"
-               % (os.path.sep.join(fields[:self.depth + 1]), self.MAX_FILES))
+               % (os.path.sep.join(fields[:self.depth + 1]), self.max_files))
 
     def do_local_audit(self):
         open_files = clouseau.retention.fileutils.get_open_files()

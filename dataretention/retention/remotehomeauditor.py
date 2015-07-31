@@ -34,7 +34,7 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
                       self.depth - 1,
                       self.to_check,
                       ",".join(self.ignore_also) if self.ignore_also is not None else None,
-                      self.MAX_FILES]
+                      self.max_files]
         return audit_args
 
     def display_host_summary(self):

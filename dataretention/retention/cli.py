@@ -8,7 +8,6 @@ from clouseau.retention.status import Status
 from clouseau.retention.rule import RuleStore
 import retention.remotefileauditor
 from clouseau.retention.locallogaudit import LocalLogsAuditor
-from clouseau.retention.fileinfo import FileInfo
 import clouseau.retention.fileinfo
 from clouseau.retention.utils import JsonHelper
 import clouseau.retention.config

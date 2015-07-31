@@ -136,7 +136,7 @@ class RemoteFilesAuditor(object):
         self.expanded_hosts = client.cmd_expandminions(
             hosts, "test.ping", expr_form=expr_type)
 
-        self.MAX_FILES = maxfiles
+        self.max_files = maxfiles
         self.set_up_max_files(maxfiles)
 
         self.cdb = RuleStore(self.store_filepath)
@@ -156,7 +156,7 @@ class RemoteFilesAuditor(object):
                       self.depth - 1,
                       self.to_check,
                       self.ignore_also,
-                      self.MAX_FILES]
+                      self.max_files]
         return audit_args
 
     def set_up_runner(self):
@@ -185,11 +185,11 @@ class RemoteFilesAuditor(object):
 
         if maxfiles is None:
             if self.dirsizes:
-                self.MAX_FILES = 1000
+                self.max_files = 1000
             else:
-                self.MAX_FILES = 100
+                self.max_files = 100
         else:
-            self.MAX_FILES = maxfiles
+            self.max_files = maxfiles
 
     def set_up_and_export_rule_store(self):
         hosts = self.cdb.store_db_list_all_hosts()

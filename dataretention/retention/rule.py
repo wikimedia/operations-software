@@ -17,6 +17,14 @@ def to_unicode(param):
         newparam = param
     return newparam
 
+def get_tablename(host):
+    '''
+    each host's rules are stored in a separate table,
+    get and return the table name for the given host
+    the hostname should be the fqdn
+    '''
+    return RuleStore.TABLE + "_" + host.replace('-', '__').replace('.', '_')
+
 def from_unicode(param):
     '''
     convert a parameter from unicode back to bytes it is not already
@@ -30,6 +38,41 @@ def from_unicode(param):
         if newparam is None:
             newparam = param
     return newparam
+
+def check_params(params, fieldlist=None, show=True):
+    if fieldlist is None:
+        fieldlist = RuleStore.FIELDS.keys()
+    err = False
+    for field in fieldlist:
+        if field not in params:
+            if show:
+                print "WARNING: missing field %s" % field
+                print "WARNING: received:", params
+            err = True
+        else:
+            ftype = RuleStore.FIELDS[field]
+            # fixme what about path, no sanitizing there, this is bad.
+            # same for hostname, no checking...
+            if ftype == 'integer' and not params[field].isdigit():
+                if show:
+                    print ("WARNING: bad param %s, should be number: %s"
+                           % (field, params[field]))
+                err = True
+            elif ftype == 'text':
+                if field == 'type' and params[field] not in RuleStore.TYPES:
+                    if show:
+                        print "WARNING: bad type %s specified" % params[field]
+                        err = True
+                elif (field == 'status' and
+                      params[field] not in Status.STATUSES):
+                    if show:
+                        print ("WARNING: bad status %s specified" %
+                               params[field])
+                    err = True
+    if err:
+        return False
+    else:
+        return True
 
 
 class RuleStore(object):
@@ -59,6 +102,9 @@ class RuleStore(object):
     though they have U status (unknown)
     '''
 
+    TABLE = 'filestatus'
+    FIELDS = {'basedir': 'text', 'name': 'text',
+              'type': 'text', 'status': 'text'}
     TYPES_TO_TEXT = {'D': 'dir', 'F': 'file', 'L': 'link', 'U': 'unknown'}
     TYPES = TYPES_TO_TEXT.keys()
 
@@ -70,22 +116,10 @@ class RuleStore(object):
         on an as needed basis
         '''
 
-        self.TABLE = 'filestatus'
-        self.FIELDS = {'basedir': 'text', 'name': 'text',
-                       'type': 'text', 'status': 'text'}
         self.storename = storename
         self.store_db = None
         self.crs = None
         self.known_hosts = None
-
-    def get_tablename(self, host):
-        '''
-        each host's rules are stored in a separate table,
-        get and return the table name for the given host
-        the hostname should be the fqdn
-        '''
-
-        return self.TABLE + "_" + host.replace('-', '__').replace('.', '_')
 
     def get_salt_known_hosts(self):
         '''
@@ -124,7 +158,7 @@ class RuleStore(object):
                     '''CREATE TABLE %s
                     (`basedir` text, `name` text, `type` text,
                     `status` text, PRIMARY KEY (`basedir`, `name`))'''
-                    % self.get_tablename(host))
+                    % get_tablename(host))
                 self.store_db.commit()
 
     def no_table_for_host(self, host):
@@ -149,47 +183,12 @@ class RuleStore(object):
         else:
             return False
 
-    def check_params(self, params, fieldlist=None, show=True):
-        if fieldlist is None:
-            fieldlist = self.FIELDS.keys()
-        err = False
-        for field in fieldlist:
-            if field not in params:
-                if show:
-                    print "WARNING: missing field %s" % field
-                    print "WARNING: received:", params
-                err = True
-            else:
-                ftype = self.FIELDS[field]
-                # fixme what about path, no sanitizing there, this is bad.
-                # same for hostname, no checking...
-                if ftype == 'integer' and not params[field].isdigit():
-                    if show:
-                        print ("WARNING: bad param %s, should be number: %s"
-                               % (field, params[field]))
-                    err = True
-                elif ftype == 'text':
-                    if field == 'type' and params[field] not in RuleStore.TYPES:
-                        if show:
-                            print "WARNING: bad type %s specified" % params[field]
-                            err = True
-                    elif (field == 'status' and
-                          params[field] not in Status.STATUSES):
-                        if show:
-                            print ("WARNING: bad status %s specified" %
-                                   params[field])
-                        err = True
-        if err:
-            return False
-        else:
-            return True
-
     def store_db_check_host_table(self, host):
         '''
         check if a table for the specific host exists, returning True if so
         '''
         self.crs.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='%s'"
-                         % self.get_tablename(host))
+                         % get_tablename(host))
         self.store_db.commit()
         result = self.crs.fetchone()
         if result is None:
@@ -205,11 +204,11 @@ class RuleStore(object):
         with values for those fields
 
         '''
-        if not self.check_params(params):
+        if not check_params(params):
             print "WARNING: bad parameters specified"
 
         self.crs.execute("INSERT INTO %s VALUES (?, ?, ?, ?)"
-                         % self.get_tablename(host),
+                         % get_tablename(host),
                          (to_unicode(params['basedir']),
                           to_unicode(params['name']),
                           params['type'],
@@ -223,11 +222,11 @@ class RuleStore(object):
         of a file/dir, and the params passed in should be a dict
         with values for those fields
         '''
-        if not self.check_params(params):
+        if not check_params(params):
             print "WARNING: bad params passed", params
 
         self.crs.execute("INSERT OR REPLACE INTO  %s VALUES (?, ?, ?, ?)"
-                         % self.get_tablename(host),
+                         % get_tablename(host),
                          (to_unicode(params['basedir']),
                           to_unicode(params['name']),
                           params['type'],
@@ -262,12 +261,12 @@ class RuleStore(object):
             clause, params_to_sub = RuleStore.params_to_string(where_params)
             query = ("SELECT %s FROM %s WHERE %s"
                      % (",".join(from_params),
-                        self.get_tablename(host),
+                        get_tablename(host),
                         clause))
         else:
             query = ("SELECT %s FROM %s"
                      % (",".join(from_params),
-                        self.get_tablename(host)))
+                        get_tablename(host)))
             params_to_sub = None
 
         if params_to_sub:
@@ -301,12 +300,12 @@ class RuleStore(object):
         that status will be deleted
         '''
         # fixme quoting
-        if (not self.check_params(params, ['basedir', 'name'], show=False)
-                and not self.check_params(params, ['status'], show=False)):
+        if (not check_params(params, ['basedir', 'name'], show=False)
+                and not check_params(params, ['status'], show=False)):
             print "WARNING: bad params passed", params
         clause, params_to_sub = RuleStore.params_to_string(params)
         query = ("DELETE FROM %s WHERE %s"
-                 % (self.get_tablename(host),
+                 % (get_tablename(host),
                     clause))
         self.crs.execute(query, params_to_sub)
         self.store_db.commit()
@@ -341,7 +340,7 @@ class RuleStore(object):
 
         tables = [row[0] for row in crs.fetchall()]
         for table in tables:
-            if table.startswith(self.TABLE + "_"):
-                hosts.append(table[len(self.TABLE + "_"):].
+            if table.startswith(RuleStore.TABLE + "_"):
+                hosts.append(table[len(RuleStore.TABLE + "_"):].
                              replace('__', '-').replace('_', '.'))
         return hosts

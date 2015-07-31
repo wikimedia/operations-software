@@ -81,6 +81,15 @@ def dir_is_ignored(dirname, ignored):
         return True
     return False
 
+def check_file_ignoredtype(ignored, igntype, checker, basename, basedir):
+    if '*' in ignored[igntype]:
+        if checker(basename, ignored[igntype]['*']):
+            return True
+        if basedir in ignored[igntype]:
+            if checker(basename, ignored[igntype][basedir]):
+                return True
+    return False
+
 def file_is_ignored(fname, basedir, ignored):
     '''
     pass normalized name (abs path), basedir (location audited),
@@ -92,30 +101,25 @@ def file_is_ignored(fname, basedir, ignored):
     basename = os.path.basename(fname)
 
     if 'prefixes' in ignored:
-        if '*' in ignored['prefixes']:
-            if clouseau.retention.fileutils.startswith(basename, ignored['prefixes']['*']):
-                return True
-        if basedir in ignored['prefixes']:
-            if clouseau.retention.fileutils.startswith(
-                    basename, ignored['prefixes'][basedir]):
-                return True
+        if  check_file_ignoredtype(
+                ignored, 'prefixes', clouseau.retention.fileutils.startswith,
+                basename, basedir):
+            return True
 
     if 'extensions' in ignored:
-        if '*' in ignored['extensions']:
-            if clouseau.retention.fileutils.endswith(basename, ignored['extensions']['*']):
-                return True
-        if basedir in ignored['extensions']:
-            if clouseau.retention.fileutils.endswith(
-                    basename, ignored['extensions'][basedir]):
-                return True
+        if  check_file_ignoredtype(
+                ignored, 'extensions', clouseau.retention.fileutils.endswith,
+                basename, basedir):
+            return True
 
     if 'files' in ignored:
+        if  check_file_ignoredtype(
+                ignored, 'files', clouseau.retention.fileutils.endswith,
+                basename, basedir):
+            return True
+
         if basename in ignored['files']:
             return True
-        if '*' in ignored['files']:
-            if clouseau.retention.fileutils.endswith(basename, ignored['files']['*']):
-                return True
-
         if '/' in ignored['files']:
             if fname in ignored['files']['/']:
                 return True
@@ -123,9 +127,6 @@ def file_is_ignored(fname, basedir, ignored):
                     fname, [w for w in ignored['files']['/'] if '*' in w]):
                 return True
 
-        if basedir in ignored['files']:
-            if clouseau.retention.fileutils.endswith(basename, ignored['files'][basedir]):
-                return True
     return False
 
 def get_home_dirs(confdir, locations):

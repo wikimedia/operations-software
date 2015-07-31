@@ -53,7 +53,7 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                       self.depth - 1,
                       self.to_check,
                       self.ignore_also,
-                      self.MAX_FILES]
+                      self.max_files]
         return audit_args
 
     def display_summary(self, audit_results):

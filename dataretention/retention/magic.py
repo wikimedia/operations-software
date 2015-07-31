@@ -4,7 +4,7 @@
 
 import ctypes
 
-from ctypes import *
+from ctypes import c_int, c_char_p, c_void_p, c_size_t, Structure, POINTER
 from ctypes.util import find_library
 
 
