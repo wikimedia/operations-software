@@ -324,9 +324,10 @@ class LocalFilesAuditor(object):
         today = time.time()
         for (fname, fstat) in files:
             all_files[fname] = FileInfo(fname, magic, fstat)
-            all_files[fname].load_file_info(today,
-                                            clouseau.retention.config.conf['cutoff'],
-                                            open_files)
+            all_files[fname].load_file_info()
+            all_files[fname].load_extra_file_info(today,
+                                                  clouseau.retention.config.conf['cutoff'],
+                                                  open_files)
 
         all_files_sorted = sorted(all_files, key=lambda f: all_files[f].path)
         result = []

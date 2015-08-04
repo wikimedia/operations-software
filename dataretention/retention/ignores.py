@@ -101,19 +101,19 @@ def file_is_ignored(fname, basedir, ignored):
     basename = os.path.basename(fname)
 
     if 'prefixes' in ignored:
-        if  check_file_ignoredtype(
+        if check_file_ignoredtype(
                 ignored, 'prefixes', clouseau.retention.fileutils.startswith,
                 basename, basedir):
             return True
 
     if 'extensions' in ignored:
-        if  check_file_ignoredtype(
+        if check_file_ignoredtype(
                 ignored, 'extensions', clouseau.retention.fileutils.endswith,
                 basename, basedir):
             return True
 
     if 'files' in ignored:
-        if  check_file_ignoredtype(
+        if check_file_ignoredtype(
                 ignored, 'files', clouseau.retention.fileutils.endswith,
                 basename, basedir):
             return True

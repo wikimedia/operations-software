@@ -466,13 +466,15 @@ class FileInfo(EntryInfo):
                 is_old = -1
         return is_old
 
-    def load_file_info(self, from_time, cutoff, open_files=None):
-        if open_files is None:
-            open_files = []
+    def load_file_info(self):
         self.get_stats()
         self.get_is_empty()
-        self.get_is_old(from_time, cutoff)
         self.get_filetype()
+
+    def load_extra_file_info(self, from_time, cutoff, open_files=None):
+        if open_files is None:
+            open_files = []
+        self.get_is_old(from_time, cutoff)
         self.get_is_open(open_files)
 
     def produce_dict(self):
@@ -552,16 +554,7 @@ class LogInfo(FileInfo):
         self.rotated = None
         self.notifempty = None
 
-    def load_file_info(self, from_time, cutoff, open_files=None, rotated=None):
-        if rotated is None:
-            rotated = []
-        if open_files is None:
-            open_files = []
-        super(LogInfo, self).load_file_info(from_time, cutoff, open_files)
-        self.get_rotated(rotated)
-
     def get_rotated(self, rotated_files):
-
         if self.normalized_path in rotated_files:
             self.rotated = 'T(%s/%s)' % (
                 rotated_files[self.normalized_path][0],

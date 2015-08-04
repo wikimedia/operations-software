@@ -290,7 +290,9 @@ class LocalLogsAuditor(LocalFilesAuditor):
         today = time.time()
         for (fname, stat) in files:
             all_files[fname] = LogInfo(fname, magic, stat)
-            all_files[fname].load_file_info(today, cutoff, open_files, rotated)
+            all_files[fname].load_file_info()
+            all_files[fname].load_extra_file_info(today, cutoff, open_files)
+            all_files[fname].get_rotated(rotated)
         return all_files
 
     def do_local_audit(self):
