@@ -88,6 +88,16 @@ my @fullviews = (
     'wbc_entity_usage', 'wbs_propertypairs',
 );
 
+my @logging_whitelist = (
+    'gblrights', 'globalauth', 'close', 'lock', 'gblblock', 'managetags', 'gather', 'campus',
+    'institution', 'instructor', 'online', 'merge', 'massmessage', 'course', 'stable', 'import',
+    'abusefilter', 'student', 'eparticle', 'rights', 'pagetriage-deletion', 'protect',
+    'pagetriage-curation', 'thanks', 'renameuser', 'review', 'block', 'upload', 'move',
+    'delete', 'patrol', 'newusers'
+);
+
+my $safelog = "log_type IN ('" . join("', '", @logging_whitelist) . "')";
+
 my %customviews = (
 
     'abuse_filter' => {
@@ -206,7 +216,8 @@ my %customviews = (
                     if(log_deleted,null,log_params) as log_params, log_deleted,
                     if(log_deleted&4,null,log_user_text) as log_user_text,
                     if(log_deleted&1,null,log_page) as log_page',
-        'where' => 'log_type<>\'suppress\'' },
+        'where' => $safelog },
+
 
     'logging_logindex' => {
         'source' => 'logging',
@@ -215,7 +226,7 @@ my %customviews = (
                     if(log_deleted&2,null,log_comment) as log_comment,
                     if(log_deleted,null,log_params) as log_params, log_deleted,
                     if(log_deleted&4,null,log_user_text) as log_user_text, log_page',
-        'where' => '(log_deleted&1)=0 and log_type<>\'suppress\'' },
+        'where' => "(log_deleted&1)=0 and $safelog" },
 
     'logging_userindex' => {
         'source' => 'logging',
@@ -225,7 +236,7 @@ my %customviews = (
                     if(log_deleted&2,null,log_comment) as log_comment,
                     if(log_deleted,null,log_params) as log_params, log_deleted,
                     log_user_text as log_user_text, if(log_deleted&1,null,log_page) as log_page',
-        'where' => '(log_deleted&4)=0 and log_type<>\'suppress\'' },
+        'where' => "(log_deleted&4)=0 and $safelog" },
 
     'mark_as_helpful' => {
         'source' => 'mark_as_helpful',
