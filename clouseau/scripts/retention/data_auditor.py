@@ -251,7 +251,8 @@ def main():
                                       timeout, maxfiles, store_filepath, verbose)
         report = logsaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, ignore_also, hosts_expr)
+            cmdline = CommandLine(confdir, store_filepath, timeout,
+                                  audit_type, ignore_also, hosts_expr)
             cmdline.run(report)
 
     elif audit_type == 'root':
@@ -263,7 +264,8 @@ def main():
                                         timeout, maxfiles, store_filepath, verbose)
         report = filesaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, ignore_also, hosts_expr)
+            cmdline = CommandLine(confdir, store_filepath, timeout,
+                                  audit_type, ignore_also, hosts_expr)
             cmdline.run(report)
 
     elif audit_type == 'homes':
@@ -275,7 +277,8 @@ def main():
                                         timeout, maxfiles, store_filepath, verbose)
         report = homesaudit.audit_hosts()
         if interactive:
-            cmdline = CommandLine(confdir, store_filepath, timeout, audit_type, ignore_also, hosts_expr)
+            cmdline = CommandLine(confdir, store_filepath, timeout,
+                                  audit_type, ignore_also, hosts_expr)
             cmdline.run(report)
 
 if __name__ == '__main__':

@@ -269,7 +269,8 @@ def set_up_global_ignored(confdir):
         if os.path.exists(configfile):
             try:
                 contents = open(configfile).read()
-                ign = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+                ign = salt.utils.yamlloader.load(
+                    contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
                 if 'ignored_files' in ign:
                     ignored['files'] = ign['ignored_files']
                 if 'ignored_dirs' in ign:
@@ -305,7 +306,8 @@ def get_perhost_ignored_from_file(confdir):
     if os.path.exists(configfile):
         try:
             contents = open(configfile).read()
-            yamlcontents = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+            yamlcontents = salt.utils.yamlloader.load(
+                contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
             perhost_ignores = yamlcontents['perhostcf']
         except:
             perhost_ignores = None
@@ -348,9 +350,12 @@ class Ignores(object):
     '''
 
     def __init__(self, confdir):
-        self.global_ignored = clouseau.retention.utils.ignores.set_up_global_ignored(confdir)
-        perhost_ignored = clouseau.retention.utils.ignores.get_perhost_ignored_from_file(confdir)
-        self.perhost_ignored = clouseau.retention.utils.ignores.convert_perhost_ignored(perhost_ignored)
+        self.global_ignored = clouseau.retention.utils.ignores.set_up_global_ignored(
+            confdir)
+        perhost_ignored = clouseau.retention.utils.ignores.get_perhost_ignored_from_file(
+            confdir)
+        self.perhost_ignored = clouseau.retention.utils.ignores.convert_perhost_ignored(
+            perhost_ignored)
 
     def merge(self, ignoreds, hostname=None):
         '''
@@ -368,7 +373,8 @@ class Ignores(object):
                     if item not in result[igntype]:
                         result[igntype][item] = list(ign[igntype][item])
                     else:
-                        result[igntype][item] = list(set(result[igntype][item] + ign[igntype][item]))
+                        result[igntype][item] = list(set(result[igntype][item] +
+                                                         ign[igntype][item]))
         return result
 
     def show_ignored(self, basedirs, ignored, igntype, text):
@@ -386,5 +392,7 @@ class Ignores(object):
         for ignored in ignoreds:
             self.show_ignored(basedirs, ignored, 'dirs', 'the following directories')
             self.show_ignored(basedirs, ignored, 'files', 'the following files')
-            self.show_ignored(basedirs, ignored, 'prefixes', 'files starting with the following')
-            self.show_ignored(basedirs, ignored, 'extensions', 'files ending with the following')
+            self.show_ignored(basedirs, ignored, 'prefixes',
+                              'files starting with the following')
+            self.show_ignored(basedirs, ignored, 'extensions',
+                              'files ending with the following')

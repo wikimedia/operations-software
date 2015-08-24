@@ -275,7 +275,7 @@ class LocalFilesAuditor(object):
             if self.dirs_to_check is not None:
                 paths[:] = [p for p in paths
                             if clouseau.retention.utils.fileutils.dirtree_check(os.path.join(base, p),
-                                                                          self.dirs_to_check)]
+                                                                                self.dirs_to_check)]
             paths[:] = [p for p in paths if
                         (not clouseau.retention.utils.fileutils.startswithpath(os.path.join(
                             base, p), expanded_dirs) and
@@ -313,7 +313,7 @@ class LocalFilesAuditor(object):
     def warn_dirsize(self, path):
         fields = path.split(os.path.sep)
         self.warnings.append("WARNING: directory %s has more than %d files"
-               % (os.path.sep.join(fields[:self.depth + 1]), self.max_files))
+                             % (os.path.sep.join(fields[:self.depth + 1]), self.max_files))
 
     def do_local_audit(self):
         open_files = clouseau.retention.utils.fileutils.get_open_files()

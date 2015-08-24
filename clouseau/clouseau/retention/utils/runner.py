@@ -65,11 +65,15 @@ class Runner(object):
                                 "data_retention.d")
             contents = clouseau.retention.utils.ignores.prep_good_rules_tosend(path, hosts)
             if contents:
-                new_result = client.cmd_full_return(hosts, 'cp.recv', [contents, os.path.join(self.confdir, 'fromstore')],
-                                                    expr_form='list')
+                new_result = client.cmd_full_return(
+                    hosts, 'cp.recv',
+                    [contents, os.path.join(self.confdir, 'fromstore')],
+                    expr_form='list')
             # step two: run the appropriate salt audit module function
-            new_result = client.cmd(hosts, "retentionaudit.%s" % self.get_auditfunction_name(), self.auditmodule_args,
-                                    expr_form='list', timeout=self.timeout)
+            new_result = client.cmd(
+                hosts, "retentionaudit.%s" % self.get_auditfunction_name(),
+                self.auditmodule_args,
+                expr_form='list', timeout=self.timeout)
 
             if new_result is not None:
                 result.update(new_result)

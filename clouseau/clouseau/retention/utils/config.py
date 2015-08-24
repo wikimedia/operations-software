@@ -14,7 +14,8 @@ def set_up_conf(confdir):
         conf = {}
         try:
             contents = open(configfile).read()
-            yamlcontents = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+            yamlcontents = salt.utils.yamlloader.load(
+                contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
             # fixme do I need this or will a direct assign get it?
             for key in yamlcontents:
                 conf[key] = yamlcontents[key]

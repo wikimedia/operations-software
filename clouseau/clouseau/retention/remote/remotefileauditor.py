@@ -133,7 +133,8 @@ class RemoteFilesAuditor(object):
         self.max_files = maxfiles
         self.set_up_max_files(maxfiles)
 
-        self.magic = clouseau.retention.utils.magic.magic_open(clouseau.retention.utils.magic.MAGIC_NONE)
+        self.magic = clouseau.retention.utils.magic.magic_open(
+            clouseau.retention.utils.magic.MAGIC_NONE)
         self.magic.load()
         self.summary = None
         self.display_from_dict = FileInfo.display_from_dict
@@ -209,7 +210,7 @@ class RemoteFilesAuditor(object):
             clouseau.retention.utils.ruleutils.export_rules(self.cdb, all_destpath, host)
             good_destpath = os.path.join(destdir, host + "_store_good.yaml")
             clouseau.retention.utils.ruleutils.export_rules(self.cdb, good_destpath, host,
-                                                      Status.text_to_status('good'))
+                                                            Status.text_to_status('good'))
 
     def normalize(self, fname):
         '''
@@ -365,7 +366,8 @@ class RemoteFilesAuditor(object):
         hostlist = report.keys()
         for host in hostlist:
             try:
-                problem_rules = clouseau.retention.utils.ruleutils.get_rules(self.cdb, host, Status.text_to_status('problem'))
+                problem_rules = clouseau.retention.utils.ruleutils.get_rules(
+                    self.cdb, host, Status.text_to_status('problem'))
             except:
                 print 'WARNING: problem retrieving problem rules for host', host
                 problem_rules = None
@@ -378,9 +380,10 @@ class RemoteFilesAuditor(object):
             if dirs_problem is not None:
                 dirs_problem = list(set(dirs_problem))
                 for dirname in dirs_problem:
-                    clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, dirname,
-                                                             clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
-                                                             Status.text_to_status('problem'), host)
+                    clouseau.retention.utils.ruleutils.do_add_rule(
+                        self.cdb, dirname,
+                        clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
+                        Status.text_to_status('problem'), host)
 
             if dirs_skipped is not None:
                 dirs_skipped = list(set(dirs_skipped))
@@ -388,6 +391,7 @@ class RemoteFilesAuditor(object):
                     if dirname in dirs_problem or dirname in existing_problems:
                         # problem report overrides 'too many to audit'
                         continue
-                    clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, dirname,
-                                                             clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
-                                                             Status.text_to_status('unreviewed'), host)
+                    clouseau.retention.utils.ruleutils.do_add_rule(
+                        self.cdb, dirname,
+                        clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
+                        Status.text_to_status('unreviewed'), host)

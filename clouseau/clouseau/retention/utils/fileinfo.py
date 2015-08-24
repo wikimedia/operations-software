@@ -582,7 +582,8 @@ class LogInfo(FileInfo):
         item = self.produce_dict()
 
         if prettyprint:
-            output = ("file:%s %s owner:%s  creat:%s mod:%s open:%s empty:%s rot:%s old:%s notifempty:%s, type:%s"
+            output = ("file:%s %s owner:%s  creat:%s mod:%s "
+                      "open:%s empty:%s rot:%s old:%s notifempty:%s, type:%s"
                       % (item['path'].ljust(path_justify),
                          item['normalized'].ljust(norm_justify),
                          item['owner'].ljust(5), item['ctime'],
@@ -597,7 +598,8 @@ class LogInfo(FileInfo):
 
     @staticmethod
     def display_from_dict(item, show_content=False, path_justify=None, norm_justify=None):
-        print ("file:%s %s  owner:%s creat:%s mod:%s open:%s empty:%s rot:%s old:%s notifempty:%s type:%s"
+        print ("file:%s %s  owner:%s creat:%s mod:%s open:%s "
+               "empty:%s rot:%s old:%s notifempty:%s type:%s"
                % (item['path'].ljust(path_justify),
                   item['normalized'].ljust(norm_justify),
                   item['owner'].ljust(5), item['ctime'],

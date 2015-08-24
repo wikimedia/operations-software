@@ -71,7 +71,8 @@ def import_rules(cdb, rules_path, host):
         sys.stderr.write("Couldn't read rules from %s.\n" % rules_path)
         return
 
-    yaml_contents = salt.utils.yamlloader.load(contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
+    yaml_contents = salt.utils.yamlloader.load(
+        contents, Loader=salt.utils.yamlloader.SaltYamlSafeLoader)
     for status in Status.status_cf:
         if status in yaml_contents:
             import_rule_list(

@@ -135,7 +135,8 @@ class DirContents(object):
         except:
             print json_text
             return json_text
-        output = clouseau.retention.utils.fileinfo.format_pretty_output_from_dict(item, path_justify=50)
+        output = clouseau.retention.utils.fileinfo.format_pretty_output_from_dict(
+            item, path_justify=50)
         print output
         return output
 

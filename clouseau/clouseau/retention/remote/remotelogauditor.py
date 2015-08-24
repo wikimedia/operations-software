@@ -70,7 +70,8 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                 try:
                     lines = audit_results[host].split('\n')
                     for line in lines:
-                        if clouseau.retention.remote.remotefileauditor.display_summary_line(line, 'host', host):
+                        if clouseau.retention.remote.remotefileauditor.display_summary_line(
+                                line, 'host', host):
                             continue
                         output.append(json.loads(
                             line, object_hook=JsonHelper.decode_dict))

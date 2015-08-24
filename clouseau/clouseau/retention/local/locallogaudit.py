@@ -328,8 +328,9 @@ class LocalLogsAuditor(LocalFilesAuditor):
 
         for fname in all_files_sorted:
             fage = all_files[fname].get_age()
-            if clouseau.retention.utils.fileutils.contains(all_files[fname].filetype,
-                                                     clouseau.retention.utils.config.conf['ignored_types']):
+            if clouseau.retention.utils.fileutils.contains(
+                    all_files[fname].filetype,
+                    clouseau.retention.utils.config.conf['ignored_types']):
                 continue
 
             if (self.oldest_only and
