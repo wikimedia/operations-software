@@ -1,8 +1,8 @@
 import os
 import sys
 
-from clouseau.retention.saltclientplus import LocalClientPlus
-import clouseau.retention.config
+from clouseau.retention.remote.saltclientplus import LocalClientPlus
+import clouseau.retention.utils.config
 
 class Runner(object):
     '''
@@ -25,7 +25,7 @@ class Runner(object):
         self.to_check = to_check
         self.timeout = timeout
         self.verbose = verbose
-        clouseau.retention.config.set_up_conf(self.confdir)
+        clouseau.retention.utils.config.set_up_conf(self.confdir)
 
     def get_auditfunction_name(self):
         if self.audit_type == 'root':
@@ -51,9 +51,9 @@ class Runner(object):
         # fixme instead of this we call the right salt module based on the
         # audit type and with the self.auditmodule_args which is a list
 
-        hostbatches = [self.expanded_hosts[i: i + clouseau.retention.config.conf['batchsize']]
+        hostbatches = [self.expanded_hosts[i: i + clouseau.retention.utils.config.conf['batchsize']]
                        for i in range(0, len(self.expanded_hosts),
-                                      clouseau.retention.config.conf['batchsize'])]
+                                      clouseau.retention.utils.config.conf['batchsize'])]
 
         result = {}
         for hosts in hostbatches:
@@ -63,7 +63,7 @@ class Runner(object):
 
             path = os.path.join(os.path.dirname(self.store_filepath),
                                 "data_retention.d")
-            contents = clouseau.retention.ignores.prep_good_rules_tosend(path, hosts)
+            contents = clouseau.retention.utils.ignores.prep_good_rules_tosend(path, hosts)
             if contents:
                 new_result = client.cmd_full_return(hosts, 'cp.recv', [contents, os.path.join(self.confdir, 'fromstore')],
                                                     expr_form='list')

@@ -1,7 +1,7 @@
 import os
 import sqlite3
-from clouseau.retention.saltclientplus import LocalClientPlus
-from clouseau.retention.status import Status
+from clouseau.retention.remote.saltclientplus import LocalClientPlus
+from clouseau.retention.utils.status import Status
 
 def to_unicode(param):
     '''

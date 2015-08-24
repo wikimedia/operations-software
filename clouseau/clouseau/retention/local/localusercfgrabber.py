@@ -1,5 +1,5 @@
 import json
-import clouseau.retention.ignores
+import clouseau.retention.utils.ignores
 
 class LocalUserCfGrabber(object):
     '''
@@ -22,7 +22,7 @@ class LocalUserCfGrabber(object):
 
         local_ignores = {}
 
-        local_ignores = clouseau.retention.ignores.get_local_ignores(self.confdir, self.locations)
+        local_ignores = clouseau.retention.utils.ignores.get_local_ignores(self.confdir, self.locations)
         output = json.dumps(local_ignores)
         if not quiet:
             print output

@@ -4,11 +4,11 @@ import socket
 import salt.client
 import salt.utils.yamlloader
 
-from clouseau.retention.status import Status
-import clouseau.retention.utils
-import clouseau.retention.fileutils
-import clouseau.retention.ruleutils
-import clouseau.retention.config
+from clouseau.retention.utils.status import Status
+import clouseau.retention.utils.utils
+import clouseau.retention.utils.fileutils
+import clouseau.retention.utils.ruleutils
+import clouseau.retention.utils.config
 
 def prep_good_rules_tosend(dirname, hosts):
     '''
@@ -77,7 +77,7 @@ def dir_is_ignored(dirname, ignored):
         os.path.dirname(dirname), ignored)
     if dirname in expanded_dirs:
         return True
-    if clouseau.retention.fileutils.wildcard_matches(dirname, wildcard_dirs):
+    if clouseau.retention.utils.fileutils.wildcard_matches(dirname, wildcard_dirs):
         return True
     return False
 
@@ -102,19 +102,19 @@ def file_is_ignored(fname, basedir, ignored):
 
     if 'prefixes' in ignored:
         if check_file_ignoredtype(
-                ignored, 'prefixes', clouseau.retention.fileutils.startswith,
+                ignored, 'prefixes', clouseau.retention.utils.fileutils.startswith,
                 basename, basedir):
             return True
 
     if 'extensions' in ignored:
         if check_file_ignoredtype(
-                ignored, 'extensions', clouseau.retention.fileutils.endswith,
+                ignored, 'extensions', clouseau.retention.utils.fileutils.endswith,
                 basename, basedir):
             return True
 
     if 'files' in ignored:
         if check_file_ignoredtype(
-                ignored, 'files', clouseau.retention.fileutils.endswith,
+                ignored, 'files', clouseau.retention.utils.fileutils.endswith,
                 basename, basedir):
             return True
 
@@ -123,7 +123,7 @@ def file_is_ignored(fname, basedir, ignored):
         if '/' in ignored['files']:
             if fname in ignored['files']['/']:
                 return True
-            if clouseau.retention.fileutils.wildcard_matches(
+            if clouseau.retention.utils.fileutils.wildcard_matches(
                     fname, [w for w in ignored['files']['/'] if '*' in w]):
                 return True
 
@@ -135,10 +135,10 @@ def get_home_dirs(confdir, locations):
     specified in the Config class (see 'home_locations'), by reading
     these root location dirs and grabbing all subdirectory names from them
     '''
-    clouseau.retention.config.set_up_conf(confdir)
+    clouseau.retention.utils.config.set_up_conf(confdir)
     home_dirs = []
 
-    for location in clouseau.retention.config.conf[locations]:
+    for location in clouseau.retention.utils.config.conf[locations]:
         if not os.path.isdir(location):
             continue
         home_dirs.extend([os.path.join(location, d)
@@ -190,7 +190,7 @@ def process_local_ignores(local_ignores):
     read from
     '''
 
-    result = clouseau.retention.ignores.init_ignored()
+    result = clouseau.retention.utils.ignores.init_ignored()
     for basedir in local_ignores:
         for path in local_ignores[basedir]:
             if not path.startswith('/'):
@@ -205,11 +205,11 @@ def process_local_ignores(local_ignores):
 def get_ignored_from_rulestore(cdb, hosts):
     ignored = {}
     for host in hosts:
-        rules_from_store = clouseau.retention.ruleutils.get_rules(
+        rules_from_store = clouseau.retention.utils.ruleutils.get_rules(
             cdb, host, Status.text_to_status('good'))
 
         if rules_from_store is not None:
-            ignored[host] = clouseau.retention.ignores.init_ignored()
+            ignored[host] = clouseau.retention.utils.ignores.init_ignored()
 
             for rule in rules_from_store:
                 if rule['status'] != 'good':
@@ -230,7 +230,7 @@ def convert_rules_to_ignored(rules):
     turn them into an ignores object, and
     return it
     '''
-    ignored = clouseau.retention.ignores.init_ignored()
+    ignored = clouseau.retention.utils.ignores.init_ignored()
 
     if 'good' not in rules:
         return
@@ -252,9 +252,9 @@ def get_ignored_from_exported_rules(confdir):
     else:
         exported_rules = None
     if exported_rules is not None:
-        ignored = clouseau.retention.ignores.convert_rules_to_ignored(exported_rules)
+        ignored = clouseau.retention.utils.ignores.convert_rules_to_ignored(exported_rules)
     else:
-        ignored = clouseau.retention.ignores.init_ignored()
+        ignored = clouseau.retention.utils.ignores.init_ignored()
     return ignored
 
 def set_up_global_ignored(confdir):
@@ -262,7 +262,7 @@ def set_up_global_ignored(confdir):
     collect up initial list of files/dirs to skip during audit
     '''
 
-    ignored = clouseau.retention.ignores.init_ignored()
+    ignored = clouseau.retention.utils.ignores.init_ignored()
 
     if confdir is not None:
         configfile = os.path.join(confdir, 'global_ignored.yaml')
@@ -283,7 +283,7 @@ def set_up_global_ignored(confdir):
     return ignored
 
 def convert_ignore_also_to_ignores(ignore_also):
-    ignored = clouseau.retention.ignores.init_ignored()
+    ignored = clouseau.retention.utils.ignores.init_ignored()
     if ignore_also is not None:
         # silently skip paths that are not absolute
         for path in ignore_also:
@@ -348,16 +348,16 @@ class Ignores(object):
     '''
 
     def __init__(self, confdir):
-        self.global_ignored = clouseau.retention.ignores.set_up_global_ignored(confdir)
-        perhost_ignored = clouseau.retention.ignores.get_perhost_ignored_from_file(confdir)
-        self.perhost_ignored = clouseau.retention.ignores.convert_perhost_ignored(perhost_ignored)
+        self.global_ignored = clouseau.retention.utils.ignores.set_up_global_ignored(confdir)
+        perhost_ignored = clouseau.retention.utils.ignores.get_perhost_ignored_from_file(confdir)
+        self.perhost_ignored = clouseau.retention.utils.ignores.convert_perhost_ignored(perhost_ignored)
 
     def merge(self, ignoreds, hostname=None):
         '''
         grab the global, the perhost for the specified host, the passed in ignoreds
         and combine them all up into one giant ignored, return that
         '''
-        result = clouseau.retention.ignores.init_ignored()
+        result = clouseau.retention.utils.ignores.init_ignored()
         todo = ignoreds + [self.global_ignored]
         if hostname is not None and hostname in self.perhost_ignored:
             todo.append(self.perhost_ignored[hostname])

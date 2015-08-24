@@ -2,7 +2,7 @@ import json
 import salt.client
 import salt.utils.yamlloader
 
-from clouseau.retention.utils import JsonHelper
+from clouseau.retention.utils.utils import JsonHelper
 
 
 class RemoteUserCfGrabber(object):

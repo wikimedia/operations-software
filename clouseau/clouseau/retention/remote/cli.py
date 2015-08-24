@@ -4,20 +4,20 @@ import json
 import readline
 import traceback
 
-from clouseau.retention.status import Status
-from clouseau.retention.rule import RuleStore
-import retention.remotefileauditor
-from clouseau.retention.locallogaudit import LocalLogsAuditor
-import clouseau.retention.fileinfo
-from clouseau.retention.utils import JsonHelper
-import clouseau.retention.config
-from retention.remoteexaminer import RemoteDirExaminer, RemoteFileExaminer
-import clouseau.retention.ruleutils
-import clouseau.retention.cliutils
-from clouseau.retention.ignores import Ignores
-from retention.remoteusercfgrabber import RemoteUserCfGrabber
-import clouseau.retention.ignores
-from clouseau.retention.completion import Completion
+from clouseau.retention.utils.status import Status
+from clouseau.retention.utils.rule import RuleStore
+import clouseau.retention.remote.remotefileauditor
+from clouseau.retention.local.locallogaudit import LocalLogsAuditor
+import clouseau.retention.utils.fileinfo
+from clouseau.retention.utils.utils import JsonHelper
+import clouseau.retention.utils.config
+from clouseau.retention.remote.remoteexaminer import RemoteDirExaminer, RemoteFileExaminer
+import clouseau.retention.utils.ruleutils
+import clouseau.retention.utils.cliutils
+from clouseau.retention.utils.ignores import Ignores
+from clouseau.retention.remote.remoteusercfgrabber import RemoteUserCfGrabber
+import clouseau.retention.utils.ignores
+from clouseau.retention.utils.completion import Completion
 
 
 class CurrentEnv(object):
@@ -149,7 +149,7 @@ class CurrentDirContents(object):
                     # fixme why do we have an empty item I wonder
                     continue
                 try:
-                    result = clouseau.retention.fileinfo.format_pretty_output_from_dict(
+                    result = clouseau.retention.utils.fileinfo.format_pretty_output_from_dict(
                         self.entries_dict[item], path_justify=justify)
                 except:
                     print "item is", item
@@ -163,7 +163,7 @@ class CurrentDirContents(object):
             if num_pages == 1:
                 break
 
-            page = clouseau.retention.cliutils.show_pager(page, num_items, num_per_page)
+            page = clouseau.retention.utils.cliutils.show_pager(page, num_items, num_per_page)
             if page is None:
                 return
             elif page == num_pages:
@@ -199,7 +199,7 @@ class CommandLine(object):
 
         self.basedir = None
 
-        clouseau.retention.cliutils.init_readline_hist()
+        clouseau.retention.utils.cliutils.init_readline_hist()
         # this is arbitrary, can tweak it later
         # how many levels down we keep in our list of
         # top-level dirs from which the user can start
@@ -211,7 +211,7 @@ class CommandLine(object):
         # fixme completely wrong
         self.batchno = 1
 
-        clouseau.retention.config.set_up_conf(self.confdir)
+        clouseau.retention.utils.config.set_up_conf(self.confdir)
 
         # duplicate all the ignores except for the uh
         # ones specific to a host. those will be done
@@ -222,7 +222,7 @@ class CommandLine(object):
         self.local_ignored = None
         self.ignores = Ignores(self.confdir)
         self.ignored_from_rulestore = {}
-        self.ignored_also = clouseau.retention.ignores.convert_ignore_also_to_ignores(ignore_also)
+        self.ignored_also = clouseau.retention.utils.ignores.convert_ignore_also_to_ignores(ignore_also)
 
         self.dircontents = CurrentDirContents(self.timeout)
         self.cenv = CurrentEnv()
@@ -230,7 +230,7 @@ class CommandLine(object):
 
     def do_one_host(self, host, report):
         self.set_host(host)
-        results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [host])
+        results = clouseau.retention.utils.ignores.get_ignored_from_rulestore(self.cdb, [host])
         if host in results:
             self.ignored_from_rulestore[host] = results[host]
 
@@ -238,14 +238,14 @@ class CommandLine(object):
             dirs_problem = None
             dirs_skipped = None
         else:
-            dirs_problem, dirs_skipped = retention.remotefileauditor.get_dirs_toexamine(report[host])
+            dirs_problem, dirs_skipped = clouseau.retention.remote.remotefileauditor.get_dirs_toexamine(report[host])
         self.cenv.set_reported_dirs(dirs_problem, dirs_skipped)
         if self.cenv.problem_dirs is None and self.cenv.skipped_dirs is None:
             print "No report available from this host"
         elif len(self.cenv.problem_dirs) == 0 and len(self.cenv.skipped_dirs) == 0:
             print "No problem dirs and no skipped dirs on this host"
         else:
-            dirs_problem_to_depth = [clouseau.retention.cliutils.get_path_prefix(
+            dirs_problem_to_depth = [clouseau.retention.utils.cliutils.get_path_prefix(
                 d, self.max_depth_top_level) for d in dirs_problem]
             dirs_skipped = [s for s in dirs_skipped
                             if s not in dirs_problem_to_depth]
@@ -259,7 +259,7 @@ class CommandLine(object):
                 elif dir_todo not in relevant_dirs:
                     print "Please choose one of the following directories:"
                     # fixme another arbitrary setting
-                    clouseau.retention.cliutils.print_columns(relevant_dirs, 5)
+                    clouseau.retention.utils.cliutils.print_columns(relevant_dirs, 5)
                 else:
                     self.basedir = None
                     self.cenv.cwdir = None
@@ -281,9 +281,9 @@ class CommandLine(object):
             else:
                 usercfgrab = RemoteUserCfGrabber(host_todo, self.timeout, self.audit_type, self.confdir)
                 to_convert = usercfgrab.run(True)
-                self.local_ignored = clouseau.retention.ignores.process_local_ignores(to_convert)
+                self.local_ignored = clouseau.retention.utils.ignores.process_local_ignores(to_convert)
 
-                results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [host_todo])
+                results = clouseau.retention.utils.ignores.get_ignored_from_rulestore(self.cdb, [host_todo])
                 if host_todo in results:
                     self.ignored_from_rulestore[host_todo] = results[host_todo]
 
@@ -360,7 +360,7 @@ class CommandLine(object):
         return contents
 
     def get_basedir_from_path(self, path):
-        for location in clouseau.retention.config.conf[self.locations]:
+        for location in clouseau.retention.utils.config.conf[self.locations]:
             if path == location or path.startswith(location + os.path.sep):
                 return location
         # fixme is this really the right fallback? check it
@@ -381,19 +381,28 @@ class CommandLine(object):
             path = LocalLogsAuditor.normalize(path)
 
         if entrytype == 'file':
-            checker = clouseau.retention.ignores.file_is_ignored
+            checker = clouseau.retention.utils.ignores.file_is_ignored
+            dirs = False
         else:
-            checker = clouseau.retention.ignores.dir_is_ignored
-
+            checker = clouseau.retention.utils.ignores.dir_is_ignored
+            dirs = True
             for ignored in [self.ignores.global_ignored,
                             self.ignored_also]:
-                if checker(path, basedir, ignored):
+                if dirs:
+                    result = checker(path, ignored)
+                else:
+                    result = checker(path, basedir, ignored)
+                if result:
                     return False
 
             for ignored in [self.ignores.perhost_ignored,
                             self.ignored_from_rulestore]:
                 if self.cenv.host in ignored:
-                    if checker(path, basedir, ignored[self.cenv.host]):
+                    if dirs:
+                        result = checker(path, ignored[self.cenv.host])
+                    else:
+                        result = checker(path, basedir, ignored[self.cenv.host])
+                    if result:
                         return False
 
         return True
@@ -438,7 +447,7 @@ class CommandLine(object):
                 print 'skipping %s, not in current dir listing' % entry
                 print self.dircontents.entries_dict
                 continue
-            filetype = clouseau.retention.ruleutils.entrytype_to_text(
+            filetype = clouseau.retention.utils.ruleutils.entrytype_to_text(
                 self.dircontents.entries_dict[entry]['type'])
             if filetype == 'link':
                 print 'No need to mark', file_expr, 'links are always skipped'
@@ -447,7 +456,7 @@ class CommandLine(object):
                 print 'Not a dir or regular file, no need to mark, skipping'
                 continue
             status = Status.text_to_status('good')
-            clouseau.retention.ruleutils.do_add_rule(self.cdb, file_expr, filetype, status, self.cenv.host)
+            clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, file_expr, filetype, status, self.cenv.host)
         return True
 
     def do_add_rule(self):
@@ -483,13 +492,13 @@ class CommandLine(object):
             path = os.path.join(self.cenv.cwdir, path)
         if path[-1] == os.path.sep:
             path = path[:-1]
-            filetype = clouseau.retention.ruleutils.text_to_entrytype('dir')
+            filetype = clouseau.retention.utils.ruleutils.text_to_entrytype('dir')
         else:
-            filetype = clouseau.retention.ruleutils.text_to_entrytype('file')
+            filetype = clouseau.retention.utils.ruleutils.text_to_entrytype('file')
 
-        clouseau.retention.ruleutils.do_add_rule(self.cdb, path, filetype, status, self.cenv.host)
+        clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, path, filetype, status, self.cenv.host)
         # update the ignores list since we have a new rule
-        results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
+        results = clouseau.retention.utils.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
         if self.cenv.host in results:
             self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
         return True
@@ -517,10 +526,10 @@ class CommandLine(object):
             if prefix == "":
                 prefix = "/"
             if status == 'a' or status == 'A':
-                clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, prefix=prefix)
+                clouseau.retention.utils.ruleutils.show_rules(self.cdb, self.cenv.host, prefix=prefix)
                 return True
             elif status[0].upper() in Status.STATUSES:
-                clouseau.retention.ruleutils.show_rules(self.cdb, self.cenv.host, status[0].upper(),
+                clouseau.retention.utils.ruleutils.show_rules(self.cdb, self.cenv.host, status[0].upper(),
                                                         prefix=prefix)
                 return True
 
@@ -536,9 +545,9 @@ class CommandLine(object):
             path = os.path.join(self.cenv.cwdir, path)
         if path[-1] == os.path.sep:
             path = path[:-1]
-        clouseau.retention.ruleutils.do_remove_rule(self.cdb, path, self.cenv.host)
+        clouseau.retention.utils.ruleutils.do_remove_rule(self.cdb, path, self.cenv.host)
         # update the ignores list since we removed a rule
-        results = clouseau.retention.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
+        results = clouseau.retention.utils.ignores.get_ignored_from_rulestore(self.cdb, [self.cenv.host])
         if self.cenv.host in results:
             self.ignored_from_rulestore[self.cenv.host] = results[self.cenv.host]
         return True
@@ -549,7 +558,7 @@ class CommandLine(object):
         rules_path = rules_path.strip()
         if rules_path == '':
             return rules_path
-        if not clouseau.retention.cliutils.check_rules_path(rules_path):
+        if not clouseau.retention.utils.cliutils.check_rules_path(rules_path):
             print "bad rules file path specified, aborting"
             return ''
         return rules_path
@@ -561,11 +570,11 @@ class CommandLine(object):
             result = self.do_show_rules_with_status()
         elif command == 'D' or command == 'd':
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
-            clouseau.retention.ruleutils.get_rules_for_path(self.cdb, self.cenv.cwdir, self.cenv.host)
+            clouseau.retention.utils.ruleutils.get_rules_for_path(self.cdb, self.cenv.cwdir, self.cenv.host)
             result = True
         elif command == 'C' or command == 'c':
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
-            clouseau.retention.ruleutils.get_rules_for_entries(self.cdb, self.cenv.cwdir,
+            clouseau.retention.utils.ruleutils.get_rules_for_entries(self.cdb, self.cenv.cwdir,
                                                                self.dircontents.entries_dict,
                                                                self.cenv.host)
             result = True
@@ -574,18 +583,18 @@ class CommandLine(object):
         elif command == 'I' or command == 'i':
             rules_path = self.get_rules_path()
             if rules_path != '':
-                clouseau.retention.ruleutils.import_rules(self.cdb, rules_path, self.cenv.host)
+                clouseau.retention.utils.ruleutils.import_rules(self.cdb, rules_path, self.cenv.host)
             result = True
         elif command == 'E' or command == 'e':
             rules_path = self.get_rules_path()
             if rules_path != '':
-                clouseau.retention.ruleutils.export_rules(self.cdb, rules_path, self.cenv.host)
+                clouseau.retention.utils.ruleutils.export_rules(self.cdb, rules_path, self.cenv.host)
             result = True
         elif command == 'Q' or command == 'q':
             print "quitting this level"
             result = None
         else:
-            clouseau.retention.cliutils.show_help('rule')
+            clouseau.retention.utils.cliutils.show_help('rule')
             result = True
         return result
 
@@ -689,7 +698,7 @@ class CommandLine(object):
             print "quitting this level"
             result = None
         else:
-            clouseau.retention.cliutils.show_help('examine')
+            clouseau.retention.utils.cliutils.show_help('examine')
             result = True
         return result
 
@@ -722,7 +731,7 @@ class CommandLine(object):
         elif command == 'Q' or command == 'q':
             result = None
         else:
-            clouseau.retention.cliutils.show_help('top')
+            clouseau.retention.utils.cliutils.show_help('top')
         return result
 
     def do_command(self, command, level, dir_path):
@@ -741,14 +750,14 @@ class CommandLine(object):
             if command in Status.STATUSES:
                 # this option is invoked on a directory so
                 # type is dir every time
-                clouseau.retention.ruleutils.do_add_rule(self.cdb, dir_path,
-                                                         clouseau.retention.ruleutils.text_to_entrytype('dir'),
+                clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, dir_path,
+                                                         clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
                                                          command, self.cenv.host)
                 return None
             elif command == 'Q' or command == 'q':
                 return None
             else:
-                clouseau.retention.cliutils.show_help(level)
+                clouseau.retention.utils.cliutils.show_help(level)
                 result = True
         elif level == 'examine':
             result = self.do_examine(command)

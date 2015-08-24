@@ -1,0 +1,6 @@
+perhostcf:
+  ignored_dirs:
+    localhost.localdomain:
+      - /home/me/something/subir
+      - /home/you/somethingelse
+      - /a/build

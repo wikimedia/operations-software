@@ -1,16 +1,17 @@
 import os
 import json
 
-import clouseau.retention.magic
-from clouseau.retention.status import Status
-from clouseau.retention.saltclientplus import LocalClientPlus
-from clouseau.retention.rule import RuleStore
-import clouseau.retention.config
-from clouseau.retention.fileinfo import FileInfo
-import clouseau.retention.fileinfo
-from clouseau.retention.utils import JsonHelper
-from retention.runner import Runner
-import clouseau.retention.ruleutils
+import clouseau.retention.utils.magic
+from clouseau.retention.utils.status import Status
+from clouseau.retention.remote.saltclientplus import LocalClientPlus
+from clouseau.retention.utils.rule import RuleStore
+import clouseau.retention.utils.config
+from clouseau.retention.utils.fileinfo import FileInfo
+import clouseau.retention.utils.fileinfo
+from clouseau.retention.utils.utils import JsonHelper
+from clouseau.retention.utils.runner import Runner
+import clouseau.retention.utils.ruleutils
+from clouseau.retention.local.localfileaudit import LocalFilesAuditor
 
 def display_summary_line(line, prompt=None, message=None):
     if line == "":
@@ -58,11 +59,11 @@ def get_dirs_toexamine(host_report):
             print "WARNING: failed to load json for", json_entry
             continue
         if 'empty' in entry:
-            empty = clouseau.retention.fileinfo.string_to_bool(entry['empty'])
+            empty = clouseau.retention.utils.fileinfo.string_to_bool(entry['empty'])
             if empty:
                 continue
         if 'old' in entry:
-            old = clouseau.retention.fileinfo.string_to_bool(entry['old'])
+            old = clouseau.retention.utils.fileinfo.string_to_bool(entry['old'])
             if old is None or old:
                 if os.path.dirname(entry['path']) not in dirs_problem:
                     dirs_problem.add(os.path.dirname(entry['path']))
@@ -129,25 +130,31 @@ class RemoteFilesAuditor(object):
         self.store_filepath = store_filepath
         self.verbose = verbose
 
-        clouseau.retention.config.set_up_conf(confdir)
-
-        client = LocalClientPlus()
-        hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
-        self.expanded_hosts = client.cmd_expandminions(
-            hosts, "test.ping", expr_form=expr_type)
-
         self.max_files = maxfiles
         self.set_up_max_files(maxfiles)
 
-        self.cdb = RuleStore(self.store_filepath)
-        self.cdb.store_db_init(self.expanded_hosts)
-        self.set_up_and_export_rule_store()
-
-        self.magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
+        self.magic = clouseau.retention.utils.magic.magic_open(clouseau.retention.utils.magic.MAGIC_NONE)
         self.magic.load()
         self.summary = None
         self.display_from_dict = FileInfo.display_from_dict
         self.runner = None
+
+        if self.hosts_expr == "127.0.0.1" or self.hosts_expr == "localhost":
+            # run locally
+            self.localaudit = True
+            self.expanded_hosts = []
+            self.cdb = None
+        else:
+            self.localaudit = False
+            clouseau.retention.utils.config.set_up_conf(confdir)
+            client = LocalClientPlus()
+            hosts, expr_type = Runner.get_hosts_expr_type(self.hosts_expr)
+            self.expanded_hosts = client.cmd_expandminions(
+                hosts, "test.ping", expr_form=expr_type)
+
+            self.cdb = RuleStore(self.store_filepath)
+            self.cdb.store_db_init(self.expanded_hosts)
+            self.set_up_and_export_rule_store()
 
     def get_audit_args(self):
         audit_args = [self.confdir,
@@ -199,9 +206,9 @@ class RemoteFilesAuditor(object):
             os.makedirs(destdir, 0755)
         for host in hosts:
             all_destpath = os.path.join(destdir, host + "_store.yaml")
-            clouseau.retention.ruleutils.export_rules(self.cdb, all_destpath, host)
+            clouseau.retention.utils.ruleutils.export_rules(self.cdb, all_destpath, host)
             good_destpath = os.path.join(destdir, host + "_store_good.yaml")
-            clouseau.retention.ruleutils.export_rules(self.cdb, good_destpath, host,
+            clouseau.retention.utils.ruleutils.export_rules(self.cdb, good_destpath, host,
                                                       Status.text_to_status('good'))
 
     def normalize(self, fname):
@@ -321,7 +328,21 @@ class RemoteFilesAuditor(object):
         except:
             print "WARNING: failed to load json from host"
 
+    def get_local_auditor(self):
+        return LocalFilesAuditor(self.audit_type, self.confdir,
+                                 self.show_sample_content, self.dirsizes,
+                                 self.depth, self.to_check, self.ignore_also,
+                                 self.max_files)
+
     def audit_hosts(self):
+        # do local audit instead
+        if self.localaudit:
+            localauditor = self.get_local_auditor()
+            result = localauditor.do_local_audit()
+            self.display_remote_host(result)
+            return
+
+        # proceed to regular remote audit
         self.set_up_runner()
         result = self.runner.run_remotely()
         if result is None:
@@ -344,7 +365,7 @@ class RemoteFilesAuditor(object):
         hostlist = report.keys()
         for host in hostlist:
             try:
-                problem_rules = clouseau.retention.ruleutils.get_rules(self.cdb, host, Status.text_to_status('problem'))
+                problem_rules = clouseau.retention.utils.ruleutils.get_rules(self.cdb, host, Status.text_to_status('problem'))
             except:
                 print 'WARNING: problem retrieving problem rules for host', host
                 problem_rules = None
@@ -357,8 +378,8 @@ class RemoteFilesAuditor(object):
             if dirs_problem is not None:
                 dirs_problem = list(set(dirs_problem))
                 for dirname in dirs_problem:
-                    clouseau.retention.ruleutils.do_add_rule(self.cdb, dirname,
-                                                             clouseau.retention.ruleutils.text_to_entrytype('dir'),
+                    clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, dirname,
+                                                             clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
                                                              Status.text_to_status('problem'), host)
 
             if dirs_skipped is not None:
@@ -367,6 +388,6 @@ class RemoteFilesAuditor(object):
                     if dirname in dirs_problem or dirname in existing_problems:
                         # problem report overrides 'too many to audit'
                         continue
-                    clouseau.retention.ruleutils.do_add_rule(self.cdb, dirname,
-                                                             clouseau.retention.ruleutils.text_to_entrytype('dir'),
+                    clouseau.retention.utils.ruleutils.do_add_rule(self.cdb, dirname,
+                                                             clouseau.retention.utils.ruleutils.text_to_entrytype('dir'),
                                                              Status.text_to_status('unreviewed'), host)

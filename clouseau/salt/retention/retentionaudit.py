@@ -1,10 +1,10 @@
 # salt module
 
-from clouseau.retention.localfileaudit import LocalFilesAuditor
-from clouseau.retention.locallogaudit import LocalLogsAuditor
-from clouseau.retention.localhomeaudit import LocalHomesAuditor
-from clouseau.retention.localexaminer import LocalFileExaminer, LocalDirExaminer
-from clouseau.retention.localusercfgrabber import LocalUserCfGrabber
+from clouseau.retention.local.localfileaudit import LocalFilesAuditor
+from clouseau.retention.local.locallogaudit import LocalLogsAuditor
+from clouseau.retention.local.localhomeaudit import LocalHomesAuditor
+from clouseau.retention.local.localexaminer import LocalFileExaminer, LocalDirExaminer
+from clouseau.retention.local.localusercfgrabber import LocalUserCfGrabber
 
 def fileaudit_host(confdir, show_content, dirsizes, depth,
                    to_check, ignore_also,

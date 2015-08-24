@@ -1,5 +1,5 @@
-from clouseau.retention.localfileaudit import LocalFilesAuditor
-import clouseau.retention.ignores
+from clouseau.retention.local.localfileaudit import LocalFilesAuditor
+import clouseau.retention.utils.ignores
 
 class LocalHomesAuditor(LocalFilesAuditor):
     '''
@@ -23,6 +23,6 @@ class LocalHomesAuditor(LocalFilesAuditor):
                                                 maxfiles)
 
         # pick up user-created local configs of files/dirs in their homedirs to ignore
-        local_ignore_info = clouseau.retention.ignores.get_local_ignores(self.confdir, self.locations)
-        local_ignores = clouseau.retention.ignores.process_local_ignores(local_ignore_info)
+        local_ignore_info = clouseau.retention.utils.ignores.get_local_ignores(self.confdir, self.locations)
+        local_ignores = clouseau.retention.utils.ignores.process_local_ignores(local_ignore_info)
         self.ignored = self.ignores.merge([self.ignored, local_ignores])

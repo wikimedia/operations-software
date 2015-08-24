@@ -1,7 +1,7 @@
 import os
 import readline
 
-import clouseau.retention.cliutils
+import clouseau.retention.utils.cliutils
 
 class Completion(object):
     '''
@@ -47,11 +47,11 @@ class Completion(object):
                 return host_todo
             else:
                 print "Please choose one of the following hosts:"
-                clouseau.retention.cliutils.print_columns(self.cenv.hostlist, 4)
+                clouseau.retention.utils.cliutils.print_columns(self.cenv.hostlist, 4)
 
     def dir_completion(self, text, state):
         if self.cenv.cwdir is None:
-            dirs_problem_to_depth = [clouseau.retention.cliutils.get_path_prefix(
+            dirs_problem_to_depth = [clouseau.retention.utils.cliutils.get_path_prefix(
                 d, self.max_depth_top_level) for d in self.cenv.problem_dirs]
             dirs_skipped = [s for s in self.cenv.skipped_dirs
                             if s not in dirs_problem_to_depth]

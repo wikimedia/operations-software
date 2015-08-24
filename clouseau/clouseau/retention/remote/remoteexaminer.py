@@ -1,8 +1,8 @@
 import json
 
 from salt.client import LocalClient
-from clouseau.retention.utils import JsonHelper
-from clouseau.retention.fileinfo import EntryInfo
+from clouseau.retention.utils.utils import JsonHelper
+from clouseau.retention.utils.fileinfo import EntryInfo
 
 class RemoteFileExaminer(object):
     '''

@@ -1,9 +1,9 @@
 import os
 import sys
 import traceback
-from clouseau.retention.status import Status
-import clouseau.retention.rule
-from clouseau.retention.rule import RuleStore
+from clouseau.retention.utils.status import Status
+import clouseau.retention.utils.rule
+from clouseau.retention.utils.rule import RuleStore
 import salt.utils.yamlloader
 from salt.utils.yamldumper import SafeOrderedDumper
 import yaml
@@ -154,8 +154,8 @@ def text_to_entrytype(fullname):
 def row_to_rule(row):
     # ('/home/ariel/wmf/security', '/home/ariel/wmf/security/openjdk6', 'D', 'G')
     (basedir, name, entrytype, status) = row
-    basedir = clouseau.retention.rule.from_unicode(basedir)
-    name = clouseau.retention.rule.from_unicode(name)
+    basedir = clouseau.retention.utils.rule.from_unicode(basedir)
+    name = clouseau.retention.utils.rule.from_unicode(name)
     rule = {'path': os.path.join(basedir, name),
             'type': entrytype_to_text(entrytype),
             'status': Status.status_to_text(status)}

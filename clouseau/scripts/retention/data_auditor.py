@@ -1,12 +1,12 @@
 import sys
 import getopt
 
-from retention.cli import CommandLine
-from retention.remotefileauditor import RemoteFilesAuditor
-from retention.remotelogauditor import RemoteLogsAuditor
-from retention.remotehomeauditor import RemoteHomesAuditor
-from retention.remoteexaminer import RemoteFileExaminer, RemoteDirExaminer
-from retention.remoteusercfgrabber import RemoteUserCfGrabber
+from clouseau.retention.remote.cli import CommandLine
+from clouseau.retention.remote.remotefileauditor import RemoteFilesAuditor
+from clouseau.retention.remote.remotelogauditor import RemoteLogsAuditor
+from clouseau.retention.remote.remotehomeauditor import RemoteHomesAuditor
+from clouseau.retention.remote.remoteexaminer import RemoteFileExaminer, RemoteDirExaminer
+from clouseau.retention.remote.remoteusercfgrabber import RemoteUserCfGrabber
 
 def usage(message=None):
     if message:
@@ -38,7 +38,7 @@ Options:
     audit       (-a) -- specify the type of audit to be done, one of 'root',
                         'logs' or 'homes'; this may not be specified with
                         the 'info' option.
-    confdir     (-d) -- path to dir where ignores.yaml is located
+    confdir     (-c) -- path to dir where ignores.yaml is located
                         default: /srv/audits/retention/configs
     target      (-t) -- for local runs, this must be 'localhost' or '127.0.1'
                         for remote hosts, this should be a host expression
@@ -152,7 +152,7 @@ def main():
             hosts_expr = val
         elif opt in ["-a", "--audit"]:
             audit_type = val
-        elif opt in ["-c", "--confir"]:
+        elif opt in ["-c", "--confdir"]:
             confdir = val
         elif opt in ["-d", "--depth"]:
             if not val.isdigit():

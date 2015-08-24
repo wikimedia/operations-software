@@ -1,6 +1,7 @@
 import os
 
-from retention.remotefileauditor import RemoteFilesAuditor
+from clouseau.retention.remote.remotefileauditor import RemoteFilesAuditor
+from clouseau.retention.local.localhomeaudit import LocalHomesAuditor
 
 
 class RemoteHomesAuditor(RemoteFilesAuditor):
@@ -95,3 +96,9 @@ class RemoteHomesAuditor(RemoteFilesAuditor):
 
         if item['owner'] != self.homes_owners[home_dir]:
             summary[dirname][group]['odd_owner'] += 1
+
+    def get_local_auditor(self):
+        return LocalHomesAuditor(self.audit_type, self.confdir,
+                                 self.show_sample_content, self.dirsizes,
+                                 self.depth, self.to_check, self.ignore_also,
+                                 self.max_files)

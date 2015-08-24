@@ -3,12 +3,12 @@ import glob
 import socket
 import time
 
-import clouseau.retention.utils
-import clouseau.retention.config
-from clouseau.retention.fileinfo import LogInfo, LogUtils
-from clouseau.retention.localfileaudit import LocalFilesAuditor
-import clouseau.retention.fileutils
-import clouseau.retention.magic
+import clouseau.retention.utils.utils
+import clouseau.retention.utils.config
+from clouseau.retention.utils.fileinfo import LogInfo, LogUtils
+from clouseau.retention.local.localfileaudit import LocalFilesAuditor
+import clouseau.retention.utils.fileutils
+import clouseau.retention.utils.magic
 
 def get_rotated_freq(rotated):
     '''
@@ -49,12 +49,12 @@ def get_logs(line):
     # wildcard allowed in path
     if '*' in line:
         return (glob.glob(
-            os.path.join(clouseau.retention.config.conf['rotate_basedir'], line)))
+            os.path.join(clouseau.retention.utils.config.conf['rotate_basedir'], line)))
     else:
         return [line]
 
 def get_logrotate_defaults():
-    contents = open(clouseau.retention.config.conf['rotate_mainconf']).read()
+    contents = open(clouseau.retention.utils.config.conf['rotate_mainconf']).read()
     lines = contents.split('\n')
     skip = False
     freq = '-'
@@ -90,9 +90,9 @@ def find_rotated_logs(confdir):
     default_freq, default_keep = get_logrotate_defaults()
     parser = LogRotParser(confdir, default_freq, default_keep)
     rotated_logs.update(parser.parse(
-        open(clouseau.retention.config.conf['rotate_mainconf']).read()))
-    for fname in os.listdir(clouseau.retention.config.conf['rotate_basedir']):
-        pathname = os.path.join(clouseau.retention.config.conf['rotate_basedir'], fname)
+        open(clouseau.retention.utils.config.conf['rotate_mainconf']).read()))
+    for fname in os.listdir(clouseau.retention.utils.config.conf['rotate_basedir']):
+        pathname = os.path.join(clouseau.retention.utils.config.conf['rotate_basedir'], fname)
         if os.path.isfile(pathname):
             rotated_logs.update(parser.parse(open(pathname).read()))
     return rotated_logs
@@ -130,7 +130,7 @@ def get_expire_days(line, filename):
         fields = [field.strip() for field in fields]
         if fields[0] == 'expire_logs_days' and fields[1].isdigit():
             found = True
-            if int(fields[1]) > clouseau.retention.config.conf['cutoff'] / 86400:
+            if int(fields[1]) > clouseau.retention.utils.config.conf['cutoff'] / 86400:
                 text = ('WARNING: some mysql logs expired after %s days in %s'
                         % (fields[1], filename))
     return found, text
@@ -170,7 +170,7 @@ class LogRotParser(object):
 
     def parse(self, contents):
         # state indicates the string we look for next
-        clouseau.retention.config.set_up_conf(self.confdir)
+        clouseau.retention.utils.config.set_up_conf(self.confdir)
         lines = contents.split('\n')
         state = '{'
         self.clear()
@@ -214,15 +214,15 @@ class MySqlCfParser(object):
         '''
         check how long mysql logs are kept around
         '''
-        clouseau.retention.config.set_up_conf(self.confdir)
-        mysql_ignores = clouseau.retention.ignores.init_ignored()
+        clouseau.retention.utils.config.set_up_conf(self.confdir)
+        mysql_ignores = clouseau.retention.utils.ignores.init_ignored()
 
         # note that I also see my.cnf.s3 and we don't check those (yet)
         hostname = socket.getfqdn()
         if '.' in hostname:
             hostname = hostname.split('.')[0]
         output = ''
-        for filename in clouseau.retention.config.conf['mysqlconf']:
+        for filename in clouseau.retention.utils.config.conf['mysqlconf']:
             expires = False
             datadir = None
             try:
@@ -275,7 +275,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         self.oldest_only = oldest
         self.show_system_logs = show_system_logs
         if self.show_system_logs:
-            for path in clouseau.retention.config.conf['systemlogs']:
+            for path in clouseau.retention.utils.config.conf['systemlogs']:
                 self.ignored['files'].pop(path, None)
 
         self.display_from_dict = LogInfo.display_from_dict
@@ -285,7 +285,7 @@ class LocalLogsAuditor(LocalFilesAuditor):
         all_files = {}
         files = self.find_all_files()
 
-        magic = clouseau.retention.magic.magic_open(clouseau.retention.magic.MAGIC_NONE)
+        magic = clouseau.retention.utils.magic.magic_open(clouseau.retention.utils.magic.MAGIC_NONE)
         magic.load()
         today = time.time()
         for (fname, stat) in files:
@@ -308,10 +308,10 @@ class LocalLogsAuditor(LocalFilesAuditor):
         if mysql_issues:
             result.append(mysql_issues)
 
-        open_files = clouseau.retention.fileutils.get_open_files()
+        open_files = clouseau.retention.utils.fileutils.get_open_files()
         rotated = find_rotated_logs(self.confdir)
 
-        all_files = self.get_all_files(clouseau.retention.config.conf['cutoff'],
+        all_files = self.get_all_files(clouseau.retention.utils.config.conf['cutoff'],
                                        open_files, rotated)
 
         all_files_sorted = sorted(all_files,
@@ -328,8 +328,8 @@ class LocalLogsAuditor(LocalFilesAuditor):
 
         for fname in all_files_sorted:
             fage = all_files[fname].get_age()
-            if clouseau.retention.fileutils.contains(all_files[fname].filetype,
-                                                     clouseau.retention.config.conf['ignored_types']):
+            if clouseau.retention.utils.fileutils.contains(all_files[fname].filetype,
+                                                     clouseau.retention.utils.config.conf['ignored_types']):
                 continue
 
             if (self.oldest_only and

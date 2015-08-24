@@ -1,9 +1,10 @@
 import json
 
-from clouseau.retention.fileinfo import LogInfo
-from clouseau.retention.utils import JsonHelper
-from retention.remotefileauditor import RemoteFilesAuditor
-import retention.remotefileauditor
+from clouseau.retention.utils.fileinfo import LogInfo
+from clouseau.retention.utils.utils import JsonHelper
+from clouseau.retention.remote.remotefileauditor import RemoteFilesAuditor
+import clouseau.retention.remote.remotefileauditor
+from clouseau.retention.local.locallogaudit import LocalLogsAuditor
 
 def summarize_log_issues(log_items, host, logs):
     for item in log_items:
@@ -69,7 +70,7 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                 try:
                     lines = audit_results[host].split('\n')
                     for line in lines:
-                        if retention.remotefileauditor.display_summary_line(line, 'host', host):
+                        if clouseau.retention.remote.remotefileauditor.display_summary_line(line, 'host', host):
                             continue
                         output.append(json.loads(
                             line, object_hook=JsonHelper.decode_dict))
@@ -78,7 +79,7 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                         print output
                     else:
                         print audit_results[host]
-                    print "WARNING: failed to load json from host", host
+                    print "WARNING: failed to load json from host", host, "for line", line
                     continue
             if output is None:
                 continue
@@ -157,4 +158,13 @@ class RemoteLogsAuditor(RemoteFilesAuditor):
                 self.display_from_dict(finfo, self.show_sample_content,
                                        path_justify, norm_justify)
         except:
-            print "WARNING: failed to load json from host:", result
+            print "WARNING: len(line is)", len(line)
+            print "WARNING: failed to load json from host for line", line, "..."
+            print lines
+
+    def get_local_auditor(self):
+        return LocalLogsAuditor(self.audit_type, self.confdir, self.oldest_only,
+                                self.show_system_logs,
+                                self.show_sample_content, self.dirsizes,
+                                self.depth, self.to_check, self.ignore_also,
+                                self.max_files)

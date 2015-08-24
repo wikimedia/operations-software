@@ -6,11 +6,11 @@ import os
 import sys
 import getopt
 
-from clouseau.retention.saltclientplus import LocalClientPlus
-import clouseau.retention.utils
-import clouseau.retention.ruleutils
-from clouseau.retention.rule import RuleStore
-from clouseau.retention.status import Status
+from clouseau.retention.remote.saltclientplus import LocalClientPlus
+import clouseau.retention.utils.utils
+import clouseau.retention.utils.ruleutils
+from clouseau.retention.utils.rule import RuleStore
+from clouseau.retention.utils.status import Status
 
 def usage(message=None):
     if message:
@@ -28,6 +28,9 @@ def usage(message=None):
                 P -- entry is a problem
                 R -- entry needs to be rechecked
                 U -- entry is unreivewed (perhaps skipped due to size)
+
+             hosts is a salt-recognizable host expression which may
+             include wildcards
 
              path is the full path of a file or a directory;
              if path is a directory, it must end in '/'
@@ -64,7 +67,7 @@ def do_action(cdb, action, hosts, status, path, dryrun):
         if path and path[-1] == os.path.sep:
             path = path[:-1]
         for host in hosts:
-            clouseau.retention.ruleutils.show_rules(cdb, host, status, prefix=path)
+            clouseau.retention.utils.ruleutils.show_rules(cdb, host, status, prefix=path)
 
     elif action == 'delete':
         if path and path[-1] == os.path.sep:
@@ -75,13 +78,13 @@ def do_action(cdb, action, hosts, status, path, dryrun):
                 print "would remove rule for %s in %s" % (path, hosts)
             else:
                 for host in hosts:
-                    clouseau.retention.ruleutils.do_remove_rule(cdb, path, host)
+                    clouseau.retention.utils.ruleutils.do_remove_rule(cdb, path, host)
         elif status:
             if dryrun:
                 print "would remove rules for status %s in %s" % (status, hosts)
             else:
                 for host in hosts:
-                    clouseau.retention.ruleutils.do_remove_rules(cdb, status, host)
+                    clouseau.retention.utils.ruleutils.do_remove_rules(cdb, status, host)
 
     elif action == 'add':
         if status is None:
@@ -90,17 +93,17 @@ def do_action(cdb, action, hosts, status, path, dryrun):
             usage('path must be specified to add a rule')
 
         if path[-1] == os.path.sep:
-            rtype = clouseau.retention.ruleutils.text_to_entrytype('dir')
+            rtype = clouseau.retention.utils.ruleutils.text_to_entrytype('dir')
             path = path[:-1]
         else:
-            rtype = clouseau.retention.ruleutils.text_to_entrytype('file')
+            rtype = clouseau.retention.utils.ruleutils.text_to_entrytype('file')
 
         if dryrun:
             print "would add rule for %s in %s with status %s of type %s" % (
                 hosts, path, status, rtype)
 
         for host in hosts:
-            clouseau.retention.ruleutils.do_add_rule(cdb, path, rtype, status, host)
+            clouseau.retention.utils.ruleutils.do_add_rule(cdb, path, rtype, status, host)
 
 def main():
     hosts = None
@@ -148,10 +151,10 @@ def main():
     cdb = RuleStore(store_filepath)
     cdb.store_db_init(None)
 
-    hosts, htype = clouseau.retention.utils.get_hosts_expr_type(hosts)
+    hosts, htype = clouseau.retention.utils.utils.get_hosts_expr_type(hosts)
     # if we are given one host, check that the host has a table or whine
     if htype == 'glob' and '*' not in hosts:
-        if not clouseau.retention.ruleutils.check_host_table_exists(cdb, hosts):
+        if not clouseau.retention.utils.ruleutils.check_host_table_exists(cdb, hosts):
             usage('no such host in rule store, %s' % hosts)
     if htype == 'grain' or htype == 'glob':
         client = LocalClientPlus()
