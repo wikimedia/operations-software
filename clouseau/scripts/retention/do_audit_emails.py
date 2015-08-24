@@ -193,7 +193,7 @@ Your friendly data auditor script.
 
     def __init__(self, email_addrs_file, audit_output_dir, mail_from,
                  mail_subject, mail_server, formmail,
-                 users, hosts, verbose, dryrun):
+                 users, hosts, to_default, verbose, dryrun):
         self.email_addrs_file = email_addrs_file
         self.audit_output_dir = audit_output_dir
         self.mail_from = mail_from
@@ -203,6 +203,7 @@ Your friendly data auditor script.
         self.formmail = formmail
         self.users = users
         self.hosts = hosts
+        self.to_default = to_default
         self.verbose = verbose
         self.dryrun = dryrun
 
@@ -266,10 +267,14 @@ Your friendly data auditor script.
 
         for user in email_texts:
             if user not in self.homes_vs_addrs:
-                print "Can't find user '%s', skipping" % user
-                continue
-
-            user_address = self.homes_vs_addrs[user]
+                if self.to_default is not None:
+                    user_address = self.to_default
+                    print "Falling back to %s for user %s" % (self.to_default, user)
+                else:
+                    print "Can't find user '%s', skipping" % user
+                    continue
+            else:
+                user_address = self.homes_vs_addrs[user]
 
             message = email.mime.text.MIMEText(email_texts[user])
             message["Subject"] = self.mail_subject
@@ -358,7 +363,8 @@ def usage(message=None):
     usage_message = """Usage: do_audit_emails.py --mailserver <hostname>
              [--auditdir <path>] [--subject <text>] [--fromaddr <addr>]
              [--emailadddrs] [--users username[,username...]]
-             [--hosts hostname[,hostname...]] [--dryrun]
+             [--hosts hostname[,hostname...]] [--todefault <addr>]
+             [--dryrun]
 
 This script reads output from a data retention audit and generates and
 sends mails to user with the files an diretories located by the audit as
@@ -369,21 +375,28 @@ Options:
   --mailserver (-m)  fqdn of mail server
   --auditdir   (-d)  directory containing the audit outputs
                      (default: audit_dir_YYYYMMDD)
+                     files within this directory generated
+                     by data_auditor.py run remotely via salt
+                     and ending in "final.txt" will be
+                     scanned, everything else will be ignored
   --subject    (-s)  subject of emails to be sent (default:
                      'Data retention audit')
   --fromaddr   (-f)  email address to use for From:
                      (default: data_auditor@wikimedia.org)
   --emailaddrs (-a)  file mapping home dirs to email addrs
                      (default: homes_vs_addresses.txt)
-   --formmail  (-F): name of file with form mail text
+  --formmail   (-F): name of file with form mail text
                      (default: use hardcoded text in script)
-   --users     (-u)  only generate and send emails for the
+  --users      (-u)  only generate and send emails for the
                      users (home dir names) in the
                      comma-separated list
-   --hosts     (-H)  only generate and send emails for the
+  --hosts      (-H)  only generate and send emails for the
                      output from the hosts in the
                      comma-separated list
-   --dryrun    (-D)  print messages, don't email them
+  --todefault  (-t)  emails for which there is no entry in the
+                     emailaddrs file get sent here (default:
+                     no mail sent, a warning message displayed)
+  --dryrun     (-D)  print messages, don't email them
 """
     sys.stderr.write(usage_message)
     sys.exit(1)
@@ -409,16 +422,18 @@ def do_main():
     form_mail_file = None
     users = None
     hosts = None
+    to_default = None
     verbose = False
     dryrun = False
 
     try:
         (options, remainder) = getopt.gnu_getopt(
-            sys.argv[1:], "a:d:f:m:s:F:u:H:vDh",
+            sys.argv[1:], "a:d:f:m:s:F:u:H:t:vDh",
             ["auditdir=", "fromaddr=",
-             "emailaddrss=", "mailserver=",
+             "emailaddrs=", "mailserver=",
              "subject=", "formmail",
              "users=", "hosts=",
+             "todefault=",
              "verbose", "dryrun", "help"])
 
     except getopt.GetoptError as err:
@@ -443,6 +458,8 @@ def do_main():
             email_subject = val
         elif opt in ["-u", "--users"]:
             users = val
+        elif opt in ["-t", "--todefault"]:
+            to_default = val
         elif opt in ["-v", "--verbose"]:
             verbose = True
         elif opt in ["-h", "--help"]:
@@ -464,7 +481,8 @@ def do_main():
     emailer = AuditEmailer(addr_list, audit_dir,
                            auditor_email, email_subject,
                            email_server, form_mail_file,
-                           users, hosts, verbose, dryrun)
+                           users, hosts, to_default,
+                           verbose, dryrun)
     emailer.run()
 
 
