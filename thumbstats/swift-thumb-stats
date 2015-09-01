@@ -35,7 +35,7 @@ class Filter(object):
 
 
 class BytesPerSize(Filter):
-    """Size vs size breakdown."""
+    """Size vs bytes breakdown."""
     _bytes = {}
     def process(self, thumb):
         self._bytes[thumb.thumbsize] = \
