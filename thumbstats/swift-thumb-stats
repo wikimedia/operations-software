@@ -26,6 +26,8 @@ class Thumb(object):
 
 
 class Filter(object):
+    """Base class for a Filter singleton.
+       Note that process() might be called by multiple threads."""
     def process(self, thumb):
         pass
     def result(self):
