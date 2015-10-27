@@ -356,7 +356,7 @@ chdir "mediawiki-config";
 
 my %db;
 
-open ALL, "<all.dblist" or die "all.dblist: $!";
+open ALL, "<dblists/all.dblist" or die "all.dblist: $!";
 while(<ALL>) {
     chomp;
     $db{$_} = {};
@@ -365,7 +365,7 @@ close ALL;
 
 sub dbprop($$$) {
     my($list, $prop, $val) = @_;
-    open DBLIST, "<$list.dblist" or die "$list.dblist: $!";
+    open DBLIST, "<dblists/$list.dblist" or die "$list.dblist: $!";
     while(<DBLIST>) {
         chomp;
         next unless defined $db{$_};
