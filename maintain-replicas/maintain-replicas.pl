@@ -81,7 +81,7 @@ my @fullviews = (
     "pagetriage_page", "pagetriage_page_tags", "pagetriage_tags", "pif_edits", "povwatch_log",
     "povwatch_subscribers", "protected_titles", 'pr_index', "redirect", 'renameuser_status', "site_identifiers",
     "sites", "site_stats", "tag_summary", "templatelinks", "transcode", "updatelog", "updates",
-    "user_daily_contribs", "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log",
+    "user_former_groups", "user_groups", "valid_tag", "wikilove_image_log",
     "wikilove_log", 'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wb_changes_subscription',
     'wb_entity_per_page', 'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
