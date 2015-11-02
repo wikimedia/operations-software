@@ -12,8 +12,8 @@
 
 db='log'
 ls="regexp '^[A-Z0-9].*[0-9]+$'"
-mhost='m2-master'
-shost='dbstore1002'
+mhost='m4-master.eqiad.wmnet'
+shost="$1"
 
 slave="mysql -h $shost --compress --skip-column-names"
 master="mysql -h $mhost --compress --skip-column-names"
@@ -31,31 +31,33 @@ set -e
 
 for table in $($master $db -e "$querytables $ls"); do
 
-    echo -n $table
+    echo -n "$shost $table"
 
     if [ $($slave $db -e "$querytables = '$table'" | wc -l) -eq 0 ]; then
         echo -n ", create"
         $dump --no-data $db $table | $slave $db
     fi
 
-#    id=$($master $db -e "select min(id) from \`$table\`")
-#
-#    if [ ! $id = "NULL" ]; then
-#        echo -n ", purge < $id"
-#        $slave $db -e "delete from \`$table\` where id < $id order by id limit 100000"
-#    fi
+    #id=$($master $db -e "select min(id) from \`$table\`")
 
-    ts=$($slave $db -e "select max(timestamp) from \`$table\`")
+    #if [ ! $id = "NULL" ]; then
+        #echo -n ", purge < $id"
+        #$slave $db -e "delete from \`$table\` where id < $id order by id limit 100000"
+    #fi
 
-    if [ ! $ts = "NULL" ]; then
-        echo -n ", load > $ts"
-        $dumpdata --replace --where="timestamp >= $ts" $db $table | $slave $db
+    ts=$($slave $db -e "select ifnull(max(timestamp),0) from \`$table\`")
+
+    echo -n " >= $ts"
+    # mysqldump has overhead with information_schema queries, so do a quick check for a noop
+    if [ ! $($master $db -e "select ifnull(max(timestamp),0) from \`$table\`") = $ts ]; then
+        echo -n " (rows!)"
+        $dumpdata --insert-ignore --where="timestamp >= '$ts'" $db "$table" | $slave $db
+        #$dumpdata --insert-ignore --where="timestamp >= '$ts'" $db "$table" >tmp/$table.sql
     else
-        echo -n ", import"
-        $dumpdata $db $table | $slave $db
+        echo -n " (nothing)"
     fi
 
-    echo ", ok"
+    echo " ok"
 
 done
 
