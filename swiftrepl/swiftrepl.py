@@ -2,7 +2,9 @@
 
 # Written by Mark Bergsma <mark@wikimedia.org>
 
+import argparse
 import collections
+import ConfigParser
 import errno
 import httplib
 import random
@@ -19,8 +21,7 @@ from cloudfiles.utils import unicode_quote
 
 from Queue import Queue, LifoQueue, Empty, Full
 
-container_regexp = sys.argv[2]  # "^wikipedia-en-local-thumb.[0-9a-f]{2}$"
-use_varnish = '-v' in sys.argv
+
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
 NOBJECT=1000
@@ -41,7 +42,7 @@ def connect(params):
                                  api_key=(params['api_key'] or None),
                                  authurl=params['auth_url'],
                                  timeout=60,
-                                 poolsize=int(sys.argv[1]) * 4)
+                                 poolsize=options.threads * 4)
 
 def varnish_rewrite(obj):
     match = re.match(r'^(?P<proj>[^\-]+)-(?P<lang>[^\-]+)-(?P<repo>[^\-]+)-(?P<zone>[^\-\.]+)(\..*)?$', obj.container.name)
@@ -176,14 +177,14 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
             try:
                 self.count += 1
                 connection = None
-                if use_varnish:
+                if options.use_varnish:
                     # Try Varnish first
                     try:
                         response, connection = varnish_object_stream_prepare(srcobj)
                         self.hits += 1
                     except:
                         connection = None
-                if not use_varnish or connection is None:
+                if not options.use_varnish or connection is None:
                     # Start source GET request
                     response = object_stream_prepare(srcobj)
 
@@ -477,12 +478,12 @@ def replicator_thread(*args, **kwargs):
             except IndexError:
                 break
 
-            if '-d' in sys.argv:
+            if options.sync_deletes:
                 sync_deletes(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
             else:
                 sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
 
-            if '-o' not in sys.argv:  # once
+            if not options.once:  # once
                 containers.append(container)
         except Exception as e:
             print >> sys.stderr, e, traceback.format_exc()
@@ -491,17 +492,32 @@ def replicator_thread(*args, **kwargs):
             containers.append(container)
 
 
-def parse_cli_params():
-    global src, dst
+def parse_config(config_path):
+    config = ConfigParser.SafeConfigParser()
+    config.read(config_path)
+    src = {}
+    dst = {}
+    for option in 'username', 'api_key', 'auth_url':
+        src[option] = config.get('src', option)
+        dst[option] = config.get('dst', option)
+    return src, dst
 
-    # FIXME
-    src['username'], src['api_key'], src['auth_url'], dst['username'], dst['api_key'], dst['auth_url'] = [l.strip() for l in file('swiftrepl.conf')]
 
 if __name__ == '__main__':
     replicate_object.count = 0
     replicate_object.hits = 0
 
-    parse_cli_params()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', dest='config', default='swiftrepl.conf')
+    parser.add_argument('--shuffle', '-r', dest='shuffle', action='store_true', default=False)
+    parser.add_argument('--threads', '-t', dest='threads', type=int, default=16)
+    parser.add_argument('--use-varnish', dest='use_varnish', action='store_true', default=False)
+    parser.add_argument('--once', '-o', dest='once', action='store_true', default=False)
+    parser.add_argument('--sync-deletes', '-d', dest='sync_deletes', action='store_true', default=False)
+    parser.add_argument('container_regexp')
+    options = parser.parse_args()
+
+    src, dst = parse_config(options.config)
 
     srcconnpool = connect(src)
     dstconnpool = connect(dst)
@@ -521,14 +537,15 @@ if __name__ == '__main__':
             break
 
     containerlist = [container for container in containers
-                     if re.match(container_regexp, container.name)]
-    if '-r' in sys.argv:
+                     if re.match(options.container_regexp, container.name)]
+    if options.shuffle:
         random.shuffle(containerlist)
+
     containers = collections.deque(containerlist)
     srcconnpool.put(srcconn)
 
     # Start threads
-    for i in range(int(sys.argv[1])):
+    for i in range(options.threads):
         t = threading.Thread(target=replicator_thread, kwargs={'srcconnpool': srcconnpool, 'dstconnpool': dstconnpool})
         t.daemon = True
         t.start()
