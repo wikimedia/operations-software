@@ -24,10 +24,13 @@ from Queue import Queue, LifoQueue, Empty, Full
 
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
-NOBJECT=1000
+NOBJECT = 1000
+PER_PAGE = 10000
 
 src = {}
 dst = {}
+options = None
+containers = []
 
 class WorkingConnectionPool(cloudfiles.connection.ConnectionPool):
     def __init__(self, username=None, api_key=None, **kwargs):
@@ -164,8 +167,6 @@ def send_object(dstobj, iterable, headers={}):
             dstobj._etag = hdr[1]
 
 def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
-    global use_varnish
-
     # Replace the connections
     srcobj.container.conn = srcconnpool.get()
     dstobj.container.conn = dstconnpool.get()
@@ -236,6 +237,10 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
             pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
             print ("VARNISH: %d/%d (%d%%)" %
                    (self.hits, self.count, pct(self.hits, self.count)))
+# FIXME initialize
+replicate_object.count = 0
+replicate_object.hits = 0
+
 
 def get_container_objects(container, limit, marker, connpool):
 
@@ -281,7 +286,6 @@ def create_container(dstconn, name):
         print "Created container", name
 
 def sync_container(srccontainer, srcconnpool, dstconnpool):
-    global NOBJECT
 
     last = ''
     hits, processed, gets = 0, 0, 0
@@ -298,6 +302,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
         dstconn = None
 
     dstobjects = None
+    limit = PER_PAGE
     while True:
         srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
 
@@ -354,7 +359,6 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
     print "FINISHED:", srccontainer.name
 
 def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
-    global NOBJECT
 
     dstconn = dstconnpool.get()
     try:
@@ -405,7 +409,6 @@ def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
         srccontainer.conn = None
 
 def sync_deletes(srccontainer, srcconnpool, dstconnpool):
-    global NOBJECT
 
     dstconn = dstconnpool.get()
     try:
@@ -503,9 +506,8 @@ def parse_config(config_path):
     return src, dst
 
 
-if __name__ == '__main__':
-    replicate_object.count = 0
-    replicate_object.hits = 0
+def main():
+    global options, containers, src, dst
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest='config', default='swiftrepl.conf')
@@ -524,16 +526,14 @@ if __name__ == '__main__':
 
     srcconn = srcconnpool.get()
 
-    containers=[]
-    limit=10000
-    last=''
+    last = ''
     while True:
-        page = srcconn.get_all_containers(limit=limit, marker=last)
+        page = srcconn.get_all_containers(limit=PER_PAGE, marker=last)
         if len(page) == 0:
             break
         last = page[-1].name.encode("utf-8")
         containers.extend(page)
-        if len(page) < limit:
+        if len(page) < PER_PAGE:
             break
 
     containerlist = [container for container in containers
@@ -554,3 +554,7 @@ if __name__ == '__main__':
         if thread is threading.currentThread():
             continue
         thread.join()
+
+
+if __name__ == '__main__':
+    sys.exit(main())
