@@ -500,10 +500,13 @@ def parse_config(config_path):
     config.read(config_path)
     src = {}
     dst = {}
+    container_sets = {}
     for option in 'username', 'api_key', 'auth_url':
         src[option] = config.get('src', option)
         dst[option] = config.get('dst', option)
-    return src, dst
+    if config.has_section('container_sets'):
+        container_sets = dict(config.items('container_sets'))
+    return src, dst, container_sets
 
 
 def main():
@@ -516,10 +519,25 @@ def main():
     parser.add_argument('--use-varnish', dest='use_varnish', action='store_true', default=False)
     parser.add_argument('--once', '-o', dest='once', action='store_true', default=False)
     parser.add_argument('--sync-deletes', '-d', dest='sync_deletes', action='store_true', default=False)
-    parser.add_argument('container_regexp')
+    parser.add_argument('--container-set', dest='container_set', metavar='SET')
+    parser.add_argument('--container-regexp', dest='container_regexp', metavar='REGEXP')
     options = parser.parse_args()
 
-    src, dst = parse_config(options.config)
+    src, dst, container_sets = parse_config(options.config)
+
+    if all([options.container_set, options.container_regexp]):
+        parser.error('use only one of container-set or container-regexp')
+
+    if not any([options.container_set, options.container_regexp]):
+        parser.error('use at least one of container-set or container-regexp')
+
+    container_regexp = options.container_regexp
+    if options.container_regexp:
+        container_regexp = options.container_regexp
+    elif options.container_set:
+        if not options.container_set in container_sets:
+            parser.error('container set %s not found in config' % options.container_set)
+        container_regexp = container_sets[options.container_set]
 
     srcconnpool = connect(src)
     dstconnpool = connect(dst)
@@ -537,7 +555,7 @@ def main():
             break
 
     containerlist = [container for container in containers
-                     if re.match(options.container_regexp, container.name)]
+                     if re.match(container_regexp, container.name)]
     if options.shuffle:
         random.shuffle(containerlist)
 
