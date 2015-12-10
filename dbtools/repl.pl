@@ -261,7 +261,7 @@ if ($mode eq "--switch-sibling-to-child")
 	print "Changing ${child_host}:${child_port} master to ${parent_log_file}, ${parent_log_pos}...\n";
 
 	$child->do(
-		"change master to master_host = ?, master_port = ${parent_port}, master_log_file = ?, master_log_pos = ${parent_log_pos}",
+		"change master to master_host = ?, master_port = ${parent_port}, master_log_file = ?, master_log_pos = ${parent_log_pos}, MASTER_SSL=1",
 		undef, $parent_host, $parent_log_file
 	);
 
@@ -343,7 +343,7 @@ elsif ($mode eq "--switch-child-to-sibling")
 	print "Changing ${child_host}:${child_port} master to ${master_log_file}, ${master_log_pos}...\n";
 
 	$child->do(
-		"change master to master_host = ?, master_port = ${master_port}, master_log_file = ?, master_log_pos = ${master_log_pos}",
+		"change master to master_host = ?, master_port = ${master_port}, master_log_file = ?, master_log_pos = ${master_log_pos}, MASTER_SSL=1",
 		undef, $master_host, $master_log_file,
 	);
 
