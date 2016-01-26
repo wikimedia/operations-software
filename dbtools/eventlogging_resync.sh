@@ -7,7 +7,7 @@
 
 db='log'
 ls="regexp '^[A-Z0-9].*[0-9]+$'"
-mhost='m2-master'
+mhost='m4-master'
 shost="$1"
 since="$2"
 
