@@ -285,10 +285,10 @@ def create_container(dstconn, name):
     else:
         print "Created container", name
 
-def sync_container(srccontainer, srcconnpool, dstconnpool):
+def sync_container(srccontainer, srcconnpool, dstconnpool, filename_regexp):
 
     last = ''
-    hits, processed, gets = 0, 0, 0
+    hits, processed, gets, skipped = 0, 0, 0, 0
 
     dstconn = dstconnpool.get()
     try:
@@ -315,8 +315,11 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
                     break
 
         for srcobj in srcobjects:
-            processed += 1
             objname = srcobj.name.encode("ascii", errors="ignore")
+            if filename_regexp is not None and not filename_regexp.match(objname):
+                skipped += 1
+                continue
+            processed += 1
             last = srcobj.name.encode("utf-8")
             msg = "%s\t%s\t%s\t%s\t%s" % (srccontainer.name, srcobj.etag, srcobj.size, objname, srcobj.last_modified)
             try:
@@ -347,11 +350,14 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
             replicate_object(srcobj, dstobj, srcconnpool, dstconnpool)
 
         pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
-        print ("STATS: %s processed: %d/%d (%d%%), hit rate: %d%%" %
+        print ("STATS: %s processed: %d/%d (%d%%), hit rate: %d%%, skipped %d/%d (%d%%)" %
                (srccontainer.name,
                 processed, srccontainer.object_count,
                 pct(processed, srccontainer.object_count),
-                pct(hits, processed)))
+                pct(hits, processed),
+                skipped, srccontainer.object_count,
+                pct(skipped, srccontainer.object_count),
+                ))
 
         if len(srcobjects) < NOBJECT:
             break
@@ -408,7 +414,7 @@ def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
         srcconnpool.put(srccontainer.conn)
         srccontainer.conn = None
 
-def sync_deletes(srccontainer, srcconnpool, dstconnpool):
+def sync_deletes(srccontainer, srcconnpool, dstconnpool, filename_regexp):
 
     dstconn = dstconnpool.get()
     try:
@@ -424,7 +430,7 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
     srclimit = int(srclimit * 1.2)
 
     last = ''
-    deletes, processed = 0, 0
+    deletes, processed, skipped = 0, 0, 0
     while True:
 
         dstobjects = get_container_objects(dstcontainer, limit=dstlimit, marker=last, connpool=dstconnpool)
@@ -440,6 +446,9 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
         diff = dstset - srcset
 
         for dstname in diff:
+            if filename_regexp is not None and not filename_regexp.match(dstname):
+                skipped += 1
+                continue
             # do a HEAD to make sure it's gone
             srccontainer.conn = srcconnpool.get()
             try:
@@ -463,11 +472,14 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool):
         processed += len(dstobjects)
 
         pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
-        print ("STATS: %s processed: %d/%d (%d%%), deleted: %d" %
+        print ("STATS: %s processed: %d/%d (%d%%), deleted: %d, skipped %d/%d (%d%%)" %
                (srccontainer.name,
                 processed, dstcontainer.object_count,
                 pct(processed, dstcontainer.object_count),
-                deletes))
+                deletes,
+                skipped, dstcontainer.object_count,
+                pct(skipped, dstcontainer.object_count),
+                ))
 
         if len(dstobjects) < dstlimit:
             break
@@ -482,9 +494,11 @@ def replicator_thread(*args, **kwargs):
                 break
 
             if options.sync_deletes:
-                sync_deletes(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
+                sync_deletes(container, kwargs['srcconnpool'],
+                        kwargs['dstconnpool'], kwargs['filename_regexp'])
             else:
-                sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
+                sync_container(container, kwargs['srcconnpool'],
+                        kwargs['dstconnpool'], kwargs['filename_regexp'])
 
             if not options.once:  # once
                 containers.append(container)
@@ -521,6 +535,7 @@ def main():
     parser.add_argument('--sync-deletes', '-d', dest='sync_deletes', action='store_true', default=False)
     parser.add_argument('--container-set', dest='container_set', metavar='SET')
     parser.add_argument('--container-regexp', dest='container_regexp', metavar='REGEXP')
+    parser.add_argument('--filename-regexp', dest='filename_regexp', metavar='REGEXP')
     options = parser.parse_args()
 
     src, dst, container_sets = parse_config(options.config)
@@ -538,6 +553,13 @@ def main():
         if not options.container_set in container_sets:
             parser.error('container set %s not found in config' % options.container_set)
         container_regexp = container_sets[options.container_set]
+
+    filename_regexp = None
+    if options.filename_regexp is not None:
+        try:
+            filename_regexp = re.compile(options.filename_regexp)
+        except re.error as e:
+            parser.error('cannot compile %r: %r' % (options.filename_regexp, e))
 
     srcconnpool = connect(src)
     dstconnpool = connect(dst)
@@ -564,7 +586,10 @@ def main():
 
     # Start threads
     for i in range(options.threads):
-        t = threading.Thread(target=replicator_thread, kwargs={'srcconnpool': srcconnpool, 'dstconnpool': dstconnpool})
+        t = threading.Thread(target=replicator_thread,
+                             kwargs={'srcconnpool': srcconnpool,
+                                     'dstconnpool': dstconnpool,
+                                     'filename_regexp': filename_regexp})
         t.daemon = True
         t.start()
 
