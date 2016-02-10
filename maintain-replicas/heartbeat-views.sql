@@ -2,7 +2,7 @@
 -- This only has to be run once per host
 -- And there is no checks that the underlying tables exist
 CREATE DATABASE IF NOT EXISTS `heartbeat_p`;
-CREATE
+CREATE OR REPLACE
 ALGORITHM=UNDEFINED
 DEFINER=`root`@`localhost`
 SQL SECURITY DEFINER VIEW
@@ -10,7 +10,7 @@ SQL SECURITY DEFINER VIEW
 SELECT (
 CASE
 WHEN (`heartbeat`.`heartbeat`.`file` like 'db1052%') THEN 's1'
-WHEN (`heartbeat`.`heartbeat`.`file` like 'db1024%') THEN 's2'
+WHEN (`heartbeat`.`heartbeat`.`file` like 'db1018%') THEN 's2'
 WHEN (`heartbeat`.`heartbeat`.`file` like 'db1038%') THEN 's3'
 WHEN (`heartbeat`.`heartbeat`.`file` like 'db1040%') THEN 's4'
 WHEN (`heartbeat`.`heartbeat`.`file` like 'db1058%') THEN 's5'
