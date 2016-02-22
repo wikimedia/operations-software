@@ -25,7 +25,7 @@ from Queue import Queue, LifoQueue, Empty, Full
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
 NOBJECT = 1000
-PER_PAGE = 10000
+LIMIT_MAX = 10000
 
 src = {}
 dst = {}
@@ -302,15 +302,15 @@ def sync_container(srccontainer, srcconnpool, dstconnpool, filename_regexp):
         dstconn = None
 
     dstobjects = None
-    limit = PER_PAGE
     while True:
         srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
 
+        limit = NOBJECT
         while dstobjects is None or (len(dstobjects) >= limit and dstobjects[-1].name < srcobjects[-1].name):
             dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last, connpool=dstconnpool)
             if len(dstobjects) == limit:
                 limit *= 2
-                if limit > 10000:
+                if limit > LIMIT_MAX:
                     dstobjects = None
                     break
 
@@ -568,12 +568,12 @@ def main():
 
     last = ''
     while True:
-        page = srcconn.get_all_containers(limit=PER_PAGE, marker=last)
+        page = srcconn.get_all_containers(limit=LIMIT_MAX, marker=last)
         if len(page) == 0:
             break
         last = page[-1].name.encode("utf-8")
         containers.extend(page)
-        if len(page) < PER_PAGE:
+        if len(page) < LIMIT_MAX:
             break
 
     containerlist = [container for container in containers
