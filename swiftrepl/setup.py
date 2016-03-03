@@ -4,7 +4,7 @@ setup(
     name="swiftrepl",
     author="Mark Bergsma",
     author_email="mark@wikimedia.org",
-    version="0.0.2",
+    version="0.0.3",
     long_description=__doc__,
     py_modules=['swiftrepl'],
     install_requires=['python-cloudfiles'],
