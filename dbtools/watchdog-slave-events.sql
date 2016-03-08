@@ -2,10 +2,12 @@ use ops;
 
 SET session sql_log_bin=0;
 
-DROP EVENT `wmf_slave_overload`;
-DROP EVENT `wmf_slave_purge`;
-DROP EVENT `wmf_slave_wikiuser_sleep`;
-DROP EVENT `wmf_slave_wikiuser_slow`;
+DROP EVENT IF EXISTS `wmf_slave_overload`;
+DROP EVENT IF EXISTS `wmf_slave_purge`;
+DROP EVENT IF EXISTS `wmf_slave_wikiuser_sleep`;
+DROP EVENT IF EXISTS `wmf_slave_wikiuser_slow`;
+DROP EVENT IF EXISTS `wmf_master_purge`;
+DROP EVENT IF EXISTS `wmf_master_wikiuser_sleep`;
 
 DELIMITER //
 
