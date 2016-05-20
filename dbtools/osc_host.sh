@@ -129,7 +129,7 @@ fi
 
 ptdryargs=""
 ptargs=""
-ddlargs=""
+ddlargs="SET SESSION innodb_lock_wait_timeout=1; SET SESSION lock_wait_timeout=60; "
 ptrep="--recurse=0"
 ddlrep=""
 
@@ -254,12 +254,14 @@ for db in "${dblist[@]}"; do
 		elif [ "$method" == "ddl" ]; then
 			echo "$ddlargs alter table $table $altersql"
 			if ! $mysql $db -e "$ddlargs alter table $table $altersql"; then
+				echo "WARNING $db : $table encountered problems"
 				reconfirm=$warn
 			fi
 
 		elif [ "$method" == "ddlonline" ]; then
 			echo "$ddlargs alter online table $table $altersql"
 			if ! $mysql $db -e "$ddlargs alter online table $table $altersql"; then
+				echo "WARNING $db : $table encountered problems"
 				reconfirm=$warn
 			fi
 		fi
