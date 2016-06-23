@@ -71,7 +71,7 @@ read_list("flaggedrevs", "has_flaggedrevs", True)
 read_list("visualeditor-default", "has_visualeditor", True)
 read_list("wikidataclient", "has_wikidata", True)
 
-for slice in ['s1', 's2', 's3', 's4', 's5', 's6', 's7']: # TODO: silver
+for slice in ['s1', 's2', 's3', 's4', 's5', 's6', 's7']: # TODO: silver/labtestweb2001
     read_list(slice, "slice", slice)
 
 for family in ["wikibooks", "wikidata", "wikinews", "wikiquote", "wikisource",
@@ -145,7 +145,7 @@ for dbhost, dbport in slices:
     dbh = pymysql.connect(host=dbhost, port=dbport, user=dbuser, passwd=dbpassword, charset='utf8')
     cursor = dbh.cursor()
 
-    logging.info("Update/create meta tables on", dbhost + "...")
+    logging.info("Update/create meta tables on", dbhost + ":" + str(dbport) + "...")
     cursor.execute("CREATE DATABASE IF NOT EXISTS meta_p DEFAULT CHARACTER SET utf8;")
     cursor.execute("""CREATE TABLE IF NOT EXISTS meta_p.wiki (
         dbname varchar(32) PRIMARY KEY,
