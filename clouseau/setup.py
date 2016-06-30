@@ -22,7 +22,7 @@ setup(
     author_email="ariel@wikimedia.org",
     description=("Auditing scripts and libraries"),
     license="GPLv2",
-    url="http://git.wikimedia.org/something/retention",
+    url="https://phabricator.wikimedia.org/r/project/something/retention",
     packages=['clouseau', 'clouseau.retention', 'clouseau.retention.local',
               'clouseau.retention.remote', 'clouseau.retention.utils', 'tests'],
     data_files=[('/srv/audits/retention/scripts', get_files('scripts/retention/wmf/','sh')),
