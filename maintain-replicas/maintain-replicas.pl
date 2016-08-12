@@ -85,7 +85,7 @@ my @fullviews = (
     "wikilove_log", 'global_group_permissions', 'global_group_restrictions', 'global_user_groups',
     'globalblocks', 'localuser', 'wikiset', 'wb_changes', 'wb_changes_dispatch', 'wb_changes_subscription',
     'wb_entity_per_page', 'wb_id_counters', 'wb_items_per_site', 'wb_property_info', 'wb_terms',
-    'wbc_entity_usage', 'wbs_propertypairs',
+    'wbc_entity_usage', 'wbs_propertypairs', 'watchlist_count',
 );
 
 my @logging_whitelist = (
@@ -328,11 +328,6 @@ my %customviews = (
         'view' => 'select cast(extract(year_month from user_touched)*100+1 as date) upa_touched,
                     up_property, up_value',
         'where' => 'user_id=up_user and up_property like pw_property', },
-
-    'watchlist_counts' => {
-        'source' => 'watchlist',
-        'view'   => 'select count(*) as wl_count, wl_namespace, wl_title',
-        'group'  => 'wl_namespace, wl_title having wl_count >= 30', },
 );
 
 my $dbuser;
