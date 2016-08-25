@@ -1,5 +1,5 @@
-import os
 import sys
+
 
 def get_hostinfo(lines):
     '''
@@ -18,12 +18,14 @@ def get_hostinfo(lines):
             hostinfo.append(line)
     return hosts
 
+
 def get_date(line):
     '''
     from a line of ls -lt, get the date
     '''
     fields = line.split()
-    return " ".join([fields[index] for index in range(5,8)])
+    return " ".join([fields[index] for index in range(5, 8)])
+
 
 def get_salt_version(line):
     '''
@@ -35,11 +37,13 @@ def get_salt_version(line):
             return field
     return ""
 
+
 def get_process(line):
     '''
     dig out the date and command from a ps line
     '''
-    # root       361  0.0  0.9  69932 19768 ?        Ss   Aug19   0:00 /usr/bin/python /usr/bin/salt-minion'
+    # root       361  0.0  0.9  69932 19768 ?        Ss   Aug19   0:00
+    # /usr/bin/python /usr/bin/salt-minion'
     line.strip()
     if not line:
         return ""
@@ -47,6 +51,7 @@ def get_process(line):
     if len(fields) < 8:
         return ""
     return " ".join(fields[8:])
+
 
 def get_host_data(hostinfo):
     '''
@@ -75,7 +80,8 @@ def get_host_data(hostinfo):
                 master:
                 - labs-puppetmaster-eqiad.wikimedia.org
                 - labs-puppetmaster-codfw.wikimedia.org
-                and this terminates as soon as we see a line with non whitespace first char.
+                and this terminates as soon as we see a line with non
+                whitespace first char.
                 '''
                 want_master = True
             else:
@@ -94,7 +100,7 @@ def get_host_data(hostinfo):
             hostdata['salt_version'] = get_salt_version(line)
         elif line.startswith("AuthenticationError"):
             hostdata['minion_errors'] = line
-        elif want_master == True:
+        elif want_master:
             stripped = line.lstrip()
             if stripped and stripped[0] == '-':
                 master_name = stripped[1:].lstrip()
@@ -103,16 +109,18 @@ def get_host_data(hostinfo):
                 want_master = False
     return hostdata
 
+
 def show(hostdata):
     '''
     given some extracted data about a host, display it
     '''
-    #yeah. it's cheap. so what.
+    # yeah. it's cheap. so what.
     keys = sorted(hostdata.keys())
     for key in keys:
         if hostdata[key]:
             print key, hostdata[key]
     print
+
 
 def show_ec2id_salt_ids(summaries):
     '''
@@ -123,8 +131,11 @@ def show_ec2id_salt_ids(summaries):
     print "hosts with ec2id salt ids"
     for summary in summaries:
         if summary['salt_id'].startswith('i-000'):
-            print summary['hostname'], summary['salt_id'], "last puppet run:", summary['puppet_rundate']
+            print("{} {} last puppet run: {}".format(
+                summary['hostname'], summary['salt_id'],
+                summary['puppet_rundate']))
     print
+
 
 def show_oldstyle_salt_ids(summaries):
     '''
@@ -140,6 +151,7 @@ def show_oldstyle_salt_ids(summaries):
                 print summary['hostname'], summary['salt_id']
     print
 
+
 def show_salt_errors(summaries):
     '''
     given nicely formatted host info summaries,
@@ -151,6 +163,7 @@ def show_salt_errors(summaries):
         if summary['minion_errors']:
             print summary['hostname']
     print
+
 
 def show_salt_bad_versions(summaries):
     '''
@@ -164,6 +177,7 @@ def show_salt_bad_versions(summaries):
             if not summary['salt_version'].startswith('2014.7.5'):
                 print summary['hostname'], summary['salt_version'], summary['issue']
     print
+
 
 def show_salt_other_masters(summaries):
     '''
@@ -181,6 +195,7 @@ def show_salt_other_masters(summaries):
                     print summary['hostname'], summary['masters']
                     break
     print
+
 
 def show_salt_correct_masters(summaries):
     '''
@@ -202,6 +217,7 @@ def show_salt_correct_masters(summaries):
                 print summary['hostname'], summary['masters']
     print
 
+
 def show_salt_no_processes(summaries):
     '''
     show all hosts where no salt minion is running
@@ -211,6 +227,7 @@ def show_salt_no_processes(summaries):
         if not summary['processes']:
             print summary['hostname']
     print
+
 
 def show_salt_too_many_processes(summaries):
     '''
@@ -223,6 +240,7 @@ def show_salt_too_many_processes(summaries):
             print summary['hostname'], summary['processes']
     print
 
+
 def show_salt_no_keysize(summaries):
     '''
     show all hosts where keysize has not been set
@@ -230,8 +248,10 @@ def show_salt_no_keysize(summaries):
     print "hosts with no keysize specified"
     for summary in summaries:
         if summary['masters'] and not summary['keysize']:
-            print summary['hostname'], 'last puppet run:', summary['puppet_rundate']
+            print("{} last puppet run: {}".format(
+                summary['hostname'], summary['puppet_rundate']))
     print
+
 
 def main():
     summaries = []
@@ -253,4 +273,4 @@ def main():
     show_salt_no_keysize(summaries)
 
 if __name__ == "__main__":
-  main()
+    main()
