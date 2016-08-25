@@ -33,6 +33,7 @@ SALT_MINION_PUB = "/etc/salt/pki/minion/minion.pub"
 PUPPET_MASTER = 'labs-puppetmaster-eqiad.wikimedia.org'
 PUPPETCONF = "/etc/puppet/puppet.conf"
 
+
 def check_master():
     masters = get_masters()
     if not masters:
@@ -41,6 +42,7 @@ def check_master():
         if entry not in MASTERS:
             return False
     return True
+
 
 def get_masters():
     contents = open(SALTCONF, "r").read()
@@ -54,12 +56,13 @@ def get_masters():
                 master:
                 - labs-puppetmaster-eqiad.wikimedia.org
                 - labs-puppetmaster-codfw.wikimedia.org
-                and this terminates as soon as we see a line with non whitespace first char.
+                and this terminates as soon as we see a line with non
+                whitespace first char.
                 '''
                 want_master = True
             else:
                 masters.append(line[8:])
-        elif want_master == True:
+        elif want_master:
             stripped = line.lstrip()
             if stripped and stripped[0] == '-':
                 master_name = stripped[1:].lstrip()
@@ -68,12 +71,14 @@ def get_masters():
                 return masters
     return masters
 
+
 def restart_salt():
     '''
     shoot all minions and start one
     '''
     shoot_salt_processes()
     start_salt_process()
+
 
 def check_salt_auth_error():
     '''
@@ -94,6 +99,7 @@ def check_salt_auth_error():
             return True
     return False
 
+
 def apt_update(verbose):
     '''
     apt-get update and display the results
@@ -103,6 +109,7 @@ def apt_update(verbose):
     '''
     return get_popen_output(["apt-get", "update"], "W:", display=verbose)
 
+
 def apt_install_dryrun(verbose):
     '''
     apt-get install dryrun for minion and display the results
@@ -111,13 +118,17 @@ def apt_install_dryrun(verbose):
     return get_popen_output(["apt-get", "-y", "--simulate", "-o",
                              "DPkg::Options::=--force-confold",
                              "-o", "Apt::Get::AllowUnauthenticated=true",
-                             "install", "salt-common", "salt-minion"], display=verbose)
+                             "install", "salt-common", "salt-minion"],
+                            display=verbose)
+
 
 def apt_install(verbose):
     return get_popen_output(["apt-get", "-y", "--force-yes",
                              "-o", "DPkg::Options::=--force-confold",
                              "-o", "Apt::Get::AllowUnauthenticated=true",
-                             "install", "salt-common", "salt-minion"], display=verbose)
+                             "install", "salt-common", "salt-minion"],
+                            display=verbose)
+
 
 def fix_salt_version(verbose):
     '''
@@ -132,6 +143,7 @@ def fix_salt_version(verbose):
     salt_processes = get_salt_processes()
     if not salt_processes:
         start_salt_process()
+
 
 def get_popen_output(command, ignore=None, display=False, skipretcode=False):
     '''
@@ -155,6 +167,7 @@ def get_popen_output(command, ignore=None, display=False, skipretcode=False):
         print "INFO:", command, output
     return output.splitlines()
 
+
 def get_salt_version():
     '''
     get the installed version of salt-minion via dpkg
@@ -167,6 +180,7 @@ def get_salt_version():
             return entry[9:]
     return None
 
+
 def check_salt_version(version):
     if version is None:
         return False
@@ -174,11 +188,13 @@ def check_salt_version(version):
         return False
     return True
 
+
 def get_salt_processes():
     '''
     return list of pids of salt-minions running
     '''
     return get_popen_output(["pgrep", "salt-minion"], skipretcode=True)
+
 
 def check_salt_processes(processes):
     '''
@@ -194,11 +210,13 @@ def check_salt_processes(processes):
     if len(processes) == 1:
         return True
 
-    entries = get_popen_output(["ps", "-p", ",".join(processes), "-o", "etimes="], skipretcode=True)
+    entries = get_popen_output(
+        ["ps", "-p", ",".join(processes), "-o", "etimes="], skipretcode=True)
     for entry in entries:
         if int(entry) > OLD_PROC:
             return False
     return True
+
 
 def do_popen(command):
     '''
@@ -214,17 +232,20 @@ def do_popen(command):
         print output
     return True
 
+
 def do_upstart():
     '''
     start salt-minion via upstart
     '''
     return do_popen([UPSTART, "salt-minion"])
 
+
 def do_systemctl():
     '''
     start salt-minion via systemctl
     '''
     return do_popen([SYSTEMCTL, "start", "salt-minion.service"])
+
 
 def start_salt_process():
     '''
@@ -238,6 +259,7 @@ def start_salt_process():
     else:
         print "failed to find startup command"
 
+
 def shoot_salt_processes():
     '''
     shoot all salt-minion processes with prejudice
@@ -249,6 +271,7 @@ def shoot_salt_processes():
         print "hrm, still some processes around", salt_processes
         return False
     return True
+
 
 def usage(message=None):
     '''
@@ -278,9 +301,10 @@ Options:
                    don't actually run them
   --verbose (-v):  display informational messages as this script runs
   --help    (-h):  display this message
-"""
+"""  # noqa
     sys.stderr.write(usage_message)
     sys.exit(1)
+
 
 def do_version(dryrun, verbose):
     '''
@@ -297,6 +321,7 @@ def do_version(dryrun, verbose):
             fix_salt_version(verbose)
     elif dryrun or verbose:
         print "salt version is good"
+
 
 def do_count(dryrun, verbose):
     '''
@@ -328,6 +353,7 @@ def do_count(dryrun, verbose):
     elif dryrun or verbose:
         print "salt minion count is good"
 
+
 def do_autherror(dryrun, verbose):
     '''
     check if the salt log ends with a notification of an authentication
@@ -344,6 +370,7 @@ def do_autherror(dryrun, verbose):
     elif dryrun or verbose:
         print "no minion autherror"
 
+
 def check_puppet_master():
     contents = open(PUPPETCONF, "r").read()
     lines = contents.splitlines()
@@ -352,6 +379,7 @@ def check_puppet_master():
             if PUPPET_MASTER in entry:
                 return True
     return False
+
 
 def fix_keysize_config(verbose):
     # check current contents of config file
@@ -392,11 +420,13 @@ def fix_keysize_config(verbose):
     os.rename(new_config, SALTCONF)
     return True
 
+
 def remove_minion_key():
     if os.path.exists(SALT_MINION_PUB):
         os.unlink(SALT_MINION_PUB)
     if os.path.exists(SALT_MINION_KEY):
         os.unlink(SALT_MINION_KEY)
+
 
 def check_keysize():
     if not os.path.exists(SALT_MINION_PUB):
@@ -410,6 +440,7 @@ def check_keysize():
             if SALT_KEYSIZE in entry:
                 return True
     return False
+
 
 def do_regenkey(dryrun, verbose):
     '''
@@ -449,6 +480,7 @@ def do_regenkey(dryrun, verbose):
         print "starting minion, don't forget to delete key on master"
     start_salt_process()
 
+
 def do_actions(actions, dryrun, verbose):
     '''
     handle user-requested actions
@@ -464,6 +496,7 @@ def do_actions(actions, dryrun, verbose):
 
     if "regenkey" in actions:
         do_regenkey(dryrun, verbose)
+
 
 def main():
     '''

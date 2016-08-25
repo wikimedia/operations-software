@@ -70,8 +70,8 @@ def get_target_command(target, target_type):
     elif target_type == 'grain':
         command = ['test.ping']
         command.extend(target.split(':'))
-    elif (target_type == 'list' or target_type == 'glob'
-          or target_type == 'mia'):
+    elif (target_type == 'list' or target_type == 'glob' or
+          target_type == 'mia'):
         command = ['test.ping']
         if target_type == 'mia':
             command.append('-v')
