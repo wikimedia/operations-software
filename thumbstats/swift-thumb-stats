@@ -10,7 +10,6 @@ import collections
 import datetime
 import json
 import os
-import pprint
 import re
 import sys
 import threading
@@ -30,6 +29,7 @@ class Filter(object):
        Note that process() might be called by multiple threads."""
     def process(self, thumb):
         pass
+
     def result(self):
         pass
 
@@ -37,11 +37,14 @@ class Filter(object):
 class BytesPerSize(Filter):
     """Size vs bytes breakdown."""
     _bytes = {}
+
     def process(self, thumb):
         self._bytes[thumb.thumbsize] = \
             self._bytes.setdefault(thumb.thumbsize, 0) + int(thumb.bytes)
+
     def result(self):
         return self._bytes
+
     def str(self):
         return "BytesPerSize"
 
@@ -50,11 +53,14 @@ class CountPerSize(Filter):
     """Size vs count breakdown."""
 
     _count = {}
+
     def process(self, thumb):
         self._count[thumb.thumbsize] = \
             self._count.setdefault(thumb.thumbsize, 0) + 1
+
     def result(self):
         return self._count
+
     def str(self):
         return "CountPerSize"
 
@@ -62,14 +68,17 @@ class CountPerSize(Filter):
 class BytesByMonth(Filter):
     """Year+month vs size vs bytes breakdown."""
     _month = {}
+
     def process(self, thumb):
         key = thumb.last_modified[:7]
         size = thumb.thumbsize
         self._month[key] = self._month.setdefault(key, {})
         self._month[key][size] = \
             self._month[key].setdefault(size, 0) + int(thumb.bytes)
+
     def result(self):
         return self._month
+
     def str(self):
         return "BytesPerMonth"
 
@@ -153,18 +162,19 @@ def thumb_containers(connection):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Print swift thumb statistics")
-    parser.add_argument('-A', '--auth', dest='auth',
-        default=os.environ.get('ST_AUTH', None),
+    parser = argparse.ArgumentParser(
+        description="Print swift thumb statistics")
+    parser.add_argument(
+        '-A', '--auth', dest='auth', default=os.environ.get('ST_AUTH', None),
         help='URL for obtaining an auth token')
-    parser.add_argument('-U', '--user', dest='user',
-        default=os.environ.get('ST_USER', None),
+    parser.add_argument(
+        '-U', '--user', dest='user', default=os.environ.get('ST_USER', None),
         help='User name for obtaining an auth token')
-    parser.add_argument('-K', '--key', dest='key',
-        default=os.environ.get('ST_KEY', None),
+    parser.add_argument(
+        '-K', '--key', dest='key', default=os.environ.get('ST_KEY', None),
         help='Key for obtaining an auth token')
-    parser.add_argument('-t', '--threads', dest='threads',
-        default=3, type=int,
+    parser.add_argument(
+        '-t', '--threads', dest='threads', default=3, type=int,
         help='How many threads to use (%(default)s)')
     args = parser.parse_args()
 
@@ -172,17 +182,17 @@ def main():
         parser.error("please provide auth, user and key")
         return 1
 
-    connection = swiftclient.Connection(args.auth, args.user, args.key,
-            retry_on_ratelimit=True)
+    connection = swiftclient.Connection(
+        args.auth, args.user, args.key, retry_on_ratelimit=True)
     worker_queue = collections.deque(thumb_containers(connection))
     filters = [BytesPerSize(), CountPerSize(), BytesByMonth()]
     threads = []
 
     for i in range(args.threads):
-        thread_connection = swiftclient.Connection(args.auth, args.user,
-                args.key, retry_on_ratelimit=True)
-        t = threading.Thread(target=process_container, args=(worker_queue,
-            thread_connection, filters))
+        thread_connection = swiftclient.Connection(
+            args.auth, args.user, args.key, retry_on_ratelimit=True)
+        t = threading.Thread(target=process_container,
+                             args=(worker_queue, thread_connection, filters))
         t.daemon = True
         t.start()
         threads.append(t)
