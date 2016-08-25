@@ -4,6 +4,7 @@ import argparse
 import sys
 import yaml
 
+
 def main():
     # Parse command line arguments.
     parser = argparse.ArgumentParser(description='Convert text file to YAML.')
