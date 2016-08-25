@@ -76,13 +76,11 @@ def get_host_data(hostinfo):
             hostdata['salt_id'] = line[4:]
         elif line.startswith("master:"):
             if not line[8:]:
-                '''
-                master:
-                - labs-puppetmaster-eqiad.wikimedia.org
-                - labs-puppetmaster-codfw.wikimedia.org
-                and this terminates as soon as we see a line with non
-                whitespace first char.
-                '''
+                # master:
+                # - labs-puppetmaster-eqiad.wikimedia.org
+                # - labs-puppetmaster-codfw.wikimedia.org
+                # and this terminates as soon as we see a line with non
+                # whitespace first char.
                 want_master = True
             else:
                 hostdata['masters'].append(line[8:])
@@ -190,7 +188,7 @@ def show_salt_other_masters(summaries):
         if summary['masters']:
             for master in summary['masters']:
                 if (not master == 'labs-puppetmaster-eqiad.wikimedia.org' and
-                    not master == 'labs-puppetmaster-codfw.wikimedia.org' and
+                        not master == 'labs-puppetmaster-codfw.wikimedia.org' and
                         not master == 'labcontrol2001.wikimedia.org'):
                     print summary['hostname'], summary['masters']
                     break

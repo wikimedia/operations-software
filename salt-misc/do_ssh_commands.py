@@ -104,8 +104,8 @@ def get_salt_responders(output, match_value=None, match_start=None):
                     entry[minion] == match_value):
                 minions_good.append(minion)
             elif (match_start is not None and
-                    isinstance(entry[minion], basestring) and
-                    entry[minion].startswith(match_start)):
+                  isinstance(entry[minion], basestring) and
+                  entry[minion].startswith(match_start)):
                 minions_good.append(minion)
             elif match_value is None and match_start is None:
                 minions_good.append(minion)

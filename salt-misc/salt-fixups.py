@@ -52,13 +52,11 @@ def get_masters():
     for line in lines:
         if line.startswith("master:"):
             if not line[8:]:
-                '''
-                master:
-                - labs-puppetmaster-eqiad.wikimedia.org
-                - labs-puppetmaster-codfw.wikimedia.org
-                and this terminates as soon as we see a line with non
-                whitespace first char.
-                '''
+                # master:
+                # - labs-puppetmaster-eqiad.wikimedia.org
+                # - labs-puppetmaster-codfw.wikimedia.org
+                # and this terminates as soon as we see a line with non
+                # whitespace first char.
                 want_master = True
             else:
                 masters.append(line[8:])
@@ -400,8 +398,8 @@ def fix_keysize_config(verbose):
 
     # remove old entry
     if has_keysize:
-        if len(lines) > index+1:
-            rest = lines[index+1:]
+        if len(lines) > index + 1:
+            rest = lines[index + 1:]
         else:
             rest = []
         lines = lines[0:index] + rest
