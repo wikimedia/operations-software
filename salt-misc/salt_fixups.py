@@ -35,6 +35,10 @@ PUPPETCONF = "/etc/puppet/puppet.conf"
 
 
 def check_master():
+    '''
+    make sure all masters listed in
+    salt config are actually masters
+    '''
     masters = get_masters()
     if not masters:
         return False
@@ -45,6 +49,10 @@ def check_master():
 
 
 def get_masters():
+    '''
+    extract a list of salt masters that the minion will respond to,
+    from its salt config file
+    '''
     contents = open(SALTCONF, "r").read()
     lines = contents.splitlines()
     masters = []
@@ -121,6 +129,9 @@ def apt_install_dryrun(verbose):
 
 
 def apt_install(verbose):
+    '''
+    install salt minion package and deps via apt
+    '''
     return get_popen_output(["apt-get", "-y", "--force-yes",
                              "-o", "DPkg::Options::=--force-confold",
                              "-o", "Apt::Get::AllowUnauthenticated=true",
@@ -180,6 +191,11 @@ def get_salt_version():
 
 
 def check_salt_version(version):
+    '''
+    check to be sure that the salt version
+    passed to us is the version we expect
+    on all hosts
+    '''
     if version is None:
         return False
     if not version.startswith(SALT_VERSION):
@@ -370,6 +386,10 @@ def do_autherror(dryrun, verbose):
 
 
 def check_puppet_master():
+    '''
+    grab the puppet master named in the puppet
+    config file and verify it's what we expect
+    '''
     contents = open(PUPPETCONF, "r").read()
     lines = contents.splitlines()
     for entry in lines:
@@ -380,6 +400,11 @@ def check_puppet_master():
 
 
 def fix_keysize_config(verbose):
+    '''
+    if salt minion keysize configuration is not set
+    (defaut is 40967, tooooo big), add the correct
+    setting
+    '''
     # check current contents of config file
     contents = open(SALTCONF, "r").read()
     lines = contents.splitlines()
@@ -420,6 +445,9 @@ def fix_keysize_config(verbose):
 
 
 def remove_minion_key():
+    '''
+    remove salt minion pub and private key
+    '''
     if os.path.exists(SALT_MINION_PUB):
         os.unlink(SALT_MINION_PUB)
     if os.path.exists(SALT_MINION_KEY):
@@ -427,6 +455,10 @@ def remove_minion_key():
 
 
 def check_keysize():
+    '''
+    get the keysize of the current salt minion key
+    and make sure it's what we expect
+    '''
     if not os.path.exists(SALT_MINION_PUB):
         return False
 

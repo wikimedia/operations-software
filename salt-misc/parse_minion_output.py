@@ -1,3 +1,10 @@
+'''
+process data about salt issues collected from
+various hosts via gather-minion_info.py
+and produce reports from it that can be used
+to feed to salt-fixups.py for correcting these
+problems
+'''
 import sys
 
 
@@ -53,6 +60,48 @@ def get_process(line):
     return " ".join(fields[8:])
 
 
+def check_line_start(line, hostdata):
+    '''
+    process lines beginning with a specified string
+    and add the extracted info to accumulated data
+    for hosts
+    '''
+    if line.startswith("Debian") or line.startswith("Ubuntu"):
+        hostdata['issue'] = line
+    elif line.startswith("doing"):
+        hostdata['hostname'] = line[6:]
+    elif line.startswith("id:"):
+        hostdata['salt_id'] = line[4:]
+    elif line.startswith("keysize:"):
+        hostdata['keysize'] = line[9:]
+    elif line.startswith("AuthenticationError"):
+        hostdata['minion_errors'] = line
+    else:
+        return False
+    return True
+
+
+def check_line_contains(line, hostdata):
+    '''
+    process lines containing a specified string
+    and add the extracted info to accumulated data
+    for hosts
+    '''
+    if "/var/log/puppet.log" in line:
+        hostdata['puppet_rundate'] = get_date(line)
+    elif "/var/log/salt/minion" in line:
+        hostdata['minion_logdate'] = get_date(line)
+    elif "/usr/bin/salt-minion" in line:
+        process = get_process(line)
+        if process:
+            hostdata['processes'].append(process)
+    elif "salt-common" in line:
+        hostdata['salt_version'] = get_salt_version(line)
+    else:
+        return False
+    return True
+
+
 def get_host_data(hostinfo):
     '''
     from list of lines for a host, dig
@@ -68,12 +117,8 @@ def get_host_data(hostinfo):
 
     want_master = False
     for line in hostinfo:
-        if line.startswith("Debian") or line.startswith("Ubuntu"):
-            hostdata['issue'] = line
-        elif line.startswith("doing"):
-            hostdata['hostname'] = line[6:]
-        elif line.startswith("id:"):
-            hostdata['salt_id'] = line[4:]
+        if check_line_start(line, hostdata):
+            continue
         elif line.startswith("master:"):
             if not line[8:]:
                 # master:
@@ -84,20 +129,8 @@ def get_host_data(hostinfo):
                 want_master = True
             else:
                 hostdata['masters'].append(line[8:])
-        elif line.startswith("keysize:"):
-            hostdata['keysize'] = line[9:]
-        elif "/var/log/puppet.log" in line:
-            hostdata['puppet_rundate'] = get_date(line)
-        elif "/var/log/salt/minion" in line:
-            hostdata['minion_logdate'] = get_date(line)
-        elif "/usr/bin/salt-minion" in line:
-            process = get_process(line)
-            if process:
-                hostdata['processes'].append(process)
-        elif "salt-common" in line:
-            hostdata['salt_version'] = get_salt_version(line)
-        elif line.startswith("AuthenticationError"):
-            hostdata['minion_errors'] = line
+        elif check_line_contains(line, hostdata):
+            continue
         elif want_master:
             stripped = line.lstrip()
             if stripped and stripped[0] == '-':
@@ -252,6 +285,10 @@ def show_salt_no_keysize(summaries):
 
 
 def main():
+    '''
+    read per-host input about salt configuration etc, produce
+    reports for each hosts and summaries as well
+    '''
     summaries = []
     inputfp = sys.stdin
     content = inputfp.read()
