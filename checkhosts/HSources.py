@@ -11,6 +11,7 @@ import salt.config
 import HOptions
 import HPassPlugins
 
+
 class Source(object):
     """Base class for host sources
 
@@ -485,6 +486,7 @@ class Source(object):
                 return True
         return False
 
+
 class DecomPuppet(Source):
     """hosts that are listed in decommissioned.pp on source
     host (should be host with current puppet repo)"""
@@ -539,6 +541,7 @@ class DecomPuppet(Source):
             if n:
                 self.hosts[self._basename(n.strip("'\" \t"))] = [True]
 
+
 class DecomRackTables(Source):
     """hosts that are listed as in the 'decommissioned'
     row in rackspace on source host (should be host with
@@ -591,8 +594,9 @@ class DecomRackTables(Source):
             return
         for l in lines[1:]:  # skip header
             # skip entries like 'ELD1 CKT19 A' (what is that?)
-            if l and not l.startswith("#") and not " " in l:
+            if l and not l.startswith("#") and " " not in l:
                 self.hosts[self._basename(l)] = [True]
+
 
 class Salt(Source):
     """hosts which are known to salt, those which respond to test ping
@@ -630,6 +634,7 @@ class Salt(Source):
             return
         for h in result:
             self.hosts[self._basename(h)] = ["ping"]
+
 
 class Dsh(Source):
     """hosts in any dsh group file on the source host (should be
@@ -672,6 +677,7 @@ class Dsh(Source):
             # possible if we have replies from more than one host
             elif fileName not in self.hosts[h]:
                 self.hosts[h].append(fileName)
+
 
 class Dhcp(Source):
     """hosts with entries in dhcp on source host (should be
@@ -720,6 +726,7 @@ class Dhcp(Source):
                 # possible if we get files from multiple hosts
                 elif fileName not in self.hosts[h]:
                     self.hosts[h].append(fileName)
+
 
 class Dns(Source):
     """hosts with IN A entries in dns on source host (should
@@ -777,6 +784,7 @@ class Dns(Source):
                     if addr not in self.hosts[self._basename(h)]:
                         self.hosts[self._basename(h)].append(pieces[4].strip())
 
+
 class Puppet(Source):
     """hosts with current (less than 7 days old) facts files on the
     source host (should be a puppet master); all facts are read and
@@ -824,7 +832,7 @@ class Puppet(Source):
                 self.hosts[fileName] = []
             fact = fact.strip()
             if (not fact or fact.startswith('#') or
-                    '!ruby' in fact or not ':' in fact):
+                    '!ruby' in fact or ':' not in fact):
                 continue
             parsed = self.parseFact(fact)
             # could already be there if we got facts file from multiple hosts
@@ -845,7 +853,7 @@ class Puppet(Source):
 
         value = value.strip()
         if value.startswith('&id'):
-            if not ' ' in value:
+            if ' ' not in value:
                 sys.stderr.write("Unknown fact format %s\n" % fact)
                 toReturn = None
             else:
@@ -859,7 +867,7 @@ class Puppet(Source):
                 toReturn = None
             else:
                 ref = value.strip()[1:]
-                if not ref in self.factIdRefs:
+                if ref not in self.factIdRefs:
                     sys.stderr.write("Unknown fact format %s\n" % fact)
                     toReturn = None
                 else:
@@ -868,6 +876,7 @@ class Puppet(Source):
             toReturn = name + ":" + value.strip('"')
 
         return toReturn
+
 
 class PuppetCerts(Source):
     """hosts with existing puppet certs on source host (should
@@ -907,6 +916,7 @@ class PuppetCerts(Source):
                 self.hosts[shortName] = []
             self.hosts[shortName].append(f)
 
+
 class LogPuppet(Source):
     """all hosts known to salt (sorry) with current puppet runs,
     whether complete, with errors, etc; the status of the run
@@ -944,7 +954,7 @@ class LogPuppet(Source):
                 self.hosts[self._basename(h)] = result
 
     def parseLog(self, logInfo):
-        if not 'stdout' in logInfo:
+        if 'stdout' not in logInfo:
             return None
         lines = logInfo['stdout'].splitlines()
 
@@ -988,6 +998,7 @@ class LogPuppet(Source):
                                ["egrep " + "'" + egrepExpr + "' " +
                                 self.params['path'] + '| tail -20'],
                                timeout=self.timeout)
+
 
 class PuppetStoredConfigs(Source):
     """hosts with entries in hosts table of the puppet db

@@ -1,5 +1,6 @@
 import HHelp
 
+
 class Cli(object):
     """
     command line interpreter: prompt for command
@@ -76,7 +77,7 @@ class Cli(object):
         else:
             setting = raw_input("setting: ")
             setting = setting.strip()
-            if not ' ' in setting:
+            if ' ' not in setting:
                 print ("Bad setting format;" +
                        "expecting setting-name whitespace value")
             # fixme this and the below set of splits is inconsistent

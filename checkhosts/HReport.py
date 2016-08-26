@@ -2,6 +2,7 @@ import sys
 import HHelp
 from HSources import Source
 
+
 class HostReport(object):
     """
     display a table showing hosts with the attributes they have from some
@@ -63,7 +64,7 @@ class HostReport(object):
         if self.hostExprs:
             # or, not and of the hostExprs
             for e in self.hostExprs:
-                if not '*' in e:
+                if '*' not in e:
                     # no glob, strict match
                     if e == host:
                         return True
@@ -156,7 +157,7 @@ class HostReport(object):
             self.sources[sourceName].hosts and
                 host in self.sources[sourceName].hosts):
             toDisplay = self.filterReportValues(
-                self.sources[sourceName].hosts[host],sourceName)
+                self.sources[sourceName].hosts[host], sourceName)
             count = len(toDisplay)
             if count == 0:
                 return "-"

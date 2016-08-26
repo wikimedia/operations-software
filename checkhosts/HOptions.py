@@ -1,6 +1,6 @@
 def getOptions(value, names):
     value = value.strip()
-    pieces = value.split(",", len(names) -1)
+    pieces = value.split(",", len(names) - 1)
     opts = {}
     if not len(names):
         return opts
@@ -10,6 +10,7 @@ def getOptions(value, names):
         opts[names[i]] = None
     return opts
 
+
 def mergeDefaults(defaults, settings):
     """given default settings, merge them into the
     new settings passed in and return the merged ones"""
@@ -18,7 +19,6 @@ def mergeDefaults(defaults, settings):
         return defaults
 
     for item in settings:
-#        if settings[item] == None or settings[item] == '':
         if not settings[item]:  # empty list, empty string, None, etc
             if item in defaults:
                 settings[item] = defaults[item]

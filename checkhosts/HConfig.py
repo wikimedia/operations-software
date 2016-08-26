@@ -3,6 +3,7 @@ import sys
 import ConfigParser
 from HSources import Source
 
+
 class CheckHostsConfig(object):
     """
     this class handles all aspects of configuration
@@ -14,7 +15,7 @@ class CheckHostsConfig(object):
         if (not configFile):
             configFile = "checkhosts.conf"
         self.files = [
-            os.path.join(home,configFile),
+            os.path.join(home, configFile),
             "/etc/checkhosts.conf",
             os.path.join(os.getenv("HOME"), ".checkhosts.conf")]
         self.defaults = {}

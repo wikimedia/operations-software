@@ -5,17 +5,20 @@ with the exception of usage() and extendedUsage()
 which both display usage messages and exit with a non-zero
 exit code."""
 
+
 def getCriteriaHelp():
     return """
 A criterion is the string on the right side of an assertion.  Hosts from the
 source list will be checked against the criterion to see if they match.
 """ + getCriteriaKnown()
 
+
 def getCriteriaValuesHelp():
     return """
 A criterion value is a fixed string (as opposed to '*') which may or may
 not be preceded by a '!'
 """ + getCriteriaValuesKnown()
+
 
 def getCriteriaKnown():
     return """
@@ -26,6 +29,7 @@ value     -- host is present with specified value in source list
 !*        -- host is absent from source list
 !value    -- host is present in source list but does not have specified value
 """ + getCriteriaValuesKnown()
+
 
 def getCriteriaValuesKnown():
     return """
@@ -45,6 +49,7 @@ For source 'puppet':
                   note that keys, passwords are excluded from this list
 """
 
+
 def getSourcesHelp(knownSources):
     return """
 A source is the string on the left side of an assertion.  Hosts from this
@@ -52,6 +57,7 @@ source will be checked to see if they match the assertion criteria.
 
 Available sources are:
 """ + " ".join(sorted(knownSources)) + "\n"
+
 
 def getFilterHelp(knownSources):
     return """
@@ -61,6 +67,7 @@ A filter is a comma-separated list of assertions, where each assertion is of the
 
 <source> must be one of the following:
 """ + " ".join(sorted(knownSources)) + "\n" + getCriteriaKnown()
+
 
 def getReportHelp(knownSources):
     return """
@@ -83,6 +90,7 @@ If the third form is supplied, all values will be displayed.
 """ + """
 Available sources are:
 """ + " ".join(sorted(knownSources))
+
 
 def getExamplesHelp():
     return """
@@ -111,6 +119,7 @@ python check-hosts.py --filter 'logpuppet=disabled'
 all mw host ip addresses except mgmt ones, using default config file
 python check-hosts.py --report 'dns!=10.65*;10.1.*;10.128.*;10.1.*' -H 'mw*'
 """
+
 
 def getOptionsHelp(knownSources):
     return """
@@ -170,6 +179,7 @@ Options:
 --version          (-V): display the program's version and exit
 """
 
+
 def getShortUsageHelp():
     return """
 Usage: python check-hosts.py --filter filterstring|--cli|--report <sourcelist>
@@ -187,6 +197,7 @@ list, racktable decommissioned list, and displays all hosts that meet the specif
 assertions, or displays attributes of hosts that meet the specified report requirements.
 """
 
+
 def usage(message):
     """Arguments:
     message   -- display this message, with newline added, before
@@ -195,8 +206,10 @@ def usage(message):
         sys.stderr.write(message)
         sys.stderr.write("\n")
         sys.stderr.write(getShortUsageHelp())
-        sys.stderr.write("For more detailed help, run this script with the --extendedhelp option.\n")
+        sys.stderr.write("For more detailed help, run this" +
+                         " script with the --extendedhelp option.\n")
         sys.exit(1)
+
 
 def extendedUsage(knownSources):
     """Display extended help on all options to stderr and exit."""

@@ -1,6 +1,7 @@
 import sys
 from HSources import Source
 
+
 class HostFilter(object):
     """
     display a list of hosts in given sources, or with attribute
@@ -76,7 +77,7 @@ class HostFilter(object):
                             possibleHosts[h] = True
                 else:
                     for h in possibleHosts.keys():
-                        if ((not h in self.sources[s].hosts) or
+                        if ((h not in self.sources[s].hosts) or
                             (h in self.sources[s].hosts and
                              self.filters[s] not in self.sources[s].hosts[h])):
                             possibleHosts.pop(h, None)
@@ -90,7 +91,7 @@ class HostFilter(object):
                     possibleHosts[h] = True
         else:
             for h in possibleHosts.keys():
-                if ((not h in self.sources[s].hosts) or
+                if ((h not in self.sources[s].hosts) or
                     (h in self.sources[s].hosts and
                      expr in self.sources[s].hosts[h])):
                     possibleHosts.pop(h, None)
@@ -107,7 +108,7 @@ class HostFilter(object):
         self.filteredHosts = {}
         # we do or, not and, for the hostExprs
         for e in self.hostExprs:
-            if not '*' in e:
+            if '*' not in e:
                 # no glob, strict match
                 if e in possibleHosts:
                     self.filteredHosts[e] = True
@@ -166,7 +167,7 @@ class HostFilter(object):
         else:
             assertions = [filterExpr.strip()]
         for a in assertions:
-            if not '=' in a:
+            if '=' not in a:
                 print "Bad format for assertion %s\n" % a
                 self.filters = None
                 return

@@ -20,20 +20,28 @@ if __name__ == '__main__':
     decommed in racktables, are known to salt, are in dns."""
 
     configfile = "checkhosts.conf"
-    configInfo = {}     # arguments and values collected from configuration
-                        #  files as well as from command line
 
-    filterExpr = None   # show a list of hosts that are present in the named
-                        # sources or with attributes that match these
-    reportArg = None    # instead, show a report of host attributes, displaying
-                        # only attributes that match these
+    # arguments and values collected from configuration
+    #  files as well as from command line
+    configInfo = {}
+
+    # show a list of hosts that are present in the named
+    # sources or with attributes that match these
+    filterExpr = None
+
+    # instead, show a report of host attributes, displaying
+    # only attributes that match these
+    reportArg = None
+
     hostExprs = None    # limit list or report to these hostnames
 
     timeout = None      # timeout in seconds for remote commands
 
     verbose = 0
-    cli = False         # enter command line mode (prompt for and process
-                        # commands)
+
+    # enter command line mode (prompt for and process commands)
+    cli = False
+
     version = "0.0.1"
 
     # these options set parameters for a specific Source subclass
@@ -56,11 +64,11 @@ if __name__ == '__main__':
     try:
         (options, remainder) = getopt.gnu_getopt(
             sys.argv[1:], "f:CR:d:D:r:p:P:n:l:Q:s:H:c:t:vVhe",
-            ["filter=","report=","cli","dhcp=", "dsh=",
+            ["filter=", "report=", "cli", "dhcp=", "dsh=",
              "decomracktables=", "decompuppet=", "puppet=",
              "dns=", "logpuppet=", "puppetcerts=",
              "storedconfigs=", "hosts=", "config=", "timeout=",
-             "verbose","version","help", "extendedhelp",
+             "verbose", "version", "help", "extendedhelp",
              "debug"])
     except getopt.GetoptError as err:
         HHelp.usage("Unknown option specified: " + str(err))
@@ -90,7 +98,7 @@ if __name__ == '__main__':
         elif opt in ["-V", "--version"]:
             print "check-hosts.py %s" % version
             sys.exit(0)
-        elif opt in ["-h","--help"]:
+        elif opt in ["-h", "--help"]:
             HHelp.usage("Help message")
         elif opt in ["-e", "--extendedhelp"]:
             HHelp.extendedUsage(Source.getKnownSources())
