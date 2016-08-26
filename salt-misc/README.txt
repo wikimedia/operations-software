@@ -6,9 +6,9 @@ Sticking them here so I can find them again, and because
 they really aren't polished prod ready etc.
 
 gather-minioninfo.sh is meant to be run on one's laptop.
-The output from that can be shoved through parse-minion-output.py
+The output from that can be shoved through parse_minion_output.py
 Once you see what the problems are you can collect lists of
-hosts and use salt-fixups.py on them; it's meant to be run
+hosts and use salt_fixups.py on them; it's meant to be run
 via ssh on the instances.
 
 do_ssh_commands.py is meant to be able to tell me which hosts
