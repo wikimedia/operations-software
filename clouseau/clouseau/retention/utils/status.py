@@ -1,5 +1,6 @@
 import re
 
+
 class Status(object):
     '''
     manage statuses (good, problem, etc) of files/dirs

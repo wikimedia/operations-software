@@ -3,7 +3,6 @@ import sys
 import json
 import readline
 import traceback
-
 from clouseau.retention.utils.status import Status
 from clouseau.retention.utils.rule import RuleStore
 from clouseau.retention.remote.remotefileauditor import get_dirs_toexamine
@@ -251,8 +250,8 @@ class CommandLine(object):
                 d, self.max_depth_top_level) for d in dirs_problem]
             dirs_skipped = [s for s in dirs_skipped
                             if s not in dirs_problem_to_depth]
-            relevant_dirs = (sorted(list(set(dirs_problem_to_depth)))
-                             + sorted(list(set(dirs_skipped))))
+            relevant_dirs = (sorted(list(set(dirs_problem_to_depth))) +
+                             sorted(list(set(dirs_skipped))))
             while True:
                 dir_todo = self.cmpl.prompt_for_dir()
                 if dir_todo is None:

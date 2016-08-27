@@ -1,10 +1,10 @@
 import json
-
 from clouseau.retention.utils.fileinfo import LogInfo
 from clouseau.retention.utils.utils import JsonHelper
 from clouseau.retention.remote.remotefileauditor import RemoteFilesAuditor
 import clouseau.retention.remote.remotefileauditor
 from clouseau.retention.local.locallogaudit import LocalLogsAuditor
+
 
 def summarize_log_issues(log_items, host, logs):
     for item in log_items:

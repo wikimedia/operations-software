@@ -3,6 +3,7 @@ import salt.utils.yamlloader
 
 conf = None
 
+
 def set_up_conf(confdir):
     global conf
 

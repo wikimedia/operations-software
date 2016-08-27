@@ -16,8 +16,10 @@ def init_readline_hist():
     delims = delims.replace("/", "")
     readline.set_completer_delims(delims)
 
+
 def save_history(histfile):
     readline.write_history_file(histfile)
+
 
 def get_path_prefix(path, depth):
     if path is None:
@@ -26,6 +28,7 @@ def get_path_prefix(path, depth):
         return path
     fields = path.split(os.path.sep)
     return os.path.sep.join(fields[:depth + 1])
+
 
 def print_columns(items, cols):
     num_rows = len(items) / cols
@@ -59,6 +62,7 @@ def print_columns(items, cols):
             except IndexError:
                 pass
         print
+
 
 def show_help(level):
     if level == 'status':
@@ -99,6 +103,7 @@ def show_help(level):
         Q quit the menu"""
     else:
         print "unknown help level requested,", level
+
 
 def show_pager(current_page, num_items, num_per_page):
     readline.set_completer(None)
@@ -141,6 +146,7 @@ def show_pager(current_page, num_items, num_per_page):
     elif result > num_pages:
         result = num_pages
     return result
+
 
 def check_rules_path(rules_path):
     # sanity check on the path, let's not read/write

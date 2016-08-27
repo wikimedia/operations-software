@@ -7,6 +7,7 @@ import calendar
 import datetime
 import stat
 
+
 def get_time_formatted(time_raw):
     '''
     format unix time to a printable string
@@ -17,6 +18,7 @@ def get_time_formatted(time_raw):
     else:
         return time.ctime(time_raw)
 
+
 def check_text_binary(content):
     textchars = (''.join(map(chr, [7, 8, 9, 10, 12, 13, 27] +
                              range(0x20, 0x100))))
@@ -25,6 +27,7 @@ def check_text_binary(content):
     except:
         return None
     return is_binary
+
 
 def get_date_fromtext(text):
     '''
@@ -55,8 +58,8 @@ def get_date_fromtext(text):
         '%d/%b/%Y:%H:%M:%S':
         [r'[0-9]{2}/[A-Z][a-z]{2}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2}', '']
     }
-    if (text is None or text == 'BINARY' or text == 'EMPTY'
-            or text == 'UNAVAILABLE' or text == ''):
+    if (text is None or text == 'BINARY' or text == 'EMPTY' or
+            text == 'UNAVAILABLE' or text == ''):
         return None
 
     for date_format in datecheck:
@@ -80,6 +83,7 @@ def get_date_fromtext(text):
     # failed to find date
     return None
 
+
 def bool_to_string(value):
     '''
     turn bools into the equivalent string,
@@ -94,6 +98,7 @@ def bool_to_string(value):
     else:
         return 'F'
 
+
 def string_to_bool(value):
     '''
     turn strings 'T', 'F', '--' into the bool
@@ -106,6 +111,7 @@ def string_to_bool(value):
         return False
     else:
         return None
+
 
 def stat_to_dict(fstat):
     stat_dict = {
@@ -125,6 +131,7 @@ def stat_to_dict(fstat):
     }
     return stat_dict
 
+
 def format_pretty_output_from_dict(item, show_content=False, path_justify=None):
     output = ("file: %s" % item['path'].ljust(path_justify) +
               ("  owner:%s" % str(item['owner']).ljust(5) if 'owner' in item else "") +
@@ -137,6 +144,7 @@ def format_pretty_output_from_dict(item, show_content=False, path_justify=None):
     if show_content and 'content' in item:
         output = output + "\n    content:%s" % item['content']
     return output
+
 
 def fileinfo_from_dict(item, fromtime=None):
     '''

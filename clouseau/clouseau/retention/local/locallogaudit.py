@@ -2,13 +2,13 @@ import os
 import glob
 import socket
 import time
-
 import clouseau.retention.utils.utils
 import clouseau.retention.utils.config
 from clouseau.retention.utils.fileinfo import LogInfo, LogUtils
 from clouseau.retention.local.localfileaudit import LocalFilesAuditor
 import clouseau.retention.utils.fileutils
 import clouseau.retention.utils.magic
+
 
 def get_rotated_freq(rotated):
     '''
@@ -28,6 +28,7 @@ def get_rotated_freq(rotated):
         freq = None
     return freq
 
+
 def get_rotated_keep(line):
     fields = line.split()
     if len(fields) == 2:
@@ -35,6 +36,7 @@ def get_rotated_keep(line):
     else:
         keep = None
     return keep
+
 
 def get_logs(line):
     if not line:
@@ -52,6 +54,7 @@ def get_logs(line):
             os.path.join(clouseau.retention.utils.config.conf['rotate_basedir'], line)))
     else:
         return [line]
+
 
 def get_logrotate_defaults():
     contents = open(clouseau.retention.utils.config.conf['rotate_mainconf']).read()
@@ -81,6 +84,7 @@ def get_logrotate_defaults():
                 keep = tmp_keep
     return freq, keep
 
+
 def find_rotated_logs(confdir):
     '''
     gather all names of log files from logrotate
@@ -97,6 +101,7 @@ def find_rotated_logs(confdir):
             rotated_logs.update(parser.parse(open(pathname).read()))
     return rotated_logs
 
+
 def get_mysqldir_ignores(hostname):
     # we can skip all bin logs, relay logs, and pid files in this
     # directory. anything else should get looked at.
@@ -108,6 +113,7 @@ def get_mysqldir_ignores(hostname):
     file_ignores = ignore_these
     dir_ignores = ['*']
     return file_ignores, dir_ignores
+
 
 def get_datadir(line):
     datadir = None
@@ -121,6 +127,7 @@ def get_datadir(line):
             if not datadir:
                 datadir = None
     return datadir
+
 
 def get_expire_days(line, filename):
     found = False

@@ -1,7 +1,7 @@
 import os
 import readline
-
 import clouseau.retention.utils.cliutils
+
 
 class Completion(object):
     '''
@@ -55,8 +55,8 @@ class Completion(object):
                 d, self.max_depth_top_level) for d in self.cenv.problem_dirs]
             dirs_skipped = [s for s in self.cenv.skipped_dirs
                             if s not in dirs_problem_to_depth]
-            relevant_dirs = (sorted(list(set(dirs_problem_to_depth)))
-                             + sorted(list(set(dirs_skipped))))
+            relevant_dirs = (sorted(list(set(dirs_problem_to_depth))) +
+                             sorted(list(set(dirs_skipped))))
         else:
             self.dircontents.get(self.cenv.host, self.cenv.cwdir, self.batchno)
             relevant_dirs = sorted([s for s in self.dircontents.entries_dict

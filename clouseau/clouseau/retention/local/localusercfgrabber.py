@@ -1,6 +1,7 @@
 import json
 import clouseau.retention.utils.ignores
 
+
 class LocalUserCfGrabber(object):
     '''
     retrieval and display dirs / files listed as to

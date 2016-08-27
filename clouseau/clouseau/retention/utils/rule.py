@@ -3,6 +3,7 @@ import sqlite3
 from clouseau.retention.remote.saltclientplus import LocalClientPlus
 from clouseau.retention.utils.status import Status
 
+
 def to_unicode(param):
     '''
     convert a parameter to unicode if it is not already
@@ -17,6 +18,7 @@ def to_unicode(param):
         newparam = param
     return newparam
 
+
 def get_tablename(host):
     '''
     each host's rules are stored in a separate table,
@@ -24,6 +26,7 @@ def get_tablename(host):
     the hostname should be the fqdn
     '''
     return RuleStore.TABLE + "_" + host.replace('-', '__').replace('.', '_')
+
 
 def from_unicode(param):
     '''
@@ -38,6 +41,7 @@ def from_unicode(param):
         if newparam is None:
             newparam = param
     return newparam
+
 
 def check_params(params, fieldlist=None, show=True):
     if fieldlist is None:
@@ -300,8 +304,8 @@ class RuleStore(object):
         that status will be deleted
         '''
         # fixme quoting
-        if (not check_params(params, ['basedir', 'name'], show=False)
-                and not check_params(params, ['status'], show=False)):
+        if (not check_params(params, ['basedir', 'name'], show=False) and
+                not check_params(params, ['status'], show=False)):
             print "WARNING: bad params passed", params
         clause, params_to_sub = RuleStore.params_to_string(params)
         query = ("DELETE FROM %s WHERE %s"

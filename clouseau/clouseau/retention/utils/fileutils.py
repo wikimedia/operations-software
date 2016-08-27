@@ -2,6 +2,7 @@ import os
 import re
 import stat
 
+
 def startswith(string_arg, list_arg):
     '''
     check if the string arg starts with any elt in
@@ -11,6 +12,7 @@ def startswith(string_arg, list_arg):
         if string_arg.startswith(elt):
             return True
     return False
+
 
 def contains(string_arg, list_arg):
     '''
@@ -22,6 +24,7 @@ def contains(string_arg, list_arg):
             return True
     return False
 
+
 def endswith(string_arg, list_arg):
     '''
     check if the string arg ends with any elt in
@@ -31,6 +34,7 @@ def endswith(string_arg, list_arg):
         if string_arg.endswith(elt):
             return True
     return False
+
 
 def startswithpath(string_arg, list_arg):
     '''
@@ -43,6 +47,7 @@ def startswithpath(string_arg, list_arg):
         if string_arg == elt or string_arg.startswith(elt + "/"):
             return True
     return False
+
 
 def subdir_check(dirname, directories):
     '''
@@ -59,6 +64,7 @@ def subdir_check(dirname, directories):
             return True
     return False
 
+
 def dirtree_check(dirname, directories):
     '''
     check if the dirname is either a directory at or above one of
@@ -72,6 +78,7 @@ def dirtree_check(dirname, directories):
         if dname.startswith(dirname + "/"):
             return True
     return False
+
 
 def wildcard_matches(dirname, wildcard_dirs, exact=True):
     '''given a list of absolute paths with exactly one '*'
@@ -92,6 +99,7 @@ def wildcard_matches(dirname, wildcard_dirs, exact=True):
                 continue
     return False
 
+
 def dir_is_wrong_type(dirname):
     try:
         dirstat = os.lstat(dirname)
@@ -102,6 +110,7 @@ def dir_is_wrong_type(dirname):
     if not stat.S_ISDIR(dirstat.st_mode):
         return True
     return False
+
 
 def get_open_files():
     '''

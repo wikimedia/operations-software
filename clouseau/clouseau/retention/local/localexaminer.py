@@ -81,8 +81,8 @@ class DirContents(object):
             self.batch_contents = []
         else:
             self.batch_contents = self.full_contents[
-                (self.batchno - 1) * self.batchsize: self.batchno
-                * self.batchsize]
+                (self.batchno - 1) * self.batchsize: self.batchno *
+                self.batchsize]
 
     def get_contents(self):
         if self.batch_contents is None:

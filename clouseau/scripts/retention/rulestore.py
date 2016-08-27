@@ -5,12 +5,12 @@
 import os
 import sys
 import getopt
-
 from clouseau.retention.remote.saltclientplus import LocalClientPlus
 import clouseau.retention.utils.utils
 import clouseau.retention.utils.ruleutils
 from clouseau.retention.utils.rule import RuleStore
 from clouseau.retention.utils.status import Status
+
 
 def usage(message=None):
     if message:
@@ -47,6 +47,7 @@ def usage(message=None):
     sys.stderr.write(usage_message)
     sys.exit(1)
 
+
 def check_args(hosts, action, status):
     if hosts is None:
         usage("Mandatory 'hosts' argument not specified")
@@ -61,6 +62,7 @@ def check_args(hosts, action, status):
         status = Status.status_to_text(status)
         if status is None:
             usage('unknown status %s specified' % status)
+
 
 def do_action(cdb, action, hosts, status, path, dryrun):
     if action == 'show':
@@ -104,6 +106,7 @@ def do_action(cdb, action, hosts, status, path, dryrun):
 
         for host in hosts:
             clouseau.retention.utils.ruleutils.do_add_rule(cdb, path, rtype, status, host)
+
 
 def main():
     hosts = None

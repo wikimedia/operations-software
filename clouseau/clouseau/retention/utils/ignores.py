@@ -3,12 +3,12 @@ import sys
 import socket
 import salt.client
 import salt.utils.yamlloader
-
 from clouseau.retention.utils.status import Status
 import clouseau.retention.utils.utils
 import clouseau.retention.utils.fileutils
 import clouseau.retention.utils.ruleutils
 import clouseau.retention.utils.config
+
 
 def prep_good_rules_tosend(dirname, hosts):
     '''
@@ -34,6 +34,7 @@ def prep_good_rules_tosend(dirname, hosts):
                 # make sure this file isn't in the dict
                 results.pop(path, None)
     return results
+
 
 def expand_ignored_dirs(basedir, ignored):
     '''
@@ -72,6 +73,7 @@ def expand_ignored_dirs(basedir, ignored):
                 dirs.append(os.path.join(basedir, dname))
     return dirs, wildcard_dirs
 
+
 def dir_is_ignored(dirname, ignored):
     expanded_dirs, wildcard_dirs = expand_ignored_dirs(
         os.path.dirname(dirname), ignored)
@@ -81,6 +83,7 @@ def dir_is_ignored(dirname, ignored):
         return True
     return False
 
+
 def check_file_ignoredtype(ignored, igntype, checker, basename, basedir):
     if '*' in ignored[igntype]:
         if checker(basename, ignored[igntype]['*']):
@@ -89,6 +92,7 @@ def check_file_ignoredtype(ignored, igntype, checker, basename, basedir):
             if checker(basename, ignored[igntype][basedir]):
                 return True
     return False
+
 
 def file_is_ignored(fname, basedir, ignored):
     '''
@@ -129,6 +133,7 @@ def file_is_ignored(fname, basedir, ignored):
 
     return False
 
+
 def get_home_dirs(confdir, locations):
     '''
     get a list of home directories where the root location(s) for home are
@@ -146,6 +151,7 @@ def get_home_dirs(confdir, locations):
                           if os.path.isdir(os.path.join(location, d))])
     return home_dirs
 
+
 def init_ignored():
     ignored = {}
     ignored['files'] = {}
@@ -155,6 +161,7 @@ def init_ignored():
     ignored['prefixes'] = {}
     ignored['extensions'] = {}
     return ignored
+
 
 def get_local_ignores(confdir, locations):
     '''
@@ -180,6 +187,7 @@ def get_local_ignores(confdir, locations):
             local_ignores[hdir].extend(entries)
         return local_ignores
 
+
 def process_local_ignores(local_ignores):
     '''
     files or dirs listed in data retention conf in homedir
@@ -202,6 +210,7 @@ def process_local_ignores(local_ignores):
                 result['files']['/'].append(path)
     return result
 
+
 def get_ignored_from_rulestore(cdb, hosts):
     ignored = {}
     for host in hosts:
@@ -223,6 +232,7 @@ def get_ignored_from_rulestore(cdb, hosts):
                     ignored[host]['files']['/'].append(path)
     return ignored
 
+
 def convert_rules_to_ignored(rules):
     '''
     from rules passed in as arg (retrieved
@@ -242,6 +252,7 @@ def convert_rules_to_ignored(rules):
             ignored['files']['/'].append(path)
     return ignored
 
+
 def get_ignored_from_exported_rules(confdir):
     hostname = socket.getfqdn()
     fromstore_file = os.path.join(confdir, 'fromstore', hostname + "_store_good.yaml")
@@ -256,6 +267,7 @@ def get_ignored_from_exported_rules(confdir):
     else:
         ignored = clouseau.retention.utils.ignores.init_ignored()
     return ignored
+
 
 def set_up_global_ignored(confdir):
     '''
@@ -283,6 +295,7 @@ def set_up_global_ignored(confdir):
                 pass
     return ignored
 
+
 def convert_ignore_also_to_ignores(ignore_also):
     ignored = clouseau.retention.utils.ignores.init_ignored()
     if ignore_also is not None:
@@ -294,6 +307,7 @@ def convert_ignore_also_to_ignores(ignore_also):
                 else:
                     ignored['files']['/'].append(path)
     return ignored
+
 
 def get_perhost_ignored_from_file(confdir):
     '''
@@ -312,6 +326,7 @@ def get_perhost_ignored_from_file(confdir):
         except:
             perhost_ignores = None
     return perhost_ignores
+
 
 def convert_perhost_ignored(perhost_ignored):
     '''
@@ -382,8 +397,8 @@ class Ignores(object):
         for basedir in ignored[igntype]:
             if basedir in basedirs or basedir == '*' or basedir == '/':
                 sys.stderr.write(
-                    "INFO: " + ','.join(ignored[igntype][basedir])
-                    + " in " + basedir + '\n')
+                    "INFO: " + ','.join(ignored[igntype][basedir]) +
+                    " in " + basedir + '\n')
 
     def show_ignoreds(self, basedirs, ignoreds, headertext=None):
         if headertext:

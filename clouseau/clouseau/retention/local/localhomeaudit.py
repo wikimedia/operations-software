@@ -1,6 +1,7 @@
 from clouseau.retention.local.localfileaudit import LocalFilesAuditor
 import clouseau.retention.utils.ignores
 
+
 class LocalHomesAuditor(LocalFilesAuditor):
     '''
     auditing of home directories on a set of hosts

@@ -1,5 +1,4 @@
 import os
-
 from clouseau.retention.remote.remotefileauditor import RemoteFilesAuditor
 from clouseau.retention.local.localhomeaudit import LocalHomesAuditor
 

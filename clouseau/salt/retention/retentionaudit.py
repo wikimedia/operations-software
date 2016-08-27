@@ -6,6 +6,7 @@ from clouseau.retention.local.localhomeaudit import LocalHomesAuditor
 from clouseau.retention.local.localexaminer import LocalFileExaminer, LocalDirExaminer
 from clouseau.retention.local.localusercfgrabber import LocalUserCfGrabber
 
+
 def fileaudit_host(confdir, show_content, dirsizes, depth,
                    to_check, ignore_also,
                    maxfiles):
@@ -14,6 +15,7 @@ def fileaudit_host(confdir, show_content, dirsizes, depth,
                                  ignore_also, maxfiles)
     result = fauditor.do_local_audit()
     return result
+
 
 def logaudit_host(confdir, oldest, show_content, show_system_logs,
                   dirsizes, depth,
@@ -26,6 +28,7 @@ def logaudit_host(confdir, oldest, show_content, show_system_logs,
     result = lauditor.do_local_audit()
     return result
 
+
 def homeaudit_host(confdir, show_content,
                    dirsizes, depth,
                    to_check, ignore_also,
@@ -36,6 +39,7 @@ def homeaudit_host(confdir, show_content,
     result = hauditor.do_local_audit()
     return result
 
+
 def examine_file(path, num_lines,
                  quiet=False):
     fexaminer = LocalFileExaminer(path, num_lines,
@@ -43,12 +47,14 @@ def examine_file(path, num_lines,
     result = fexaminer.run()
     return result
 
+
 def examine_dir(path, batchno, batchsize,
                 quiet=False):
     dexaminer = LocalDirExaminer(path, batchno,
                                  batchsize, quiet)
     result = dexaminer.run()
     return result
+
 
 def retrieve_usercfs(confdir, audit_type):
     ucfsretriever = LocalUserCfGrabber(confdir, audit_type)

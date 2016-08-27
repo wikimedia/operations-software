@@ -13,6 +13,7 @@ from clouseau.retention.utils.runner import Runner
 import clouseau.retention.utils.ruleutils
 from clouseau.retention.local.localfileaudit import LocalFilesAuditor
 
+
 def display_summary_line(line, prompt=None, message=None):
     if line == "":
         return True
@@ -25,6 +26,7 @@ def display_summary_line(line, prompt=None, message=None):
         print line
         return True
     return False
+
 
 def get_dirs_toexamine(host_report):
     '''

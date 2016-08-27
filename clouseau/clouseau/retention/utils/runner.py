@@ -1,8 +1,8 @@
 import os
 import sys
-
 from clouseau.retention.remote.saltclientplus import LocalClientPlus
 import clouseau.retention.utils.config
+
 
 class Runner(object):
     '''

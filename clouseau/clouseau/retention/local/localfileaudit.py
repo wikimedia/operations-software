@@ -3,13 +3,16 @@ import time
 import socket
 import stat
 import locale
-
 import clouseau.retention.utils.magic
 import clouseau.retention.utils.config
 from clouseau.retention.utils.fileinfo import FileInfo
 import clouseau.retention.utils.fileutils
-from clouseau.retention.utils.ignores import Ignores
+from clouseau.retention.utils.fileutils import dirtree_check
 import clouseau.retention.utils.ignores
+from clouseau.retention.utils.ignores import Ignores
+from clouseau.retention.utils.ignores import convert_ignore_also_to_ignores
+from clouseau.retention.utils.ignores import get_ignored_from_exported_rules
+from clouseau.retention.utils.ignores import expand_ignored_dirs
 
 
 class LocalFilesAuditor(object):
@@ -57,9 +60,9 @@ class LocalFilesAuditor(object):
 
         if ignore_also is not None:
             ignore_also = ignore_also.split(',')
-        ignore_also_ignoreds = clouseau.retention.utils.ignores.convert_ignore_also_to_ignores(ignore_also)
+        ignore_also_ignoreds = convert_ignore_also_to_ignores(ignore_also)
         self.ignores = Ignores(self.confdir)
-        ignored_from_export = clouseau.retention.utils.ignores.get_ignored_from_exported_rules(self.confdir)
+        ignored_from_export = get_ignored_from_exported_rules(self.confdir)
         hostname = socket.getfqdn()
 
         self.ignored = self.ignores.merge([ignore_also_ignoreds, ignored_from_export], hostname)
@@ -152,8 +155,7 @@ class LocalFilesAuditor(object):
         dirs = [os.path.join(dirname, d)
                 for d in os.listdir(dirname)]
         if self.dirs_to_check is not None:
-            dirs = [d for d in dirs if clouseau.retention.utils.fileutils.dirtree_check(
-                d, self.dirs_to_check)]
+            dirs = [d for d in dirs if dirtree_check(d, self.dirs_to_check)]
 
         for dname in dirs:
             todo = self.get_subdirs_to_do(dname, dirname_depth + 1, todo)
@@ -161,7 +163,7 @@ class LocalFilesAuditor(object):
 
     def get_dirs_to_do(self, dirname):
         if (self.dirs_to_check is not None and
-                not clouseau.retention.utils.fileutils.dirtree_check(dirname, self.dirs_to_check)):
+                not dirtree_check(dirname, self.dirs_to_check)):
             return {}
 
         todo = {}
@@ -239,7 +241,7 @@ class LocalFilesAuditor(object):
             results: the result set
         '''
         if self.dirs_to_check is not None:
-            if not clouseau.retention.utils.fileutils.dirtree_check(subdirpath, self.dirs_to_check):
+            if not dirtree_check(subdirpath, self.dirs_to_check):
                 return
 
         if clouseau.retention.utils.ignores.dir_is_ignored(subdirpath, self.ignored):
@@ -270,12 +272,10 @@ class LocalFilesAuditor(object):
         # cutoff won't be in our list
         temp_results = []
         for base, paths, files in self.walk_nolinks(subdirpath):
-            expanded_dirs, wildcard_dirs = clouseau.retention.utils.ignores.expand_ignored_dirs(
-                base, self.ignored)
+            expanded_dirs, wildcard_dirs = expand_ignored_dirs(base, self.ignored)
             if self.dirs_to_check is not None:
                 paths[:] = [p for p in paths
-                            if clouseau.retention.utils.fileutils.dirtree_check(os.path.join(base, p),
-                                                                                self.dirs_to_check)]
+                            if dirtree_check(os.path.join(base, p), self.dirs_to_check)]
             paths[:] = [p for p in paths if
                         (not clouseau.retention.utils.fileutils.startswithpath(os.path.join(
                             base, p), expanded_dirs) and
@@ -341,8 +341,8 @@ class LocalFilesAuditor(object):
         for fname in all_files_sorted:
             if (not clouseau.retention.utils.fileutils.contains(
                     all_files[fname].filetype,
-                    clouseau.retention.utils.config.conf['ignored_types'])
-                    and not all_files[fname].is_empty):
+                    clouseau.retention.utils.config.conf['ignored_types']) and
+                    not all_files[fname].is_empty):
                 result.append(all_files[fname].format_output(
                     self.show_sample_content, False,
                     max_name_length))

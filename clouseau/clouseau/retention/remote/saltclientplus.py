@@ -2,6 +2,7 @@ import salt.client
 import salt.utils
 import time
 
+
 class LocalClientPlus(salt.client.LocalClient):
     '''
     extend the salt LocalClient module with methods for showing

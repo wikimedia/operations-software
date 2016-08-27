@@ -1,12 +1,12 @@
 import sys
 import getopt
-
 from clouseau.retention.remote.cli import CommandLine
 from clouseau.retention.remote.remotefileauditor import RemoteFilesAuditor
 from clouseau.retention.remote.remotelogauditor import RemoteLogsAuditor
 from clouseau.retention.remote.remotehomeauditor import RemoteHomesAuditor
 from clouseau.retention.remote.remoteexaminer import RemoteFileExaminer, RemoteDirExaminer
 from clouseau.retention.remote.remoteusercfgrabber import RemoteUserCfGrabber
+
 
 def usage(message=None):
     if message:

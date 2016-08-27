@@ -27,6 +27,7 @@ def get_rules_for_entries(cdb, path, path_entries, host, quiet=False):
             print rule
     return uniq_sorted
 
+
 def import_rule_list(cdb, entries, status, host):
     '''
     import status rules for a list of files or dirs
@@ -54,6 +55,7 @@ def import_rule_list(cdb, entries, status, host):
             sys.stderr.write("Couldn't add rule for %s to rule store\n" %
                              entry)
 
+
 def import_rules(cdb, rules_path, host):
     # we don't toss all existing rules, these get merged into
     # the rules already in the rules store
@@ -79,14 +81,17 @@ def import_rules(cdb, rules_path, host):
                 cdb, yaml_contents[status],
                 Status.status_cf[status][0], host)
 
+
 def do_remove_rule(cdb, path, host):
     cdb.store_db_delete({'basedir': os.path.dirname(path),
                          'name': os.path.basename(path)},
                         host)
 
+
 def do_remove_rules(cdb, status, host):
     cdb.store_db_delete({'status': status},
                         host)
+
 
 def do_add_rule(cdb, path, rtype, status, host):
     cdb.store_db_replace({'basedir': os.path.dirname(path),
@@ -95,8 +100,10 @@ def do_add_rule(cdb, path, rtype, status, host):
                           'status': status},
                          host)
 
+
 def check_host_table_exists(cdb, host):
     return cdb.store_db_check_host_table(host)
+
 
 def normalize_path(path, ptype):
     '''
@@ -110,6 +117,7 @@ def normalize_path(path, ptype):
         if path[-1] == os.path.sep:
             path = path[:-1]
     return path
+
 
 def export_rules(cdb, rules_path, host, status=None):
     rules = get_rules(cdb, host, status)
@@ -140,17 +148,20 @@ def export_rules(cdb, rules_path, host, status=None):
             exc_type, exc_value, exc_traceback)))
         sys.stderr.write("Couldn't save rules into %s.\n" % rules_path)
 
+
 def entrytype_to_text(abbrev):
     if abbrev in RuleStore.TYPES:
         return RuleStore.TYPES_TO_TEXT[abbrev]
     else:
         return None
 
+
 def text_to_entrytype(fullname):
     for key in RuleStore.TYPES_TO_TEXT:
         if RuleStore.TYPES_TO_TEXT[key] == fullname:
             return key
     return None
+
 
 def row_to_rule(row):
     # ('/home/ariel/wmf/security', '/home/ariel/wmf/security/openjdk6', 'D', 'G')
@@ -161,6 +172,7 @@ def row_to_rule(row):
             'type': entrytype_to_text(entrytype),
             'status': Status.status_to_text(status)}
     return rule
+
 
 def get_rules(cdb, host, status=None):
     if status:
@@ -175,6 +187,7 @@ def get_rules(cdb, host, status=None):
         rules.append(row_to_rule(row))
     return rules
 
+
 def show_rules(cdb, host, status=None, prefix=None):
     rules = get_rules(cdb, host, status)
     if rules:
@@ -182,6 +195,7 @@ def show_rules(cdb, host, status=None, prefix=None):
         for rule in rules_sorted:
             if prefix is None or rule['path'].startswith(prefix):
                 print rule
+
 
 def get_rules_with_prefix(cdb, path, host):
     '''
@@ -195,6 +209,7 @@ def get_rules_with_prefix(cdb, path, host):
     for row in rows:
         rules.append(row_to_rule(row))
     return rules
+
 
 def check_rule_prefixes(rows):
     '''
@@ -212,6 +227,7 @@ def check_rule_prefixes(rows):
         else:
             text.append(row)
     return text, wildcards
+
 
 def rule_is_prefix(basedir, name, path, wildcard=False):
     '''
@@ -240,6 +256,7 @@ def rule_is_prefix(basedir, name, path, wildcard=False):
                 if os.path.sep not in path[len(left): -1 * len(right)]:
                     return True
     return False
+
 
 def get_rules_for_path(cdb, path, host, quiet=False):
     # get all paths starting from / and descending to the specified path
@@ -279,6 +296,7 @@ def get_rules_for_path(cdb, path, host, quiet=False):
         for rule in keep_sorted:
             print rule
     return keep_sorted
+
 
 def get_prefixes(path):
     '''
