@@ -7,8 +7,7 @@
     "mysql_user": "root",
     "mysql_password": "password",
     "fullviews": [
-        "abuse_filter_action", "abuse_filter_history",
-        "aft_article_answer", "aft_article_answer_text",
+        "abuse_filter_action", "aft_article_answer", "aft_article_answer_text",
         "aft_article_feedback_properties", "aft_article_feedback_ratings_rollup",
         "aft_article_feedback_select_rollup", "aft_article_field", "aft_article_field_group",
         "aft_article_field_option", "aft_article_filter_count", "aft_article_revision_feedback_ratings_rollup",
