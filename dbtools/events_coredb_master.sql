@@ -1,7 +1,7 @@
 -- Events for s[1-7] masters
 
 set @cache_sql_log_bin := @@session.sql_log_bin;
-set @@session.sql_log_bin = 1;
+set @@session.sql_log_bin = 0;
 
 set @cache_event_scheduler := @@global.event_scheduler;
 set @@global.event_scheduler = 0;
@@ -12,7 +12,7 @@ use ops;
 
 -- Remember, table is replicated!
 -- https://wikitech.wikimedia.org/wiki/MariaDB#Schema_Changes
-
+-- note from Jaime: it is not, because it creates GTID issues
 create table if not exists event_log (
   server_id int unsigned  not null,
   stamp     datetime      not null,
@@ -24,11 +24,14 @@ create table if not exists event_log (
 -- Avoid replicating event DDL. Coredb events should only be created
 -- on s[1-7] though they may rely on replicated tables like event_log.
 
-set @@session.sql_log_bin = 0;
-
 delimiter ;;
 
 -- Housekeeping
+
+drop event if exists wmf_slave_overload;;
+drop event if exists wmf_slave_wikiuser_sleep;;
+drop event if exists wmf_slave_wikiuser_slow;;
+drop event if exists wmf_slave_purge;;
 
 drop event if exists wmf_master_purge;;
 
