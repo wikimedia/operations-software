@@ -35,7 +35,7 @@ drop event if exists wmf_slave_purge;;
 
 drop event if exists wmf_master_purge;;
 
-create event wmf_master_purge
+create definer='root'@'localhost' event wmf_master_purge
 
     on schedule every 15 minute starts date(now())
 
@@ -55,7 +55,7 @@ create event wmf_master_purge
 
 drop event if exists wmf_master_wikiuser_sleep;;
 
-create event wmf_master_wikiuser_sleep
+create definer='root'@'localhost' event wmf_master_wikiuser_sleep
 
     on schedule every 30 second starts date(now()) + interval 5 second
 
