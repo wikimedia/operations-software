@@ -45,6 +45,7 @@ create event wmf_slave_purge
         declare sid int;
 
         set sid := @@server_id;
+        set @@session.sql_log_bin := 0;
 
         delete from event_log where stamp < now() - interval 1 day and server_id = sid;
 
@@ -86,6 +87,7 @@ create event wmf_slave_wikiuser_slow
         declare continue handler for not found set all_done = 1;
 
         set sid := @@server_id;
+        set @@session.sql_log_bin := 0;
 
         if (get_lock('wmf_slave_wikiuser_slow', 1) = 0) then
             signal sqlstate value '45000' set message_text = 'get_lock';
@@ -149,6 +151,7 @@ create event wmf_slave_wikiuser_sleep
         end if;
 
         set sid := @@server_id;
+        set @@session.sql_log_bin := 0;
 
         set all_done = 0;
         open threads_sleeping;
@@ -213,6 +216,7 @@ create event wmf_slave_overload
         end if;
 
         set sid := @@server_id;
+        set @@session.sql_log_bin := 0;
 
         set active_count := (
             select count(ps.id)
