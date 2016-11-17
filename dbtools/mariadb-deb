@@ -17,10 +17,11 @@ confirm() {
 }
 
 package=$(grep 'Package:' $control | awk '{print $2}')
+vendor=$(echo $package | sed 's/wmf-\(mariadb\|mysql\).*/\1/')
 release=$(grep 'Version:' $control | awk '{print $2}')
-version=$(echo $release | sed 's/-[0-9]*//')
+version=$(echo $release | sed 's/\(.*\)-.*/\1/')
 debname="${package}_${release}_amd64"
-tarball="mariadb-${version}-linux-x86_64.tar.gz"
+tarball="${vendor}-${version}-linux-x86_64.tar.gz"
 optname="${package}"
 tarname=$(echo $tarball | sed 's/\.tar\.gz$//')
 makedir="$debname"
@@ -58,14 +59,27 @@ mv $makedir/opt/$tarname $makedir/opt/$optname
 
 echo "adding WMF stuff..."
 
-setup="$makedir/opt/$optname/install"
-cat mariadb-deb-install.tpl.sh | sed "s:BASEDIR:$basedir:g" > $setup
-chmod 755 $setup
+postinst="$makedir/DEBIAN/postinst"
+cat mariadb-deb-postinst.tpl.sh | sed "s:BASEDIR:$basedir:g" > $postinst
+chmod 755 $postinst
 
-service="$makedir/opt/$optname/service"
-cat mariadb-deb-service.tpl.sh | sed "s:BASEDIR:$basedir:g" > $service
-chmod 755 $service
+postrm="$makedir/DEBIAN/postrm"
+cat mariadb-deb-postrm.tpl.sh | sed "s:BASEDIR:$basedir:g" > $postrm
+chmod 755 $postrm
 
+echo "removing unneeded files"
+# suite test
+rm -Rf $makedir/opt/$optname/mysql-test
+# embebbed mysql & test binaries
+rm -f $makedir/opt/$optname/bin/mysql_client_test_embedded
+rm -f $makedir/opt/$optname/bin/mysqltest_embedded
+rm -f $makedir/opt/$optname/bin/mysql_embedded
+rm -f $makedir/opt/$optname/bin/mysql_client_test
+
+# making root the owner
+
+chown -R root:root $makedir
+echo "Now building the package (this may take a while)..."
 dpkg-deb --build $makedir
 
 echo "done."
