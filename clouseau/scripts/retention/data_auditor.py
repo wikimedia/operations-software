@@ -281,5 +281,6 @@ def main():
                                   audit_type, ignore_also, hosts_expr)
             cmdline.run(report)
 
+
 if __name__ == '__main__':
     main()

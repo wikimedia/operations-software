@@ -307,5 +307,6 @@ def main():
     show_salt_too_many_processes(summaries)
     show_salt_no_keysize(summaries)
 
+
 if __name__ == "__main__":
     main()

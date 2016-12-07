@@ -15,6 +15,7 @@ def _init():
     """
     return ctypes.cdll.LoadLibrary(find_library('magic'))
 
+
 _libraries = {}
 _libraries['magic'] = _init()
 
@@ -49,6 +50,8 @@ MAGIC_NO_CHECK_BUILTIN = NO_CHECK_BUILTIN = 4173824
 
 class magic_set(Structure):
     pass
+
+
 magic_set._fields_ = []
 magic_t = POINTER(magic_set)
 

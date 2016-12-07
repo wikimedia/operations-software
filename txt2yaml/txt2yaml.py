@@ -22,5 +22,6 @@ def main():
     # Write amended YAML to stdout.
     yaml.dump(y, sys.stdout)
 
+
 if __name__ == '__main__':
     main()

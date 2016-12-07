@@ -164,5 +164,6 @@ def main():
         hosts = client.cmd_expandminions(hosts, "test.ping", expr_form=htype)
     do_action(cdb, action, hosts, status, path, dryrun)
 
+
 if __name__ == '__main__':
     main()

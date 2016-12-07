@@ -17,6 +17,7 @@ def get_files(path, extension=None):
     else:
         return glob.glob(path + '*.' + extension)
 
+
 setup(
     name="clouseau",
     version="0.0.1",

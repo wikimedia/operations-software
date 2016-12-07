@@ -569,5 +569,6 @@ def main():
     elif dryrun:
         print "wrong master encountered, stopping"
 
+
 if __name__ == "__main__":
     main()
