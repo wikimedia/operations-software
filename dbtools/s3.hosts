@@ -5,11 +5,15 @@ db2043.codfw.wmnet  3306
 db2050.codfw.wmnet  3306
 db2057.codfw.wmnet  3306
 db2018.codfw.wmnet  3306
-dbstore1001.eqiad.wmnet 3306
-dbstore1002.eqiad.wmnet 3306
 labsdb1001.eqiad.wmnet  3306
 labsdb1003.eqiad.wmnet  3306
 db1069.eqiad.wmnet  3313
+labsdb1009.eqiad.wmnet  3306
+labsdb1010.eqiad.wmnet  3306
+labsdb1011.eqiad.wmnet  3306
+dbstore1001.eqiad.wmnet 3306
+dbstore1002.eqiad.wmnet 3306
+db1095.eqiad.wmnet  3306
 db1015.eqiad.wmnet  3306
 db1035.eqiad.wmnet  3306
 db1038.eqiad.wmnet  3306

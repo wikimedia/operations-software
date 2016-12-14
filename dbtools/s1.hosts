@@ -11,6 +11,10 @@ db2016.codfw.wmnet  3306
 labsdb1003.eqiad.wmnet  3306
 labsdb1001.eqiad.wmnet  3306
 db1069.eqiad.wmnet  3311
+labsdb1009.eqiad.wmnet  3306
+labsdb1010.eqiad.wmnet  3306
+labsdb1011.eqiad.wmnet  3306
+db1095.eqiad.wmnet  3306
 dbstore1001.eqiad.wmnet 3306
 dbstore1002.eqiad.wmnet 3306
 db1080.eqiad.wmnet  3306
