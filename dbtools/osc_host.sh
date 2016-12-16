@@ -120,7 +120,7 @@ if [[ ! "$method" =~ ^(percona|ddl|ddlonline)$ ]]; then
 	exit 1
 fi
 
-mysql="mysql -h $host -u $user -P $port"
+mysql="mysql --skip-ssl -h $host -u $user -P $port"
 
 if ! $mysql -e "status"; then
 	echo "Connect failed: $user@$host:$port"
