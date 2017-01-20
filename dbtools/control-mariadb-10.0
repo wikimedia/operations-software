@@ -1,5 +1,5 @@
 Package: wmf-mariadb10
-Version: 10.0.28-1
+Version: 10.0.29-1
 Section: misc
 Priority: optional
 Architecture: amd64
