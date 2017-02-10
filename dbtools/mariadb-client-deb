@@ -1,0 +1,122 @@
+#!/bin/bash
+# This turns an upstream MariaDB static tarball into a deb
+# with only the client libraries.
+
+control=$1
+
+if [ ! -e $control ]; then
+	echo "missing control" 1>&2
+	exit 1
+fi
+
+confirm() {
+	read -p "continue? yes/no " yn
+	if [[ ! "$yn" =~ ^y ]]; then
+		echo "abort"
+		exit 1
+	fi
+}
+
+package=$(grep 'Package:' $control | awk '{print $2}')
+vendor=$(echo $package | sed 's/wmf-\(mariadb\|mysql\).*/\1/')
+release=$(grep 'Version:' $control | awk '{print $2}')
+version=$(echo $release | sed 's/\(.*\)-.*/\1/')
+debname="${package}_${release}_amd64"
+tarball="${vendor}-${version}-linux-x86_64.tar.gz"
+optname="${package}"
+tarname=$(echo $tarball | sed 's/\.tar\.gz$//')
+makedir="$debname"
+basedir="/opt/$optname"
+
+echo "control: $control"
+echo "package: $package"
+echo "release: $release"
+echo "version: $version"
+echo "tarname: $tarname"
+echo "makedir: $makedir"
+echo "basedir: $basedir"
+
+confirm
+
+if [ ! -e $tarball ]; then
+	echo "missing tarball" 1>&2
+	exit 1
+fi
+
+echo "creating directory structure..."
+
+rm -rf $makedir
+mkdir $makedir
+
+mkdir $makedir/DEBIAN
+cp $control $makedir/DEBIAN/control
+
+mkdir $makedir/opt
+
+echo "extracting tarball..."
+
+tar zxpf $tarball -C $makedir/opt
+mv $makedir/opt/$tarname $makedir/opt/$optname
+
+echo "adding WMF stuff..."
+
+postinst="$makedir/DEBIAN/postinst"
+cat mariadb-client-deb-postinst.tpl.sh | sed "s:BASEDIR:$basedir:g" > $postinst
+chmod 755 $postinst
+
+postrm="$makedir/DEBIAN/postrm"
+cat mariadb-client-deb-postrm.tpl.sh | sed "s:BASEDIR:$basedir:g" > $postrm
+chmod 755 $postrm
+
+echo "removing unneeded files"
+# suite test
+rm -Rf $makedir/opt/$optname/mysql-test
+rm -Rf $makedir/opt/$optname/sql-bench
+# embebbed mysql & test binaries
+rm -f $makedir/opt/$optname/bin/mysql_client_test_embedded
+rm -f $makedir/opt/$optname/bin/mysqltest_embedded
+rm -f $makedir/opt/$optname/bin/mysql_embedded
+rm -f $makedir/opt/$optname/bin/mysql_client_test
+# mysqld server binaries
+rm -f $makedir/opt/$optname/bin/mysqld
+rm -f $makedir/opt/$optname/bin/mysqld_multi
+rm -f $makedir/opt/$optname/bin/mysqld_safe
+rm -f $makedir/opt/$optname/bin/mysqld_safe_helper
+rm -f $makedir/opt/$optname/bin/mysql_upgrade
+rm -f $makedir/opt/$optname/bin/aria*
+rm -f $makedir/opt/$optname/bin/myisam*
+rm -f $makedir/opt/$optname/bin/inno*
+rm -f $makedir/opt/$optname/bin/wsrep*
+# helper scripts
+rm -Rf $makedir/opt/$optname/share
+rm -Rf $makedir/opt/$optname/support-files
+rm -Rf $makedir/opt/$optname/scripts
+# man pages for deleted binaries
+rm -Rf $makedir/man/man8
+rm -f $makedir/opt/$optname/man/man1/mysqltest.1
+rm -f $makedir/opt/$optname/man/man1/mysqltest_embedded.1
+rm -f $makedir/opt/$optname/man/man1/mysql_client_test.1
+rm -f $makedir/opt/$optname/man/man1/mysql_client_test_embedded.1
+rm -f $makedir/opt/$optname/man/man1/aria*
+rm -f $makedir/opt/$optname/man/man1/myisam*
+rm -f $makedir/opt/$optname/man/man1/inno*
+rm -f $makedir/opt/$optname/man/man1/wsrep*
+rm -f $makedir/opt/$optname/man/man1/mysql-test-run.pl.1
+rm -f $makedir/opt/$optname/man/man1/mysql_upgrade.1
+# server plugins
+rm -Rf $makedir/opt/$optname/lib/plugin
+# server libraries
+rm -f $makedir/opt/$optname/libmysqld.so
+rm -f $makedir/opt/$optname/libmysqld.so.18
+rm -f $makedir/opt/$optname/libmysqld.a
+rm -f $makedir/opt/$optname/libmysqlservices.a
+# data dir
+rm -Rf $makedir/opt/$optname/data
+
+# making root the owner
+
+chown -R root:root $makedir
+echo "Now building the package (this may take a while)..."
+dpkg-deb --build $makedir
+
+echo "done."
