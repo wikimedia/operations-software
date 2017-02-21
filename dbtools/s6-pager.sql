@@ -67,8 +67,19 @@ ALTER TABLE frwiki.logging
 
 ALTER TABLE frwiki.revision
   DROP PRIMARY KEY,
-  DROP INDEX rev_id,
-  ADD PRIMARY KEY (rev_id, rev_user)
+  ADD PRIMARY KEY (rev_id, rev_user),
+  DROP INDEX user_timestamp,
+  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+  DROP KEY rev_timestamp,
+  ADD KEY rev_timestamp (rev_timestamp, rev_id),
+  DROP KEY page_timestamp,
+  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+  DROP KEY usertext_timestamp,
+  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+  DROP KEY page_user_timestamp,
+  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+  DROP KEY rev_page_id,
+  ADD KEY rev_page_id (rev_page, rev_id)
   PARTITION BY RANGE (rev_user) (
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p10000 VALUES LESS THAN (10000),
@@ -158,8 +169,19 @@ ALTER TABLE ruwiki.logging
 
 ALTER TABLE ruwiki.revision
   DROP PRIMARY KEY,
-  DROP INDEX rev_id,
-  ADD PRIMARY KEY (rev_id, rev_user)
+  ADD PRIMARY KEY (rev_id, rev_user),
+  DROP INDEX user_timestamp,
+  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+  DROP KEY rev_timestamp,
+  ADD KEY rev_timestamp (rev_timestamp, rev_id),
+  DROP KEY page_timestamp,
+  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+  DROP KEY usertext_timestamp,
+  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+  DROP KEY page_user_timestamp,
+  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+  DROP KEY rev_page_id,
+  ADD KEY rev_page_id (rev_page, rev_id)
   PARTITION BY RANGE (rev_user) (
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p5000 VALUES LESS THAN (5000),
@@ -240,8 +262,19 @@ ALTER TABLE jawiki.logging
 
 ALTER TABLE jawiki.revision
   DROP PRIMARY KEY,
-  DROP INDEX rev_id,
-  ADD PRIMARY KEY (rev_id, rev_user)
+  ADD PRIMARY KEY (rev_id, rev_user),
+  DROP INDEX user_timestamp,
+  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+  DROP KEY rev_timestamp,
+  ADD KEY rev_timestamp (rev_timestamp, rev_id),
+  DROP KEY page_timestamp,
+  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+  DROP KEY usertext_timestamp,
+  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+  DROP KEY page_user_timestamp,
+  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+  DROP KEY rev_page_id,
+  ADD KEY rev_page_id (rev_page, rev_id)
   PARTITION BY RANGE (rev_user) (
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p10000 VALUES LESS THAN (10000),
