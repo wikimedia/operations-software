@@ -145,6 +145,10 @@ for var in "$@"; do
 		ddlrep="set session sql_log_bin=1;"
 	fi
 
+    if [[ "$var" =~ ^--gtid_domain_id=([0-9]+) ]]; then
+        ddlrep="$ddlrep set session gtid_domain_id = ${BASH_REMATCH[1]};"
+    fi
+
 	# pt-online-schema-change will try to panic when altering a primary key. Tell it that we
 	# know about the risks and have decided to go for gold...
 	if [[ "$var" =~ ^--primary-key ]]; then
