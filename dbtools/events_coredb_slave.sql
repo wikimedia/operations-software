@@ -79,7 +79,6 @@ create definer='root'@'localhost' event wmf_slave_wikiuser_slow
                 and ps.user = 'wikiuser'
                 and ps.time between 300 and 1000000
                 and ps.info is not null
-                and lower(ps.info) regexp '^[[:space:]]*select'
                 and not lower(ps.info) regexp 'wikiexporter'
                 and not lower(ps.info) regexp 'master_pos_wait'
             order by ps.time desc;
