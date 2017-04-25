@@ -51,133 +51,127 @@ create definer='root'@'localhost' event wmf_slave_purge
 
     end ;;
 
--- NOTE: information_schema.processlist
--- MariaDB must generate information_schema.processlist every time it is accessed.
--- That involves various locks which start to matter during high traffic, so stagger
--- events appropriately, at least several seconds apart.
+-- NOTE: We use performance_schema.threads, which should be mostly lockless
+-- and with much less contention than information_schema.processlist
 
--- wikiuser slow queries get killed at 300s
+-- wikiuser slow queries get killed at 60s
 -- time < 1000000 mariadb 5.5 bug allows new connections to be 2147483647 briefly
 
 drop event if exists wmf_slave_wikiuser_slow;;
 
 create definer='root'@'localhost' event wmf_slave_wikiuser_slow
+on schedule every 30 second starts date(now()) + interval 3 second
+do begin
 
-    on schedule every 30 second starts date(now()) + interval 3 second
+    declare sid int;
+    declare all_done int default 0;
+    declare thread_id bigint default null;
+    declare thread_query varchar(100);
 
-    do begin
+    declare slow_queries cursor for
+        SELECT ps.PROCESSLIST_ID, substring(ps.PROCESSLIST_INFO,1,100)
+        FROM performance_schema.threads ps
+        WHERE ps.processlist_user = 'wikiuser'
+            AND ps.type='FOREGROUND'
+            AND ps.PROCESSLIST_COMMAND = 'Query'
+            AND ps.processlist_time between 60 and 1000000
+            AND not lower(ps.PROCESSLIST_INFO) regexp 'wikiexporter'
+            AND not lower(ps.PROCESSLIST_INFO) regexp 'master_pos_wait'
+        ORDER BY ps.processlist_time DESC;
 
-        declare sid int;
-        declare all_done int default 0;
-        declare thread_id bigint default null;
-        declare thread_query varchar(100);
+    declare continue handler for not found set all_done = 1;
 
-        declare slow_queries cursor for
-            select ps.id, substring(info,1,100)
-            from information_schema.processlist ps
-            where ps.command = 'Query'
-                and ps.user = 'wikiuser'
-                and ps.time between 300 and 1000000
-                and ps.info is not null
-                and not lower(ps.info) regexp 'wikiexporter'
-                and not lower(ps.info) regexp 'master_pos_wait'
-            order by ps.time desc;
+    set sid := @@server_id;
+    set @@session.sql_log_bin := 0;
 
-        declare continue handler for not found set all_done = 1;
+    if (get_lock('wmf_slave_wikiuser_slow', 1) = 0) then
+        signal sqlstate value '45000' set message_text = 'get_lock';
+    end if;
 
-        set sid := @@server_id;
-        set @@session.sql_log_bin := 0;
+    set all_done = 0;
+    open slow_queries;
 
-        if (get_lock('wmf_slave_wikiuser_slow', 1) = 0) then
-            signal sqlstate value '45000' set message_text = 'get_lock';
+    repeat fetch slow_queries into thread_id, thread_query;
+
+        if (thread_id is not null) then
+
+            kill thread_id;
+
+            insert into event_log values (sid, now(), 'wmf_slave_wikiuser_slow (>60)',
+                concat('kill ',thread_id, '; ',thread_query)
+            );
+
         end if;
 
-        set all_done = 0;
-        open slow_queries;
+        until all_done
+    end repeat;
 
-        repeat fetch slow_queries into thread_id, thread_query;
+    close slow_queries;
 
-            if (thread_id is not null) then
+    -- https://mariadb.atlassian.net/browse/MDEV-4602
+    select 1 from (select 1) as t;
 
-                kill thread_id;
+    do release_lock('wmf_slave_wikiuser_slow');
 
-                insert into event_log values (sid, now(), 'wmf_slave_wikiuser_slow',
-                    concat('kill ',thread_id, '; ',thread_query)
-                );
+end ;;
 
-            end if;
-
-            until all_done
-        end repeat;
-
-        close slow_queries;
-
-        -- https://mariadb.atlassian.net/browse/MDEV-4602
-        select 1 from (select 1) as t;
-
-        do release_lock('wmf_slave_wikiuser_slow');
-
-    end ;;
-
--- wikiuser sleepers get killed at 300s
+-- wikiuser sleepers get killed at 60s
 -- time < 1000000 mariadb 5.5 bug allows new connections to be 2147483647 briefly
 
 drop event if exists wmf_slave_wikiuser_sleep;;
 
 create definer='root'@'localhost' event wmf_slave_wikiuser_sleep
+on schedule every 30 second starts date(now()) + interval 5 second
+do begin
 
-    on schedule every 30 second starts date(now()) + interval 5 second
+    declare sid int;
+    declare all_done int default 0;
+    declare thread_id bigint default null;
 
-    do begin
+    declare threads_sleeping cursor for
+        SELECT ps.PROCESSLIST_ID
+        FROM performance_schema.threads ps
+        WHERE ps.processlist_user = 'wikiuser'
+            AND ps.type='FOREGROUND'
+            AND ps.PROCESSLIST_COMMAND = 'Sleep'
+            AND ps.processlist_time between 60 and 1000000
+        ORDER BY ps.processlist_time DESC;
 
-        declare sid int;
-        declare all_done int default 0;
-        declare thread_id bigint default null;
+    declare continue handler for not found set all_done = 1;
 
-        declare threads_sleeping cursor for
-            select ps.id
-            from information_schema.processlist ps
-            where ps.command = 'Sleep'
-                and ps.user = 'wikiuser'
-                and ps.time between 300 and 1000000
-                and ps.info is null
-            order by ps.time desc;
+    set sid := @@server_id;
+    set @@session.sql_log_bin := 0;
 
-        declare continue handler for not found set all_done = 1;
+    if (get_lock('wmf_slave_wikiuser_sleep', 1) = 0) then
+        signal sqlstate value '45000' set message_text = 'get_lock';
+    end if;
 
-        if (get_lock('wmf_slave_wikiuser_sleep', 1) = 0) then
-            signal sqlstate value '45000' set message_text = 'get_lock';
+    set all_done = 0;
+    open threads_sleeping;
+
+    repeat fetch threads_sleeping into thread_id;
+
+        if (thread_id is not null) then
+
+            kill thread_id;
+
+            insert into event_log values (sid, now(), 'wmf_slave_wikiuser_sleep',
+                concat('kill ',thread_id)
+            );
+
         end if;
 
-        set sid := @@server_id;
-        set @@session.sql_log_bin := 0;
+        until all_done
+    end repeat;
 
-        set all_done = 0;
-        open threads_sleeping;
+    close threads_sleeping;
 
-        repeat fetch threads_sleeping into thread_id;
+    -- https://mariadb.atlassian.net/browse/MDEV-4602
+    select 1 from (select 1) as t;
 
-            if (thread_id is not null) then
+    do release_lock('wmf_slave_wikiuser_sleep');
 
-                kill thread_id;
-
-                insert into event_log values (sid, now(), 'wmf_slave_wikiuser_sleep',
-                    concat('kill ',thread_id)
-                );
-
-            end if;
-
-            until all_done
-        end repeat;
-
-        close threads_sleeping;
-
-        -- https://mariadb.atlassian.net/browse/MDEV-4602
-        select 1 from (select 1) as t;
-
-        do release_lock('wmf_slave_wikiuser_sleep');
-
-    end ;;
+end ;;
 
 -- Identify a general overload
 
@@ -194,19 +188,16 @@ create definer='root'@'localhost' event wmf_slave_overload
         declare thread_id bigint default null;
         declare thread_query varchar(100);
         declare active_count bigint default null;
+        declare top_connections bigint default null;
 
         declare active_queries cursor for
-            select ps.id, substring(info,1,100)
-            from information_schema.processlist ps
-            where ps.command = 'Query'
-                and ps.user = 'wikiuser'
-                and ps.time between 10 and 1000000
-                and ps.info is not null
-                and lower(ps.info) regexp '^[[:space:]]*select'
-                and not lower(ps.info) regexp 'wikiexporter'
-                and not lower(ps.info) regexp 'master_pos_wait'
-            order by ps.time desc
-            limit 100;
+            SELECT ps.PROCESSLIST_ID, substring(ps.PROCESSLIST_INFO,1,100)
+            FROM performance_schema.threads ps
+            WHERE ps.processlist_user = 'wikiuser'
+                AND ps.type='FOREGROUND'
+                AND ps.processlist_time between 10 and 1000000
+           ORDER BY ps.processlist_time DESC
+           LIMIT 1000;
 
         declare continue handler for not found set all_done = 1;
 
@@ -218,17 +209,14 @@ create definer='root'@'localhost' event wmf_slave_overload
         set @@session.sql_log_bin := 0;
 
         set active_count := (
-            select count(ps.id)
-            from information_schema.processlist ps
-            where ps.command = 'Query'
-                and ps.info is not null
+            SELECT count(*) FROM performance_schema.threads
         );
+        set top_connections := @@GLOBAL.max_connections;
 
-        -- While a server usually has hundreds of open client connections, the number
-        -- of concurrent active queries is much lower during normal load. If we find a
-        -- spike, be nastier than normal and kill the slowest running over 30s.
+        -- If we find a spike of connections, be nastier than normal and kill the slowest
+        -- running over 10s.
 
-        if (active_count is not null and active_count > 300) then
+        if (active_count is not null and active_count > (top_connections/2)) then
 
             set all_done = 0;
             open active_queries;
@@ -239,7 +227,7 @@ create definer='root'@'localhost' event wmf_slave_overload
 
                     kill thread_id;
 
-                    insert into event_log values (sid, now(), 'wmf_slave_overload (300)',
+                    insert into event_log values (sid, now(), 'wmf_slave_overload',
                         concat('kill ',thread_id,'; ',thread_query)
                     );
 
