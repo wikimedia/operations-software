@@ -17,7 +17,7 @@ import threading
 import swiftclient
 
 CONTAINER_THUMB_RE = re.compile('-thumb(\.[a-f0-9][a-f0-9])?$')
-THUMB_RE = re.compile('/(?P<size>\d+)px-(?P<name>.*)$')
+THUMB_RE = re.compile('/.*?(?P<size>\d+)px-(?P<name>.*)$')
 
 
 class Thumb(object):
