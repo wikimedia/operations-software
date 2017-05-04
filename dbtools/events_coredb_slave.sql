@@ -76,7 +76,7 @@ do begin
             AND ps.PROCESSLIST_COMMAND = 'Query'
             AND ps.processlist_time between 60 and 1000000
             AND not lower(ps.PROCESSLIST_INFO) regexp 'wikiexporter'
-            AND not lower(ps.PROCESSLIST_INFO) regexp 'master_pos_wait'
+            AND not lower(ps.PROCESSLIST_INFO) regexp '(master_pos_wait|master_gtid_wait|insert|update|replace|delete)'
         ORDER BY ps.processlist_time DESC;
 
     declare continue handler for not found set all_done = 1;
