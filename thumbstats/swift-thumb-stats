@@ -34,6 +34,40 @@ class Filter(object):
         pass
 
 
+class HiveExport(Filter):
+    """Print to stdout a dump of thumbnails found, ready for import into Hive
+    for further analysis.
+
+    The Hive statements below will create a suitable table and import the dump.
+    Note that the dump needs to live on the same server as the hive server is
+    running on. The ORC conversion step is needed for efficient storage and
+    querying by Hive.
+
+    CREATE TABLE thumbstats_raw (
+        name string, pixels int, container string,path string, bytes int,
+        last_modified timestamp, content_type string);
+    CREATE TABLE thumbstats (
+        name string, pixels int, container string, path string, bytes int,
+        last_modified timestamp, content_type string)
+        STORED AS ORC tblproperties ("orc.compress" = "SNAPPY");
+    LOAD DATA LOCAL INPATH "<dumpfile>" OVERWRITE INTO TABLE thumbstats_raw;
+    INSERT OVERWRITE thumbstats SELECT * FROM thumbstats_raw;
+    """
+
+    def process(self, thumb):
+        # Hive < 1.2.0 requires a fixed timestamp format on load, see HIVE-9298
+        thumb.last_modified = thumb.last_modified.replace('T', ' ')
+        thumb.last_modified += '000'
+        export_fields = (
+            thumb.name, thumb.thumbsize, thumb.container_name,
+            thumb.filename, thumb.bytes, thumb.last_modified,
+            thumb.content_type)
+        print '\x01'.join([unicode(x).encode('utf8') for x in export_fields])
+
+    def result(self):
+        return {}
+
+
 class BytesPerSize(Filter):
     """Size vs bytes breakdown."""
     _bytes = {}
@@ -94,7 +128,7 @@ def iter_container(connection, name, limit=None):
         _, listing = connection.get_container(name, limit=limit, marker=marker)
 
 
-def iter_thumbs(container):
+def iter_thumbs(container, container_name):
     """Iterate over the container contents and yield Thumb objects."""
 
     for thumb in container:
@@ -102,6 +136,7 @@ def iter_thumbs(container):
         if not m:
             continue
         t = Thumb()
+        t.container_name = container_name
         t.name = m.group('name')
         t.thumbsize = m.group('size')
         t.filename = thumb['name']
@@ -116,7 +151,8 @@ def _process_container(container, connection, filters):
     """Iterate over the container thumbs and pass items to each filter."""
 
     container_name = container['name']
-    thumbs = iter_thumbs(iter_container(connection, container_name))
+    thumbs = iter_thumbs(iter_container(connection, container_name),
+                         container_name)
     start = datetime.datetime.utcnow()
     for i, thumb in enumerate(thumbs):
         thumb.container_name = container_name
@@ -176,6 +212,9 @@ def main():
     parser.add_argument(
         '-t', '--threads', dest='threads', default=3, type=int,
         help='How many threads to use (%(default)s)')
+    parser.add_argument(
+        '--hive_export', dest='hive_export', default=False,
+        action='store_true', help='Export thumbnail data for Hive processing')
     args = parser.parse_args()
 
     if None in (args.auth, args.user, args.key):
@@ -187,6 +226,9 @@ def main():
     worker_queue = collections.deque(thumb_containers(connection))
     filters = [BytesPerSize(), CountPerSize(), BytesByMonth()]
     threads = []
+
+    if args.hive_export:
+        filters = [HiveExport()]
 
     for i in range(args.threads):
         thread_connection = swiftclient.Connection(
