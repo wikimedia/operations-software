@@ -51,7 +51,7 @@ class HiveExport(Filter):
         last_modified timestamp, content_type string)
         STORED AS ORC tblproperties ("orc.compress" = "SNAPPY");
     LOAD DATA LOCAL INPATH "<dumpfile>" OVERWRITE INTO TABLE thumbstats_raw;
-    INSERT OVERWRITE thumbstats SELECT * FROM thumbstats_raw;
+    INSERT OVERWRITE TABLE thumbstats SELECT * FROM thumbstats_raw;
     """
 
     def process(self, thumb):
