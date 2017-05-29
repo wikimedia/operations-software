@@ -15,4 +15,6 @@ update-alternatives --remove mysqlcheck $basedir/bin/mysqlcheck
 # Handled automatically
 # rmdir --ignore-fail-on-non-empty /usr/local/bin
 
+INITRM
+
 exit 0

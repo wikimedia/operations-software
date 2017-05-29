@@ -56,7 +56,7 @@ mkdir $makedir/opt
 echo "extracting tarball..."
 
 tar zxpf $tarball -C $makedir/opt
-mv $makedir/opt/$tarname $makedir/opt/$optname
+mv $makedir/opt/$tarname $makedir/$basedir
 
 echo "adding WMF stuff..."
 
@@ -70,48 +70,48 @@ chmod 755 $postrm
 
 echo "removing unneeded files"
 # suite test
-rm -Rf $makedir/opt/$optname/mysql-test
-rm -Rf $makedir/opt/$optname/sql-bench
+rm -Rf $makedir/$basedir/mysql-test
+rm -Rf $makedir/$basedir/sql-bench
 # embebbed mysql & test binaries
-rm -f $makedir/opt/$optname/bin/mysql_client_test_embedded
-rm -f $makedir/opt/$optname/bin/mysqltest_embedded
-rm -f $makedir/opt/$optname/bin/mysql_embedded
-rm -f $makedir/opt/$optname/bin/mysql_client_test
+rm -f $makedir/$basedir/bin/mariabackup
+rm -f $makedir/$basedir/bin/mysql_client_test_embedded
+rm -f $makedir/$basedir/bin/mysqltest_embedded
+rm -f $makedir/$basedir/bin/mysql_embedded
+rm -f $makedir/$basedir/bin/mysql_client_test
 # mysqld server binaries
-rm -f $makedir/opt/$optname/bin/mysqld
-rm -f $makedir/opt/$optname/bin/mysqld_multi
-rm -f $makedir/opt/$optname/bin/mysqld_safe
-rm -f $makedir/opt/$optname/bin/mysqld_safe_helper
-rm -f $makedir/opt/$optname/bin/mysql_upgrade
-rm -f $makedir/opt/$optname/bin/aria*
-rm -f $makedir/opt/$optname/bin/myisam*
-rm -f $makedir/opt/$optname/bin/inno*
-rm -f $makedir/opt/$optname/bin/wsrep*
+rm -f $makedir/$basedir/bin/mysqld
+rm -f $makedir/$basedir/bin/mysqld_multi
+rm -f $makedir/$basedir/bin/mysqld_safe
+rm -f $makedir/$basedir/bin/mysqld_safe_helper
+rm -f $makedir/$basedir/bin/mysql_upgrade
+rm -f $makedir/$basedir/bin/aria*
+rm -f $makedir/$basedir/bin/myisam*
+rm -f $makedir/$basedir/bin/inno*
+rm -f $makedir/$basedir/bin/wsrep*
+rm -f $makedir/$basedir/bin/galera*
 # helper scripts
-rm -Rf $makedir/opt/$optname/share
-rm -Rf $makedir/opt/$optname/support-files
-rm -Rf $makedir/opt/$optname/scripts
+rm -Rf $makedir/$basedir/share
+rm -Rf $makedir/$basedir/support-files
+rm -Rf $makedir/$basedir/scripts
 # man pages for deleted binaries
-rm -Rf $makedir/man/man8
-rm -f $makedir/opt/$optname/man/man1/mysqltest.1
-rm -f $makedir/opt/$optname/man/man1/mysqltest_embedded.1
-rm -f $makedir/opt/$optname/man/man1/mysql_client_test.1
-rm -f $makedir/opt/$optname/man/man1/mysql_client_test_embedded.1
-rm -f $makedir/opt/$optname/man/man1/aria*
-rm -f $makedir/opt/$optname/man/man1/myisam*
-rm -f $makedir/opt/$optname/man/man1/inno*
-rm -f $makedir/opt/$optname/man/man1/wsrep*
-rm -f $makedir/opt/$optname/man/man1/mysql-test-run.pl.1
-rm -f $makedir/opt/$optname/man/man1/mysql_upgrade.1
+rm -Rf $makedir/$basedir/man/man8
+rm -f $makedir/$basedir/man/man1/mysqltest.1
+rm -f $makedir/$basedir/man/man1/mysqltest_embedded.1
+rm -f $makedir/$basedir/man/man1/mysql_client_test.1
+rm -f $makedir/$basedir/man/man1/mysql_client_test_embedded.1
+rm -f $makedir/$basedir/man/man1/aria*
+rm -f $makedir/$basedir/man/man1/myisam*
+rm -f $makedir/$basedir/man/man1/inno*
+rm -f $makedir/$basedir/man/man1/wsrep*
+rm -f $makedir/$basedir/man/man1/mysql-test-run.pl.1
+rm -f $makedir/$basedir/man/man1/mysql_upgrade.1
 # server plugins
-rm -Rf $makedir/opt/$optname/lib/plugin
+rm -Rf $makedir/$basedir/lib/plugin
 # server libraries
-rm -f $makedir/opt/$optname/libmysqld.so
-rm -f $makedir/opt/$optname/libmysqld.so.18
-rm -f $makedir/opt/$optname/libmysqld.a
-rm -f $makedir/opt/$optname/libmysqlservices.a
+rm -f $makedir/$basedir/lib/libmysqld*
+rm -f $makedir/$basedir/lib/libmysqlservices.a
 # data dir
-rm -Rf $makedir/opt/$optname/data
+rm -Rf $makedir/$basedir/data
 
 # making root the owner
 

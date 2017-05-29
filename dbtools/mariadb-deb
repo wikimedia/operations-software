@@ -26,6 +26,8 @@ optname="${package}"
 tarname=$(echo $tarball | sed 's/\.tar\.gz$//')
 makedir="$debname"
 basedir="/opt/$optname"
+initinstall=""
+initrm=""
 
 echo "control: $control"
 echo "package: $package"
@@ -47,7 +49,7 @@ echo "creating directory structure..."
 rm -rf $makedir
 mkdir $makedir
 
-mkdir $makedir/DEBIAN
+mkdir $makedir/DEBIAN 
 cp $control $makedir/DEBIAN/control
 
 mkdir $makedir/opt
@@ -59,12 +61,20 @@ mv $makedir/opt/$tarname $makedir/opt/$optname
 
 echo "adding WMF stuff..."
 
+# install systemd unit on stretch or higher
+if [[ ! "$(cat /etc/debian_version)" < "9" ]]; then
+    initinstall="/bin/systemctl daemon-reload"
+    initrm="/bin/systemctl daemon-reload"
+    mkdir -p $makedir/etc/systemd/system
+    cat $vendor.service | sed "s:BASEDIR:/opt/${optname}/:g" > $makedir/etc/systemd/system/$vendor.service
+fi
+
 postinst="$makedir/DEBIAN/postinst"
-cat mariadb-deb-postinst.tpl.sh | sed "s:BASEDIR:$basedir:g" > $postinst
+cat mariadb-deb-postinst.tpl.sh | sed "s:BASEDIR:$basedir:g" | sed "s:INITINSTALL:$initinstall:g" > $postinst
 chmod 755 $postinst
 
 postrm="$makedir/DEBIAN/postrm"
-cat mariadb-deb-postrm.tpl.sh | sed "s:BASEDIR:$basedir:g" > $postrm
+cat mariadb-deb-postrm.tpl.sh | sed "s:BASEDIR:$basedir:g" | sed "s:INITRM:$initrm:g" > $postrm
 chmod 755 $postrm
 
 echo "removing unneeded files"

@@ -13,4 +13,6 @@ update-alternatives --install /usr/local/bin/mysqlbinlog mysqlbinlog $basedir/bi
 update-alternatives --install /usr/local/bin/mysql_upgrade mysql_upgrade $basedir/bin/mysql_upgrade 1
 update-alternatives --install /usr/local/bin/mysqlcheck mysqlcheck $basedir/bin/mysqlcheck 1
 
+INITINSTALL
+
 exit 0
