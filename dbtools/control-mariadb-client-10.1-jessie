@@ -1,0 +1,11 @@
+Package: wmf-mariadb101-client
+Version: 10.1.23-1
+Section: misc
+Priority: optional
+Architecture: amd64
+Maintainer: Jaime Crespo <jcrespo@wikimedia.org>
+Depends: libssl1.0.0
+Description: MariaDB 10.1 client only with Wikimedia-specific patches.
+ This package installs all mysql client utilities, but not the
+ mysql server. No need to install it if the server is already installed
+ (the server already contains all clients).

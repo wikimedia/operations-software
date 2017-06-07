@@ -50,7 +50,7 @@ CapabilityBoundingSet=CAP_IPC_LOCK
 ProtectSystem=full
 
 # Doesn't yet work properly with SELinux enabled
-# NoNewPrivileges=true
+NoNewPrivileges=true
 
 PrivateDevices=true
 
