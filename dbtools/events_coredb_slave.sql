@@ -216,7 +216,7 @@ create definer='root'@'localhost' event wmf_slave_overload
         -- If we find a spike of connections, be nastier than normal and kill the slowest
         -- running over 10s.
 
-        if (active_count is not null and active_count > (top_connections/2)) then
+        if (active_count is not null and active_count > (top_connections/4)) then
 
             set all_done = 0;
             open active_queries;
