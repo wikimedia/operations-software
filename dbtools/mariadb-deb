@@ -65,8 +65,9 @@ echo "adding WMF stuff..."
 if [[ ! "$(cat /etc/debian_version)" < "9" ]]; then
     initinstall="/bin/systemctl daemon-reload"
     initrm="/bin/systemctl daemon-reload"
-    mkdir -p $makedir/etc/systemd/system
-    cat $vendor.service | sed "s:BASEDIR:/opt/${optname}/:g" > $makedir/etc/systemd/system/$vendor.service
+    mkdir -p $makedir/lib/systemd/system
+    cat $vendor.service | sed "s:BASEDIR:${basedir}/:g" > $makedir/lib/systemd/system/$vendor.service
+    cat $vendor@.service | sed "s:BASEDIR:${basedir}/:g" > $makedir/lib/systemd/system/$vendor@.service
 fi
 
 postinst="$makedir/DEBIAN/postinst"
@@ -79,12 +80,12 @@ chmod 755 $postrm
 
 echo "removing unneeded files"
 # suite test
-rm -Rf $makedir/opt/$optname/mysql-test
+rm -Rf $makedir/$basedir/mysql-test
 # embebbed mysql & test binaries
-rm -f $makedir/opt/$optname/bin/mysql_client_test_embedded
-rm -f $makedir/opt/$optname/bin/mysqltest_embedded
-rm -f $makedir/opt/$optname/bin/mysql_embedded
-rm -f $makedir/opt/$optname/bin/mysql_client_test
+rm -f $makedir/$basedir/bin/mysql_client_test_embedded
+rm -f $makedir/$basedir/bin/mysqltest_embedded
+rm -f $makedir/$basedir/bin/mysql_embedded
+rm -f $makedir/$basedir/bin/mysql_client_test
 
 # making root the owner
 
