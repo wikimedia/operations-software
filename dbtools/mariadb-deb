@@ -62,7 +62,7 @@ mv $makedir/opt/$tarname $makedir/opt/$optname
 echo "adding WMF stuff..."
 
 # install systemd unit on stretch or higher
-if [[ ! "$(cat /etc/debian_version)" < "9" ]]; then
+if [[ "$vendor" == "mariadb" && "$version" > '10.1' || "$vendor" == "mysql" && "$version" > '5.7' ]]; then
     initinstall="/bin/systemctl daemon-reload"
     initrm="/bin/systemctl daemon-reload"
     mkdir -p $makedir/lib/systemd/system
