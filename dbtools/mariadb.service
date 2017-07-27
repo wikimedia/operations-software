@@ -60,8 +60,9 @@ ProtectHome=true
 # Execute pre and post scripts as root, otherwise it does it as User=
 PermissionsStartOnly=true
 
-# Set TimeoutStartSec and TimeoutStopSec to 10 minutes (sometimes it
-# can take a very long time to stop a server or start it if it crashed)
+# Set TimeoutStartSec and TimeoutStopSec to infinity (sometimes it
+# can take a very long time to stop a server or start it if it crashed,
+# like 1 hour or more and be a normal behaviour)
 TimeoutSec=infinity
 
 # WE DISABLE ALL GALERA RELATED FUNCTIONALITY
