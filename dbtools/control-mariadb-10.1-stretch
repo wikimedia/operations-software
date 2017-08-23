@@ -1,5 +1,5 @@
 Package: wmf-mariadb101
-Version: 10.1.25-5
+Version: 10.1.26-1
 Section: misc
 Priority: optional
 Architecture: amd64
