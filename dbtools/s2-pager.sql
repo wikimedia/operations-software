@@ -6,17 +6,18 @@ union select  100000 as n, count(rev_user) from bgwiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from bgwiki.revision where rev_user >= 100000 and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from bgwiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |          903947 |
--- |   10000 |         2148330 |
--- |  100000 |         3003957 |
--- | 1000000 |          772584 |
+-- |       1 |         1009270 |
+-- |   10000 |         2372980 |
+-- |  100000 |         3134647 |
+-- | 1000000 |         1188335 |
 -- | 2000000 |               0 |
 -- +---------+-----------------+
--- 5 rows in set (1.73 sec)
+-- 5 rows in set (2.39 sec)
+
 
 ALTER TABLE bgwiki.logging
   DROP PRIMARY KEY,
@@ -58,17 +59,17 @@ union select  100000 as n, count(rev_user) from cswiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from cswiki.revision where rev_user >= 100000 and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from cswiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         1225371 |
--- |   10000 |         3870115 |
--- |  100000 |         4904869 |
--- | 1000000 |         2676888 |
+-- |       1 |         1380210 |
+-- |   10000 |         4310041 |
+-- |  100000 |         5212679 |
+-- | 1000000 |         3611541 |
 -- | 2000000 |               0 |
 -- +---------+-----------------+
--- 5 rows in set (2 min 14.52 sec)
+-- 5 rows in set (4.06 sec)
 
 ALTER TABLE cswiki.logging
   DROP PRIMARY KEY,
@@ -108,17 +109,17 @@ union select  100000 as n, count(rev_user) from enwikiquote.revision where rev_u
 union select 1000000 as n, count(rev_user) from enwikiquote.revision where rev_user >= 100000 and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from enwikiquote.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |          766967 |
--- |   10000 |          453557 |
--- |  100000 |          330448 |
--- | 1000000 |          279150 |
--- | 2000000 |           97901 |
+-- |       1 |          828991 |
+-- |   10000 |          478794 |
+-- |  100000 |          352831 |
+-- | 1000000 |          326074 |
+-- | 2000000 |          127378 |
 -- +---------+-----------------+
--- 5 rows in set (1 min 14.91 sec)
+-- 5 rows in set (0.74 sec)
 
 ALTER TABLE enwikiquote.logging
   DROP PRIMARY KEY,
@@ -127,6 +128,7 @@ ALTER TABLE enwikiquote.logging
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p10000 VALUES LESS THAN (10000),
   PARTITION p100000 VALUES LESS THAN (100000),
+  PARTITION p200000 VALUES LESS THAN (200000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE enwikiquote.revision
@@ -148,6 +150,7 @@ ALTER TABLE enwikiquote.revision
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p10000 VALUES LESS THAN (10000),
   PARTITION p100000 VALUES LESS THAN (100000),
+  PARTITION p200000 VALUES LESS THAN (200000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- enwiktionary
@@ -167,26 +170,26 @@ union select 1000000 as n, count(rev_user) from enwiktionary.revision where rev_
 union select 2000000 as n, count(rev_user) from enwiktionary.revision where rev_user >= 1000000 and rev_user < 2000000
 union select 3000000 as n, count(rev_user) from enwiktionary.revision where rev_user >= 3000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         1088949 |
--- |   10000 |         3506698 |
--- |   20000 |          947482 |
--- |   30000 |         1419086 |
--- |   40000 |         2439779 |
--- |   50000 |         6499965 |
--- |  100000 |         2351610 |
--- |  200000 |          447897 |
--- |  300000 |         4029361 |
--- |  400000 |         9274848 |
--- |  500000 |         1349585 |
--- | 1000000 |         1043189 |
--- | 2000000 |         1047336 |
--- | 3000000 |           11288 |
+-- |       1 |         1291874 |
+-- |   10000 |         3731249 |
+-- |   20000 |          974370 |
+-- |   30000 |         4825233 |
+-- |   40000 |         2648562 |
+-- |   50000 |         6968329 |
+-- |  100000 |         2666343 |
+-- |  200000 |          600025 |
+-- |  300000 |         4157888 |
+-- |  400000 |        11473520 |
+-- |  500000 |         1501967 |
+-- | 1000000 |         1316460 |
+-- | 2000000 |         1612034 |
+-- | 3000000 |          936717 |
 -- +---------+-----------------+
--- 14 rows in set (1 min 6.99 sec)
+-- 14 rows in set (11.07 sec)
 
 ALTER TABLE enwiktionary.logging
   DROP PRIMARY KEY,
@@ -250,17 +253,17 @@ union select  100000 as n, count(rev_user) from fiwiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from fiwiki.revision where rev_user >= 100000 and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from fiwiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         2185285 |
--- |   10000 |         3214324 |
--- |  100000 |         6062824 |
--- | 1000000 |         3424978 |
+-- |       1 |         2368911 |
+-- |   10000 |         3359361 |
+-- |  100000 |         6322189 |
+-- | 1000000 |         3999004 |
 -- | 2000000 |               0 |
 -- +---------+-----------------+
-5 rows in set (27.11 sec)
+-- 5 rows in set (4.22 sec)
 
 ALTER TABLE fiwiki.logging
   DROP PRIMARY KEY,
@@ -311,26 +314,26 @@ union select 1000000 as n, count(rev_user) from itwiki.revision where rev_user >
 union select 2000000 as n, count(rev_user) from itwiki.revision where rev_user >= 1000000 and rev_user < 2000000
 union select 3000000 as n, count(rev_user) from itwiki.revision where rev_user >= 2000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |        13603340 |
--- |   10000 |         4818558 |
--- |   20000 |         1938854 |
--- |   30000 |         1438740 |
--- |   40000 |         2431179 |
--- |   50000 |          856054 |
--- |  100000 |         6369713 |
--- |  200000 |        11119159 |
--- |  300000 |        10053293 |
--- |  400000 |         4235306 |
--- |  500000 |         4172320 |
--- | 1000000 |        11788989 |
--- | 2000000 |          984619 |
+-- |       1 |        15749798 |
+-- |   10000 |         5283282 |
+-- |   20000 |         1976107 |
+-- |   30000 |         1486660 |
+-- |   40000 |         2590625 |
+-- |   50000 |          900580 |
+-- |  100000 |         6711308 |
+-- |  200000 |        12213408 |
+-- |  300000 |        11082536 |
+-- |  400000 |         4574543 |
+-- |  500000 |         4481133 |
+-- | 1000000 |        14646225 |
+-- | 2000000 |         3651405 |
 -- | 3000000 |               0 |
 -- +---------+-----------------+
--- 14 rows in set (2 min 37.98 sec)
+-- 14 rows in set (23.51 sec)
 
 ALTER TABLE itwiki.logging
   DROP PRIMARY KEY,
@@ -349,8 +352,10 @@ ALTER TABLE itwiki.logging
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
   PARTITION p500000 VALUES LESS THAN (500000),
-  PARTITION p750000 VALUES LESS THAN (750000),
+  PARTITION p600000 VALUES LESS THAN (600000),
+  PARTITION p800000 VALUES LESS THAN (800000),
   PARTITION p1000000 VALUES LESS THAN (1000000),
+  PARTITION p2000000 VALUES LESS THAN (2000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE itwiki.revision
@@ -382,8 +387,10 @@ ALTER TABLE itwiki.revision
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
   PARTITION p500000 VALUES LESS THAN (500000),
-  PARTITION p750000 VALUES LESS THAN (750000),
+  PARTITION p600000 VALUES LESS THAN (600000),
+  PARTITION p800000 VALUES LESS THAN (800000),
   PARTITION p1000000 VALUES LESS THAN (1000000),
+  PARTITION p2000000 VALUES LESS THAN (2000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- nlwiki
@@ -402,24 +409,25 @@ union select  500000 as n, count(rev_user) from nlwiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from nlwiki.revision where rev_user >= 500000  and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from nlwiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         4163116 |
--- |   10000 |         6144952 |
--- |   20000 |         3612280 |
--- |   30000 |         1362992 |
--- |   40000 |         1882182 |
--- |   50000 |          990176 |
--- |  100000 |         4834840 |
--- |  200000 |         6958755 |
--- |  300000 |         5594085 |
--- |  400000 |         3566284 |
--- |  500000 |         1868596 |
--- | 1000000 |         2343797 |
+-- |       1 |         4590981 |
+-- |   10000 |         6339947 |
+-- |   20000 |         3756899 |
+-- |   30000 |         1366108 |
+-- |   40000 |         1939488 |
+-- |   50000 |         1065444 |
+-- |  100000 |         5108871 |
+-- |  200000 |         7318875 |
+-- |  300000 |         5875156 |
+-- |  400000 |         3825600 |
+-- |  500000 |         2157538 |
+-- | 1000000 |         3256761 |
 -- | 2000000 |               0 |
 -- +---------+-----------------+
+-- 13 rows in set (12.30 sec)
 
 ALTER TABLE nlwiki.logging
   DROP PRIMARY KEY,
@@ -437,6 +445,7 @@ ALTER TABLE nlwiki.logging
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
   PARTITION p500000 VALUES LESS THAN (500000),
+  PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE nlwiki.revision
@@ -467,6 +476,7 @@ ALTER TABLE nlwiki.revision
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
   PARTITION p500000 VALUES LESS THAN (500000),
+  PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- nowiki
@@ -477,16 +487,18 @@ union select  100000 as n, count(rev_user) from nowiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from nowiki.revision where rev_user >= 100000 and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from nowiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         1119949 |
--- |   10000 |         3596329 |
--- |  100000 |         6077737 |
--- | 1000000 |         4365985 |
+-- |       1 |         1240561 |
+-- |   10000 |         3805119 |
+-- |  100000 |         6882907 |
+-- | 1000000 |         5119519 |
+-- | 2000000 |               0 |
 -- +---------+-----------------+
--- 4 rows in set (42.18 sec)
+-- 5 rows in set (4.45 sec)
+
 
 ALTER TABLE nowiki.logging
   DROP PRIMARY KEY,
@@ -495,6 +507,7 @@ ALTER TABLE nowiki.logging
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p10000 VALUES LESS THAN (10000),
   PARTITION p100000 VALUES LESS THAN (100000),
+  PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE nowiki.revision
@@ -516,6 +529,7 @@ ALTER TABLE nowiki.revision
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p10000 VALUES LESS THAN (10000),
   PARTITION p100000 VALUES LESS THAN (100000),
+  PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- plwiki
@@ -534,25 +548,25 @@ union select  500000 as n, count(rev_user) from plwiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from plwiki.revision where rev_user >= 500000  and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from plwiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         4900476 |
--- |   10000 |         2996143 |
--- |   20000 |         2817380 |
--- |   30000 |         1657955 |
--- |   40000 |         3079880 |
--- |   50000 |          996358 |
--- |  100000 |         5508649 |
--- |  200000 |         7160471 |
--- |  300000 |         4558427 |
--- |  400000 |         3110678 |
--- |  500000 |         2170635 |
--- | 1000000 |         2750341 |
+-- |       1 |         5279089 |
+-- |   10000 |         3067889 |
+-- |   20000 |         2944598 |
+-- |   30000 |         1737258 |
+-- |   40000 |         3411825 |
+-- |   50000 |         1010394 |
+-- |  100000 |         5811149 |
+-- |  200000 |         7968068 |
+-- |  300000 |         4917511 |
+-- |  400000 |         3400026 |
+-- |  500000 |         2523466 |
+-- | 1000000 |         4332452 |
 -- | 2000000 |               0 |
 -- +---------+-----------------+
--- 13 rows in set (1 min 43.65 sec)
+-- 13 rows in set (12.56 sec)
 
 ALTER TABLE plwiki.logging
   DROP PRIMARY KEY,
@@ -571,6 +585,7 @@ ALTER TABLE plwiki.logging
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
   PARTITION p500000 VALUES LESS THAN (500000),
+  PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE plwiki.revision
@@ -602,6 +617,7 @@ ALTER TABLE plwiki.revision
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
   PARTITION p500000 VALUES LESS THAN (500000),
+  PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- ptwiki
@@ -618,23 +634,23 @@ union select 1000000 as n, count(rev_user) from ptwiki.revision where rev_user >
 union select 2000000 as n, count(rev_user) from ptwiki.revision where rev_user >= 1000000 and rev_user < 2000000
 union select 3000000 as n, count(rev_user) from ptwiki.revision where rev_user >= 2000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         8485522 |
--- |   10000 |         2782285 |
--- |   50000 |         2264550 |
--- |  100000 |         3648770 |
--- |  200000 |         3645097 |
--- |  300000 |         2299734 |
--- |  400000 |         2815469 |
--- |  500000 |         3177825 |
--- | 1000000 |         9708497 |
--- | 2000000 |         2629705 |
+-- |       1 |         9666554 |
+-- |   10000 |         2824138 |
+-- |   50000 |         2304482 |
+-- |  100000 |         3851876 |
+-- |  200000 |         3803355 |
+-- |  300000 |         2454432 |
+-- |  400000 |         2969162 |
+-- |  500000 |         3444601 |
+-- | 1000000 |        10536151 |
+-- | 2000000 |         4075444 |
 -- | 3000000 |               0 |
 -- +---------+-----------------+
--- 11 rows in set (1 min 28.19 sec)
+-- 11 rows in set (15.20 sec)
 
 ALTER TABLE ptwiki.logging
   DROP PRIMARY KEY,
@@ -694,19 +710,19 @@ union select  200000 as n, count(rev_user) from svwiki.revision where rev_user >
 union select  300000 as n, count(rev_user) from svwiki.revision where rev_user >= 200000  and rev_user <  300000
 union select 1000000 as n, count(rev_user) from svwiki.revision where rev_user >= 300000  and rev_user < 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         2907677 |
--- |   10000 |         4426063 |
--- |   50000 |         6434996 |
--- |  100000 |         2791745 |
--- |  200000 |         4279150 |
--- |  300000 |         9667527 |
--- | 1000000 |         1951754 |
+-- |       1 |         3140147 |
+-- |   10000 |         4572613 |
+-- |   50000 |         6897591 |
+-- |  100000 |         3410662 |
+-- |  200000 |         5464678 |
+-- |  300000 |        12671727 |
+-- | 1000000 |         3587992 |
 -- +---------+-----------------+
--- 7 rows in set (1 min 0.30 sec)
+-- 7 rows in set (9.63 sec)
 
 ALTER TABLE svwiki.logging
   DROP PRIMARY KEY,
@@ -720,6 +736,7 @@ ALTER TABLE svwiki.logging
   PARTITION p250000 VALUES LESS THAN (250000),
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
+  PARTITION p500000 VALUES LESS THAN (500000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE svwiki.revision
@@ -746,6 +763,7 @@ ALTER TABLE svwiki.revision
   PARTITION p250000 VALUES LESS THAN (250000),
   PARTITION p300000 VALUES LESS THAN (300000),
   PARTITION p400000 VALUES LESS THAN (400000),
+  PARTITION p500000 VALUES LESS THAN (500000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- thwiki
@@ -755,15 +773,16 @@ union select   10000 as n, count(rev_user) from thwiki.revision where rev_user >
 union select  100000 as n, count(rev_user) from thwiki.revision where rev_user >= 10000  and rev_user < 100000
 union select 1000000 as n, count(rev_user) from thwiki.revision where rev_user >= 100000 and rev_user < 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |          987804 |
--- |   10000 |         1130274 |
--- |  100000 |         2602517 |
--- | 1000000 |         1164924 |
+-- |       1 |         1233683 |
+-- |   10000 |         1165227 |
+-- |  100000 |         2710044 |
+-- | 1000000 |         1513846 |
 -- +---------+-----------------+
+-- 4 rows in set (2.00 sec)
 
 ALTER TABLE thwiki.logging
   DROP PRIMARY KEY,
@@ -803,16 +822,17 @@ union select  500000 as n, count(rev_user) from trwiki.revision where rev_user >
 union select 1000000 as n, count(rev_user) from trwiki.revision where rev_user >= 500000 and rev_user < 1000000
 union select 2000000 as n, count(rev_user) from trwiki.revision where rev_user >= 1000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         3160681 |
--- |  100000 |         4153333 |
--- | 1000000 |         7735660 |
+-- |       1 |         3356078 |
+-- |  100000 |         4477231 |
+-- |  500000 |         7546025 |
+-- | 1000000 |         1676463 |
 -- | 2000000 |               0 |
 -- +---------+-----------------+
--- 4 rows in set (18 min 7.94 sec)
+-- 5 rows in set (7.01 sec)
 
 ALTER TABLE trwiki.logging
   DROP PRIMARY KEY,
@@ -820,6 +840,7 @@ ALTER TABLE trwiki.logging
   PARTITION BY RANGE (log_user) (
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p100000 VALUES LESS THAN (100000),
+  PARTITION p250000 VALUES LESS THAN (250000),
   PARTITION p500000 VALUES LESS THAN (500000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
@@ -841,6 +862,7 @@ ALTER TABLE trwiki.revision
   PARTITION BY RANGE (rev_user) (
   PARTITION p1 VALUES LESS THAN (1),
   PARTITION p100000 VALUES LESS THAN (100000),
+  PARTITION p250000 VALUES LESS THAN (250000),
   PARTITION p500000 VALUES LESS THAN (500000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
@@ -859,24 +881,24 @@ union select 1000000 as n, count(rev_user) from zhwiki.revision where rev_user >
 union select 2000000 as n, count(rev_user) from zhwiki.revision where rev_user >= 1000000 and rev_user < 2000000
 union select 3000000 as n, count(rev_user) from zhwiki.revision where rev_user >= 2000000;
 
--- results on 2016-03-08:
+-- results on 2017-09-20:
 -- +---------+-----------------+
 -- | n       | count(rev_user) |
 -- +---------+-----------------+
--- |       1 |         5177460 |
--- |   10000 |         1467357 |
--- |   20000 |         1625075 |
--- |   50000 |         2828562 |
--- |  100000 |         2842176 |
--- |  200000 |         2088287 |
--- |  300000 |         1494092 |
--- |  400000 |         1288781 |
--- |  500000 |         2201698 |
--- | 1000000 |         9437890 |
--- | 2000000 |         5812084 |
--- | 3000000 |          705377 |
+-- |       1 |         6450168 |
+-- |   10000 |         1507870 |
+-- |   20000 |         1710563 |
+-- |   50000 |         2954974 |
+-- |  100000 |         3072475 |
+-- |  200000 |         2223542 |
+-- |  300000 |         1579237 |
+-- |  400000 |         1397183 |
+-- |  500000 |         2413770 |
+-- | 1000000 |        10602983 |
+-- | 2000000 |         7249337 |
+-- | 3000000 |         2494584 |
 -- +---------+-----------------+
--- 12 rows in set (1 min 36.49 sec)
+-- 12 rows in set (17.57 sec)
 
 ALTER TABLE zhwiki.logging
   DROP PRIMARY KEY,
@@ -895,6 +917,7 @@ ALTER TABLE zhwiki.logging
   PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION p1500000 VALUES LESS THAN (1500000),
   PARTITION p2000000 VALUES LESS THAN (2000000),
+  PARTITION p3000000 VALUES LESS THAN (3000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 ALTER TABLE zhwiki.revision
@@ -926,4 +949,5 @@ ALTER TABLE zhwiki.revision
   PARTITION p1000000 VALUES LESS THAN (1000000),
   PARTITION p1500000 VALUES LESS THAN (1500000),
   PARTITION p2000000 VALUES LESS THAN (2000000),
+  PARTITION p3000000 VALUES LESS THAN (3000000),
   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
