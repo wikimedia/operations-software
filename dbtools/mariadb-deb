@@ -17,7 +17,7 @@ confirm() {
 }
 
 package=$(grep 'Package:' $control | awk '{print $2}')
-vendor=$(echo $package | sed 's/wmf-\(mariadb\|mysql\).*/\1/')
+vendor=$(echo $package | sed 's/wmf-\(mariadb\|mysql\|percona\).*/\1/')
 release=$(grep 'Version:' $control | awk '{print $2}')
 version=$(echo $release | sed 's/\(.*\)-.*/\1/')
 debname="${package}_${release}_amd64"
@@ -66,8 +66,8 @@ if [[ "$vendor" == "mariadb" && "$version" > '10.1' || "$vendor" == "mysql" && "
     initinstall="/bin/systemctl daemon-reload"
     initrm="/bin/systemctl daemon-reload"
     mkdir -p $makedir/lib/systemd/system
-    cat $vendor.service | sed "s:BASEDIR:${basedir}/:g" > $makedir/lib/systemd/system/$vendor.service
-    cat $vendor@.service | sed "s:BASEDIR:${basedir}/:g" > $makedir/lib/systemd/system/$vendor@.service
+    cat $vendor.service | sed "s:BASEDIR:${basedir}:g" > $makedir/lib/systemd/system/$vendor.service
+    cat $vendor@.service | sed "s:BASEDIR:${basedir}:g" > $makedir/lib/systemd/system/$vendor@.service
 fi
 
 postinst="$makedir/DEBIAN/postinst"

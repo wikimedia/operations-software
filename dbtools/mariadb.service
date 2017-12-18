@@ -1,5 +1,5 @@
 #
-# /etc/systemd/system/mariadb.service
+# /lib/systemd/system/mariadb.service
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by
@@ -12,7 +12,7 @@
 # David Strauss
 # and probably others
 #
-# Lightly customized for WMF needs by Jaime Crespo
+# Heavily customized for WMF needs by Jaime Crespo
 
 [Unit]
 Description=MariaDB database server

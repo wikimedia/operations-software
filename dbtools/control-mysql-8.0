@@ -1,5 +1,5 @@
 Package: wmf-mysql80
-Version: 8.0.0-dmr-1
+Version: 8.0.3-rc-1
 Section: misc
 Priority: optional
 Architecture: amd64

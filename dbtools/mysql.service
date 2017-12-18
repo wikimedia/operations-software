@@ -1,10 +1,6 @@
-# Multi instance version of mariadb. For if you run multiple versions at once.
-# Also used for mariadb@bootstrap to bootstrap Galera.
 #
-# create config file /etc/mysql/mysqld.conf.d/my{instancename}.cnf
+# /lib/systemd/system/mysql.service
 #
-# start as systemctl start mariadb@{instancename}.server
-
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation; either version 2.1 of the License, or
@@ -15,15 +11,12 @@
 # Erkan Yanar
 # David Strauss
 # and probably others
-# Inspired from https://gitweb.gentoo.org/repo/gentoo.git/tree/dev-db/mysql-init-scripts/files/mysqld_at.service
-
+#
 # Heavily customized for WMF needs by Jaime Crespo
 
 [Unit]
-Description=MariaDB database server
+Description=MySQL database server
 After=network.target
-
-ConditionPathExists=/etc/mysql/mysqld.conf.d/%I.cnf
 
 [Install]
 WantedBy=multi-user.target
@@ -37,7 +30,7 @@ Alias=mysqld.service
 ## Core requirements
 ##
 
-Type=notify
+Type=forking
 
 # Setting this to true can break replication and the Type=notify settings
 # See also bind-address mysqld option.
@@ -77,43 +70,27 @@ TimeoutSec=infinity
 # Perform automatic wsrep recovery. When server is started without wsrep,
 # galera_recovery simply returns an empty string. In any case, however,
 # the script is not expected to return with a non-zero status.
-# It is always safe to unset _WSREP_START_POSITION%I environment variable.
+# It is always safe to unset _WSREP_START_POSITION environment variable.
 # Do not panic if galera_recovery script is not available. (MDEV-10538)
-#ExecStartPre=/bin/sh -c "systemctl unset-environment _WSREP_START_POSITION%I"
-
+#ExecStartPre=/bin/sh -c "systemctl unset-environment _WSREP_START_POSITION"
 #ExecStartPre=/bin/sh -c "[ ! -e BASEDIR/bin/galera_recovery ] && VAR= || \
-# VAR=`BASEDIR/bin/galera_recovery --defaults-file=/my%I.cnf`; [ $? -eq 0 ] \
-# && systemctl set-environment _WSREP_START_POSITION%I=$VAR || exit 1"
-
-# Alternate: (remove ConditionPathExists above)
-# use [mysqld.INSTANCENAME] as sections in my.cnf
-#
-#ExecStartPre=/bin/sh -c "[ ! -e BASEDIR/bin/galera_recovery ] && VAR= || \
-# VAR=`BASEDIR/bin/galera_recovery --defaults-group-suffix=%I`; [ $? -eq 0 ] \
-# && systemctl set-environment _WSREP_START_POSITION%I=$VAR || exit 1"
+# VAR=`BASEDIR/bin/galera_recovery`; [ $? -eq 0 ] \
+# && systemctl set-environment _WSREP_START_POSITION=$VAR || exit 1"
 
 # Needed to create system tables etc.
 # ExecStartPre=BASEDIR/scripts/mysql_install_db -u mysql
 
 # Start main service
-# MYSQLD_OPTS here is for users to set in /etc/systemd/system/mariadb@.service.d/MY_SPECIAL.conf
+# MYSQLD_OPTS here is for users to set in /etc/systemd/system/mariadb.service.d/MY_SPECIAL.conf
 # Use the [service] section and Environment="MYSQLD_OPTS=...".
 # This isn't a replacement for my.cnf.
 # _WSREP_NEW_CLUSTER is for the exclusive use of the script galera_new_cluster
+PIDFile=/run/mysqld/mysqld.pid
+ExecStart=BASEDIR/bin/mysqld --daemonize --pid-file=/run/mysqld/mysqld.pid $MYSQLD_OPTS
 
-# Note: Place $MYSQLD_OPTS at the very end for its options to take precedence.
-
-#ExecStart=BASEDIR/bin/mysqld --defaults-file=/my%I.cnf \
-#  $_WSREP_NEW_CLUSTER $_WSREP_START_POSITION%I $MYSQLD_OPTS
-# Alternate: (remove ConditionPathExists above)
-# use [mysqld.INSTANCENAME] as sections in my.cnf
-#
-
-# IMPORTANT: We assume the main my.cnf includes /etc/mysql/mysqld.conf.d/%I
-ExecStart=BASEDIR/bin/mysqld --defaults-group-suffix=@%I $MYSQLD_OPTS
 
 # Unset _WSREP_START_POSITION environment variable.
-#ExecStartPost=/bin/sh -c "systemctl unset-environment _WSREP_START_POSITION%I"
+#ExecStartPost=/bin/sh -c "systemctl unset-environment _WSREP_START_POSITION"
 
 KillMode=process
 KillSignal=SIGTERM
@@ -144,8 +121,8 @@ OOMScoreAdjust=-600
 # Explicitly start with high IO priority
 # BlockIOWeight=1000
 
-# If you don't use the /tmp directory for SELECT ... OUTFILE and
-# LOAD DATA INFILE you can enable PrivateTmp=true for a little more security.
+# Socket should be on /var/run/mysqld/mysqld.sock
+# This will also make more difficult to do server-side imports and exports
 PrivateTmp=true
 
 ##
@@ -154,13 +131,13 @@ PrivateTmp=true
 ## isn't executed.
 ##
 
-
 # Number of files limit. previously [mysqld_safe] open-file-limit
 # Please set ulimits on a separate file, in particular the os default
 # will not be enough on s3, dbstores and labs (they need ~200 000)
 LimitNOFILE=200001
 
 # Maximium core size. previously [mysqld_safe] core-file-size
+# Set core by default to 0. For debugging, set higher
 LimitCORE=0
 
 # Nice priority. previously [mysqld_safe] nice
