@@ -1,4 +1,7 @@
--- Events for s[1-7] slaves
+-- Events for s[1-8] core replicas
+
+-- Avoid replicating event DDL. Coredb events should only be created
+-- on s[1-8] though they may rely on replicated tables like event_log.
 
 set @cache_sql_log_bin := @@session.sql_log_bin;
 set @@session.sql_log_bin = 0;
@@ -23,13 +26,9 @@ create table if not exists event_log (
   index server_stamp (server_id, stamp)
 ) engine=innodb default charset=binary;
 
--- Avoid replicating event DDL. Coredb events should only be created
--- on s[1-7] though they may rely on replicated tables like event_log.
-
 delimiter ;;
 
 -- Housekeeping
-
 
 drop event if exists wmf_master_wikiuser_sleep;;
 drop event if exists wmf_master_purge;;
@@ -76,8 +75,6 @@ do begin
             AND ps.PROCESSLIST_COMMAND = 'Query'
             AND ps.processlist_time between 60 and 1000000
             AND not lower(ps.PROCESSLIST_INFO) like '%wikiexporter%'
-            AND not lower(ps.PROCESSLIST_INFO) like '%master\_pos\_wait%'
-            AND not lower(ps.PROCESSLIST_INFO) like '%master\_gtid\_wait%'
             AND lower(ps.PROCESSLIST_INFO) like '%select%'
         ORDER BY ps.processlist_time DESC;
 
@@ -100,7 +97,7 @@ do begin
             kill thread_id;
 
             insert into event_log values (sid, now(), 'wmf_slave_wikiuser_slow (>60)',
-                concat('kill ',thread_id, '; ',thread_query)
+                concat('kill ',thread_id, '; ',LEFT(thread_query, 997))
             );
 
         end if;
@@ -230,7 +227,7 @@ create definer='root'@'localhost' event wmf_slave_overload
                     kill thread_id;
 
                     insert into event_log values (sid, now(), 'wmf_slave_overload',
-                        concat('kill ',thread_id,'; ',thread_query)
+                        concat('kill ',thread_id,'; ',LEFT(thread_query, 997))
                     );
 
                 end if;
