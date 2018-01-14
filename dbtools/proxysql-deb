@@ -1,0 +1,84 @@
+#!/bin/bash
+# This turns a compiled proxysql binary  into a deb.
+
+control=$1
+
+if [ ! -e $control ]; then
+	echo "missing control" 1>&2
+	exit 1
+fi
+
+confirm() {
+	read -p "continue? yes/no " yn
+	if [[ ! "$yn" =~ ^y ]]; then
+		echo "abort"
+		exit 1
+	fi
+}
+
+package=$(grep 'Package:' $control | awk '{print $2}')
+release=$(grep 'Version:' $control | awk '{print $2}')
+version=$(echo $release | sed 's/\(.*\)-.*/\1/')
+debname="${package}_${release}_amd64"
+binary="${package}"
+makedir="$debname"
+basedir="/usr"
+initinstall="/bin/systemctl daemon-reload"
+initrm="/bin/systemctl daemon-reload"
+
+echo "control: $control"
+echo "package: $package"
+echo "release: $release"
+echo "version: $version"
+echo "binary:  $binary"
+echo "makedir: $makedir"
+echo "basedir: $basedir"
+
+confirm
+
+if [ ! -e $binary ]; then
+	echo "missing proxysql binary" 1>&2
+	exit 1
+fi
+
+echo "creating directory structure..."
+
+rm -rf $makedir
+mkdir $makedir
+
+mkdir $makedir/DEBIAN 
+cp $control $makedir/DEBIAN/control
+
+mkdir -p ${makedir}${basedir}/bin
+
+echo "Copying binary..."
+
+cp $binary ${makedir}${basedir}/bin
+
+echo "adding WMF stuff..."
+
+# install systemd unit
+mkdir -p $makedir/lib/systemd/system
+cat $package.service | sed "s:BASEDIR:${basedir}:g" > $makedir/lib/systemd/system/$package.service
+#cat $package@.service | sed "s:BASEDIR:${basedir}:g" > $makedir/lib/systemd/system/$package@.service
+
+mkdir -p $makedir/var/lib/$package
+mkdir -p $makedir/run/$package
+
+postinst="$makedir/DEBIAN/postinst"
+cat $package-deb-postinst.tpl.sh | sed "s:BASEDIR:$basedir:g" | sed "s:INITINSTALL:$initinstall:g" > $postinst
+chmod 755 $postinst
+
+#postrm="$makedir/DEBIAN/postrm"
+#cat $package-deb-postrm.tpl.sh | sed "s:BASEDIR:$basedir:g" | sed "s:INITRM:$initrm:g" > $postrm
+#chmod 755 $postrm
+
+echo "removing unneeded files"
+
+# making root the owner
+
+chown -R root:root $makedir
+echo "Now building the package (this may take a while)..."
+dpkg-deb --build $makedir
+
+echo "done."
