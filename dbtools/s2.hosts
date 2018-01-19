@@ -1,6 +1,5 @@
 dbstore2002.codfw.wmnet	3312
 dbstore2001.codfw.wmnet	3312
-db2035.codfw.wmnet	3306
 db2041.codfw.wmnet	3306
 db2049.codfw.wmnet	3306
 db2056.codfw.wmnet	3306
@@ -8,7 +7,7 @@ db2063.codfw.wmnet	3306
 db2064.codfw.wmnet	3306
 db2088.codfw.wmnet	3312
 db2091.codfw.wmnet	3312
-db2017.codfw.wmnet	3306
+db2035.codfw.wmnet	3306
 labsdb1009.eqiad.wmnet	3306
 labsdb1010.eqiad.wmnet	3306
 labsdb1011.eqiad.wmnet	3306
