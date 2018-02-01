@@ -74,7 +74,6 @@ do begin
             AND ps.type='FOREGROUND'
             AND ps.PROCESSLIST_COMMAND = 'Query'
             AND ps.processlist_time between 60 and 1000000
-            AND not lower(ps.PROCESSLIST_INFO) like '%wikiexporter%'
             AND lower(ps.PROCESSLIST_INFO) like '%select%'
         ORDER BY ps.processlist_time DESC;
 
