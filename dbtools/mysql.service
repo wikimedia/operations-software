@@ -63,6 +63,7 @@ PermissionsStartOnly=true
 # Set TimeoutStartSec and TimeoutStopSec to infinity (sometimes it
 # can take a very long time to stop a server or start it if it crashed,
 # like 1 hour or more and be a normal behaviour)
+# Set to 0 instead if systemd version < 229
 TimeoutSec=infinity
 
 # WE DISABLE ALL GALERA RELATED FUNCTIONALITY
