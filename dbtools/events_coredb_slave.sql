@@ -72,7 +72,7 @@ do begin
         FROM performance_schema.threads ps
         WHERE ps.processlist_user = 'wikiuser'
             AND ps.type='FOREGROUND'
-            AND ps.PROCESSLIST_COMMAND = 'Query'
+            AND ps.PROCESSLIST_COMMAND <> 'Sleep'
             AND ps.processlist_time between 60 and 1000000
             AND lower(ps.PROCESSLIST_INFO) like '%select%'
         ORDER BY ps.processlist_time DESC;
@@ -214,7 +214,7 @@ create definer='root'@'localhost' event wmf_slave_overload
         -- If we find a spike of connections, be nastier than normal and kill the slowest
         -- running over 10s.
 
-        if (active_count is not null and active_count > (top_connections/4)) then
+        if (active_count is not null and active_count > (top_connections/10)) then
 
             set all_done = 0;
             open active_queries;
