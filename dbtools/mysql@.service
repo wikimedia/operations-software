@@ -18,6 +18,8 @@
 Description=MySQL database server
 After=network.target
 
+ConditionPathExists=/etc/mysql/mysqld.conf.d/%I.cnf
+
 [Install]
 WantedBy=multi-user.target
 Alias=mysqld.service
@@ -89,7 +91,7 @@ RuntimeDirectory=mysqld
 # Use the [service] section and Environment="MYSQLD_OPTS=...".
 # This isn't a replacement for my.cnf.
 # _WSREP_NEW_CLUSTER is for the exclusive use of the script galera_new_cluster
-ExecStart=BASEDIR/bin/mysqld $MYSQLD_OPTS
+ExecStart=BASEDIR/bin/mysqld --defaults-group-suffix=@%I $MYSQLD_OPTS
 
 
 # Unset _WSREP_START_POSITION environment variable.
