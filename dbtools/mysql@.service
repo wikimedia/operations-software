@@ -72,7 +72,8 @@ PermissionsStartOnly=true
 TimeoutSec=infinity
 
 # Create on start (but do not delete on stop) /run/mysqld
-RuntimeDirectory=mysqld
+# Enable it only starting with buster
+#RuntimeDirectory=mysqld
 #RuntimeDirectoryPreserve=yes
 
 # WE DISABLE ALL GALERA RELATED FUNCTIONALITY
