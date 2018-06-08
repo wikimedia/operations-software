@@ -27,7 +27,7 @@ fi
 SHARD="$1"
 HOST_FILE_PATH="/home/marostegui/git/software/dbtools/"
 FILE="$SHARD.hosts"
-for i in $(cat "$HOST_FILE_PATH/$FILE"  | grep "^db" | egrep -v "dbstore*|db1095|db1069" | cut -d " " -f1 | head -n-1)
+for i in $(cat "$HOST_FILE_PATH/$FILE"  | grep "^db" | egrep -v "dbstore*|db1124|db1125|db2094|db2095" | cut -d " " -f1 | head -n-1)
 # The master is delete from the list of hosts as it is not a slave that needs to be checked
 do
     echo "insert into dsns.dsns_$SHARD (dsn) values (\"h=$i,u=root\");";
