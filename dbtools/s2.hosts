@@ -14,7 +14,6 @@ labsdb1011.eqiad.wmnet	3306
 db1102.eqiad.wmnet	3312
 db1125.eqiad.wmnet	3312
 dbstore1002.eqiad.wmnet	3306
-db1066.eqiad.wmnet	3306
 db1074.eqiad.wmnet	3306
 db1076.eqiad.wmnet	3306
 db1090.eqiad.wmnet	3312
@@ -22,3 +21,4 @@ db1103.eqiad.wmnet	3312
 db1105.eqiad.wmnet	3312
 db1122.eqiad.wmnet	3306
 db1054.eqiad.wmnet	3306
+db1066.eqiad.wmnet	3306
