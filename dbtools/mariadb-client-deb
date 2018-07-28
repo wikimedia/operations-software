@@ -78,6 +78,7 @@ rm -f $makedir/$basedir/bin/mysql_client_test_embedded
 rm -f $makedir/$basedir/bin/mysqltest_embedded
 rm -f $makedir/$basedir/bin/mysql_embedded
 rm -f $makedir/$basedir/bin/mysql_client_test
+rm -f $makedir/$basedir/bin/test-connect-t
 # mysqld server binaries
 rm -f $makedir/$basedir/bin/mysqld
 rm -f $makedir/$basedir/bin/mysqld_multi
@@ -109,6 +110,7 @@ rm -f $makedir/$basedir/man/man1/mysql_upgrade.1
 rm -Rf $makedir/$basedir/lib/plugin
 # server libraries
 rm -f $makedir/$basedir/lib/libmysqld*
+rm -f $makedir/$basedir/lib/libmariadbd*
 rm -f $makedir/$basedir/lib/libmysqlservices.a
 # data dir
 rm -Rf $makedir/$basedir/data
