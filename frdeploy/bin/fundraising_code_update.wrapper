@@ -1,0 +1,2 @@
+# convenience wrapper to run fundraising_code_update as deployment user
+sudo -u deploy /usr/local/FrDeploy/bin/fundraising_code_update $@

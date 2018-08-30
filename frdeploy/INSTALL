@@ -1,0 +1,61 @@
+In Fundraising this is all configured by a puppet module that is pretty
+specific to our platform. Certainly the install portion could be packaged, but
+there's a lot of fiddly user configuration both locally and on target hosts
+that is tedious without orchestration.
+
+On the deployment server . . .
+
+1) Install dependencies.
+
+ apt-get install git rsync libfile-find-rule-perl yamllint php5-cli
+
+2) Tweeze executables and library to deployment system.
+
+ mkdir -p /usr/local/FrDeploy/bin
+ cp bin/fundraising_code_update /usr/local/FrDeploy/bin/
+ cp bin/rsync_blaster /usr/local/FrDeploy/bin/
+ cp lib/FrDeploy.pm /usr/share/perl5
+ cp bin/fundraising_code_update.wrapper /usr/local/bin/fundraising_code_update
+ cp bin/rsync_blaster /usr/local/bin/rsync_blaster
+
+3) Create group 'www-data' (typically present as stock Debian webserver group).
+
+ groupadd www-data
+
+4) Create user 'deploy' with initial login group 'www-data'.
+
+ useradd -m -d /var/lib/deploy -g www-data -s /bin/bash deploy
+
+5) Add sudoers policy for local groups or users to run these tools.
+
+ # /etc/sudoers.d/FrDeploy
+ %sysops ALL = (deploy) NOPASSWD: /usr/local/FrDeploy/bin/fundraising_code_update
+ %sysops ALL = (deploy) NOPASSWD: /usr/local/FrDeploy/bin/rsync_blaster
+
+6) Set up localsettings git repository.
+
+7) Make sure /srv directory exists and is writable by the deploy user. You
+don't have to use /srv, that's just what we do in Fundraising.
+
+8) Create /etc/FrDeploy.conf, see FrDeploy.conf.EXAMPLE and tweak accordingly.
+
+9) Generate ssh keypair for deploy user.
+
+
+On each target host . . .
+
+11) Create deployment user matching 'remote_user' in your FrDeploy.conf.  This
+is a place where you could enhance security a bit by using rssh as the deploy
+user's shell, and restricting ssh sessions to rsync.  But if you want to use
+the service-restart rsync_blaster feature, you need full ssh access anyway.
+
+ useradd -m -d /var/lib/deploy -g www-data -s /bin/bash deploy
+
+12) Add the deploy user's public ssh key created in #9 to the local deploy
+user's authorized_keys.
+
+13) Make sure /srv directory exists and is writable by the local deploy user.
+Again, you don't have to use /srv, that's just what we do in Fundraising.
+
+14) If you're using service-restart, configure sudo permissions as necessary to
+allow the local deploy user to run the command in question.

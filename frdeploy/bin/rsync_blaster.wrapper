@@ -1,0 +1,2 @@
+# convenience wrapper to run rsync_blaster as deployment user
+sudo -u deploy /usr/local/FrDeploy/bin/rsync_blaster $@

@@ -1,0 +1,106 @@
+# For better or worse, this config file is executable perl code to be
+# interpreted by do() in FrDeploy::readconf.
+# To check syntax: perl -c FrDeploy.conf
+
+# This is a where program-wide settings and defaults are configured, and also
+# where special project 'config_repository' is configured.
+$program_settings = {
+  'default_attributes' => [0644, 'deploy', 'www-data', 0755],
+  'state_dir'          => '/var/lib/deploy',
+  'rsync_args'         => '-var --delete --timeout=15 --exclude .git --exclude .gitreview --delete-excluded',
+  'local_user'         => 'deploy',
+  'remote_user'        => 'deploy',
+  'tidy'               => 'y',
+  'config_repository'  => {
+    'attr'           => [0640, 'deploy', 'www-data', 0750],
+    'branch'         => 'master',
+    'dir'            => '/srv',
+    'project_subdir' => 'localsettings',
+    'repo'           => 'file:///var/lib/git/localsettings.git',
+    'lint-yaml'      => 'y',
+    'lint-php'       => 'y',
+  },
+};
+
+# This is where project deployment pools are configured.
+$sync_settings = {
+  'webservers' => {
+    'hosts' => ['web1001','web1002'],
+    'projects' => ['SmashPig'],
+  },
+  'civiservers' => {
+    'hosts' => ['civi1001','civi1002'],
+    'projects' => ['civicrm','SmashPig','process-control'],
+  },
+};
+
+# This is where projects are defined and linked to git repos.
+# key of the top level hash is the project name
+# autoupdate: (y|n) update project by default, i.e. without specifying via '-p' argument
+# repo: git repository for the project
+# branch: git branch used for deployment
+# dir: local directory on deployment host, where this project will reside
+# project_subdir: local checkout directory, within 'dir' to be managed by git
+# files: files (* and ? globbing supported) with file attribute adjustments 
+# postinstall: file and directory tweezing on top of the git checkout
+# versionfile: if used, write commit ID to this file for quick reference
+# tidy: (y|auto) y=interactively remove cruft, auto=non-interactively remove cruft
+# service-restart: optional command to be run remotely, over ssh, on target machines after code deployment
+$project_settings = {
+  'SmashPig' => {
+    'autoupdate' => 'y',
+    'branch' => 'deployment',
+    'dir' => '/srv/www/org/wikimedia/listeners',
+    'files' => {
+      'config.php' => ['file', 0640, 'deploy', 'www-data'],
+    },
+    'postinstall' => [
+      'mkdir local-config',
+      'mkdir local-config/adyen',
+      'mkdir local-config/paypal',
+      'install local-config/*.yaml',
+      'install local-config/*/*.yaml',
+    ],
+    'project_subdir' => 'SmashPig',
+    'repo' => 'https://gerrit.wikimedia.org/r/p/wikimedia/fundraising/SmashPig',
+    'versionfile' => '.version-stamp',
+  },
+  'civicrm' => {
+    'autoupdate' => 'n',
+    'branch' => 'deployment',
+    'dir' => '/srv',
+    'files' => {
+      'sites/default/civicrm.settings.php' => ['file', 0640, 'deploy', 'www-data'],
+      'sites/default/settings.php' => ['file', 0640, 'deploy', 'www-data'],
+    },
+    'postinstall' => [
+      'install sites/default/civicrm.settings.php',
+      'install sites/default/settings.php',
+      'symlink /srv/org.wikimedia.civicrm-files sites/default/files',
+    ],
+    'project_subdir' => 'org.wikimedia.civicrm',
+    'repo' => 'https://gerrit.wikimedia.org/r/wikimedia/fundraising/crm.git',
+    'versionfile' => '.version-stamp',
+  },
+  'process-control' => {
+    'autoupdate' => 'y',
+    'dir' => '/srv',
+    'postinstall' => [
+      'mkdir civi1001',
+      'mkdir mintaka',
+      'mkdir frdev1001',
+      'install */*.yaml',
+    ],
+    'project_subdir' => 'process-control',
+    'service-restart' => '/usr/bin/sudo /usr/bin/cron-generate',
+    'tidy' => 'auto',
+  },
+};
+
+
+# This needs to be here to wrap all this up in a scalar for do() in readconf{}
+$conf = {
+  'project_settings' => $project_settings,
+  'sync_settings'    => $sync_settings,
+  'program_settings' => $program_settings,
+};

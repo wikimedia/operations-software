@@ -1,0 +1,223 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Std;
+use FrDeploy;
+
+# sanity check then import config file
+my ($program,$project,$sync) = FrDeploy::readconf();
+
+# exit unless invoked as configured local user
+FrDeploy::check_user($program);
+
+# Config Tree is a special project for installable configuration files
+# - always refreshed before other projects
+# - doesn't use revision rollback/locking or post-install
+my $conf_tree = $program->{'config_repository'};
+
+# collect command-line options
+our ($opt_d,$opt_h,$opt_i,$opt_p,$opt_s);
+Getopt::Std::getopts ("dhip:s");
+$program->{'debug'} = 'y' if $opt_d;
+if (defined $ARGV[0]) {
+	print "\n[31mHey, I don't know what to do with $ARGV[0], did you mean '-p $ARGV[0]' perhaps?[0m\n";
+	$opt_h = 1;
+}
+
+# help has been requested
+if ($opt_h) {
+	print "\nUsage: $0 [OPTION]\n\n" .
+		"  -p project1,project2=REVISION\n\n" .
+		"        By default, only projects configured autoupdate=y are updated and\n" .
+		"        updates follow the last revision setting (see below). The -p option\n" .
+		"        overrides the default behavior with specific projects or revisions\n\n" .
+		"        REVISION:\n" .
+		"          =head       set project to track branch head (normal operation)\n" .
+		"          =a4b3c2d1   lock project to a specific revision/commit\n" .
+		"          =rollback   roll back to the previously installed revision/commit and lock\n\n" .
+		"  -s    skip lint checks\n\n" .
+		"  -h    display this informative help page\n\n" .
+		"  -d    debug\n\n" .
+		"  -i    information about installed projects\n\n";
+	exit;
+}
+
+# get Config Tree present state and print project info
+my $r = FrDeploy::git_info($program,$conf_tree);
+$conf_tree->{'warning'} = $r->{'warning'} if $r->{'warning'};
+if ($opt_s) {
+	$conf_tree->{'lint'} .= " [31m(lint was disabled for this run)[0m" if $conf_tree->{'lint'};
+	for (keys %{$conf_tree}) {
+		$conf_tree->{$_} = 'n' if /^lint-/;
+	}
+}
+FrDeploy::print_project_info($conf_tree) if $opt_i;
+
+# get some run parameters
+if ($opt_p) {
+	# if -p was thrown, override autoupdate=y with requested list of projects to update
+	my @errors;
+	delete $program->{'do_project'};
+	for (split /,/, $opt_p) {
+		my @project_input_errors;
+		my ($proj,$new_rev) = split '=';
+		if ($proj and $project->{$proj}) {
+			push @{$program->{'do_project'}}, $proj;
+		} else {
+			push @project_input_errors, 'unknown project';
+		}
+		if ($new_rev) {
+			if ($new_rev =~ /^(head|rollback|[0-9a-f]{6,40})?$/) {
+				if ($1 eq 'head') {
+					$project->{$proj}->{'new-revision'} = 'head';
+				} elsif ($1 eq 'rollback') {
+					if ($project->{$proj}->{'rollback'}) {
+						$project->{$proj}->{'new-revision'} = $project->{$proj}->{'rollback'};
+					} else {
+						push @project_input_errors, 'no rollback revision stored';
+					}
+				} elsif ($1) {
+					$project->{$proj}->{'new-revision'} = $1;
+				}
+			} else {
+				push @project_input_errors, 'bad revision argument';
+			}
+		}
+		push @errors, "$_ " . join(', ', @project_input_errors) if @project_input_errors
+	}
+	FrDeploy::fatal($program, " -p " . join("\n -p ", @errors)) if @errors;
+} else {
+	# build the default autoupdated project list for git updating
+	for (@{$program->{'sorted_project_list'}}) {
+		push @{$program->{'do_project'}}, $_ if $opt_i or $project->{$_}->{'autoupdate'} eq 'y';
+	}
+}
+
+# loop through project defs and sanity check and collect info on what's presently installed
+for my $proj (@{$program->{'do_project'}}) {
+	# skip this whole step for repo-less projects
+	if (defined $project->{$proj}->{'repo'}) {
+		my $r = FrDeploy::git_info($program,$project->{$proj});
+		$project->{$proj}->{'warning'} = $r->{'warning'} if $r->{'warning'};
+	}
+	# disable lint checks if -s flag was thrown
+	if ($opt_s) {
+		$project->{$proj}->{'lint'} .= " [31m(lint was disabled for this run)[0m" if $project->{$proj}->{'lint'};
+		for (keys %{$project->{$proj}}) {
+			$project->{$proj}->{$_} = 'n' if /^lint-/;
+		}
+	}
+	FrDeploy::print_project_info($project->{$proj}) if $opt_i;
+}
+
+# info flag was thrown, no updates ok!
+if ($opt_i) {
+	print "\n";
+	exit;
+}
+
+# review change instructions for Config Tree
+print "\n[1mHere's what we're planning to do this run:[0m\n\n";
+print " [1m$conf_tree->{'name'}[0m $conf_tree->{'install'}\n";
+print " [31m* warning: $conf_tree->{'warning'}[0m\n" if $conf_tree->{'warning'};
+my $display_rev = $conf_tree->{'revision'} ? substr($conf_tree->{'revision'},0,10) : 'absent';
+print " * $display_rev --> head\n";
+
+# review change instructions for other projects
+for my $proj (@{$program->{'do_project'}}) {
+	print "\n [1m$proj[0m $project->{$proj}->{'install'}\n";
+	if (defined $project->{$proj}->{'repo'}) {
+		print " [31m* warning: $project->{$proj}->{'warning'}[0m\n" if $project->{$proj}->{'warning'};
+		my $display_rev = $project->{$proj}->{'revision'} ? substr($project->{$proj}->{'revision'},0,10) : 'absent';
+		print " * $display_rev";
+		if ($project->{$proj}->{'new-revision'}) {
+			if ($project->{$proj}->{'new-revision'} eq 'head') {
+				print " --> head\n";
+			} elsif ($project->{$proj}->{'rollback'} and $project->{$proj}->{'new-revision'} eq $project->{$proj}->{'rollback'}) {
+				print " --> " . substr($project->{$proj}->{'new-revision'},0,10) . " (rollback+lock)\n";
+			} else {
+				print " --> " . substr($project->{$proj}->{'new-revision'},0,10) . " (lock)\n";
+			}
+		} elsif (defined $project->{$proj}->{'revision-lock'}) {
+			print " (locked)\n";
+		} else {
+			print " --> head\n";
+		}
+	}
+	print " * postinstall\n" if defined $project->{$proj}->{'postinstall'};
+}
+my $proceed = FrDeploy::affirm('Ok to proceed? [y/n]','y','y');
+if ($proceed eq 'no') {
+	print "\n[1mEek--punt!^[[0m\n\nreminder: [1m$0 -h^[[0m for usage info\n\n";
+	exit;
+}
+
+# fetch Config Tree repository, update/install depending on what we find
+print "\n [1m$conf_tree->{'name'}[0m $conf_tree->{'install'}\n";
+$r = FrDeploy::git_update($program,$conf_tree);
+$conf_tree->{'revision'} = $r->{'revision'};
+FrDeploy::postinstall($program,$conf_tree);
+print " revision is " . substr($r->{'revision'},0,10) . "\n";
+$program->{'config_repository'} = $conf_tree;
+FrDeploy::write_state($program,$project);
+FrDeploy::printlog($program->{'ident'},"revision for $conf_tree->{'name'} is " . substr($r->{'revision'},0,10));
+FrDeploy::printlog('log_to_irc',"$program->{'ident'}: revision for $conf_tree->{'name'} is " . substr($r->{'revision'},0,10));
+
+# cycle through the list of requested projects and do git stuff
+for my $proj (@{$program->{'do_project'}}) {
+
+	# make project dir as necessary
+	print "\n [1m$proj[0m $project->{$proj}->{'install'}\n";
+
+	# update git if this project has a repo
+	my $r = FrDeploy::git_update($program,$project->{$proj}) if $project->{$proj}->{'repo'};
+
+	# do postinstall for every project
+	FrDeploy::postinstall($program,$project->{$proj});
+
+	my $change = " $proj";
+
+	if ($project->{$proj}->{'repo'}) {
+
+		# set rollback revision to the last revision if there's an update
+		$change .= " revision";
+		if ($project->{$proj}->{'revision'} and $project->{$proj}->{'revision'} eq $r->{'revision'}) {
+			$change .= ' is ' . substr($r->{'revision'},0,10);
+		} else {
+			$change .= " changed";
+			$change .= " from " . substr($project->{$proj}->{'revision'},0,10) if $project->{$proj}->{'revision'};
+			$change .=  " to " . substr($r->{'revision'},0,10);
+			$project->{$proj}->{'rollback'} = $project->{$proj}->{'revision'};
+			$project->{$proj}->{'revision'} = $r->{'revision'};
+		}
+		if ($project->{$proj}->{'rollback'} and $project->{$proj}->{'rollback'} eq $project->{$proj}->{'revision'}) {
+			delete $project->{$proj}->{'rollback'};
+		}
+
+		# check on outcome of an attempted revision lock
+		if ($project->{$proj}->{'new-revision'}) {
+			if ($project->{$proj}->{'new-revision'} eq 'head') {
+				delete $project->{$proj}->{'revision-lock'};
+			} elsif ($project->{$proj}->{'revision'} =~ /^$project->{$proj}->{'new-revision'}/) { # support short git hashes
+				$project->{$proj}->{'revision-lock'} = $project->{$proj}->{'revision'};
+			} else {
+				print " [31mrevision change to " . substr($project->{$proj}->{'new-revision'},0,10) . " was unsuccessful![0m\n";
+			}
+		}
+
+		$change .= ' (locked)' if $project->{$proj}->{'revision-lock'};
+		$change .= ',' if $project->{$proj}->{'postinstall'};
+
+	}
+
+	$change .= ' config revision is ' . substr($conf_tree->{'revision'},0,10) if $project->{$proj}->{'postinstall'};
+
+	print "$change\n";
+	FrDeploy::write_state($program,$project);
+	FrDeploy::printlog($program->{'ident'},$change);
+	FrDeploy::printlog('log_to_irc',"$program->{'ident'}: $change");
+
+}
+
+print "\n[1mDone![0m\n\n";
+exit;

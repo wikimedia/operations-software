@@ -1,0 +1,158 @@
+#!/usr/bin/perl
+# frack-puppet:modules/frdeploy/files/rsync_blaster
+use strict;
+use warnings;
+use Getopt::Std;
+use FrDeploy;
+
+# read config file
+my ($program,$project,$sync) = FrDeploy::readconf();
+
+# exit unless invoked as configured local user
+FrDeploy::check_user($program);
+
+# collect command-line options
+our ($opt_d,$opt_h,$opt_i,$opt_t);
+Getopt::Std::getopts ("dhit");
+$program->{'debug'} = 'y' if $opt_d;
+
+# set rsync flags
+my $rsync_args = (defined $opt_t) ? "-n $program->{'rsync_args'}" : $program->{'rsync_args'};
+
+# print project/role (i)nformation and exit
+if ($opt_i) {
+
+	print "\nPROJECTS:\n";
+	for my $proj_name (sort keys %{$project}) {
+		my $src = "$project->{$proj_name}->{'dir'}/$project->{$proj_name}->{'project_subdir'}";
+		my $dest = (defined $project->{$proj_name}->{'rsync-to'}) ? $project->{$proj_name}->{'rsync-to'} : $src;
+		print " $proj_name\n";
+		print "   repo:    $project->{$proj_name}->{'repo'}\n" if $project->{$proj_name}->{'repo'};
+		print "   branch:  $project->{$proj_name}->{'branch'}\n" if $project->{$proj_name}->{'branch'};
+		print "   src:     $src\n";
+		print "   dest:    $dest\n";
+		if (defined $project->{$proj_name}->{'service-restart'}) {
+			print "   restart: $project->{$proj_name}->{'service-restart'}\n";
+		}
+	}
+
+	print "\nROLES:\n";
+	for my $role (sort keys %{$sync}) {
+		print " $role\n" .
+			"   hosts:    " . join(' ', @{$sync->{$role}->{'hosts'}}) . "\n" .
+			"   projects:";
+		for my $proj_name (@{$sync->{$role}->{'projects'}}) {
+			if (defined $project->{$proj_name}) {
+				print " $proj_name";
+			} else {
+				print " [31m(${proj_name})[0m";
+			}
+		}
+		print "\n";
+	}
+
+	exit;
+}
+
+# figure out the mess that the user requested
+my $rsync_jobs;
+for my $chunk (@ARGV) {
+	$rsync_jobs = FrDeploy::get_jobs_from_sync_args($sync,$chunk,$rsync_jobs);
+}
+
+# if there weren't any jobs (or if the user threw the -h help flag) print usage info and exit
+if ($opt_h or ! defined $rsync_jobs) {
+
+	print "\n Usage: $program->{'ident'} [OPTION] [TARGET]:[PROJECT] [TARGET2]:[PROJECT2]\n\n" .
+		"  TARGET:\n" .
+		"    host1,host2  comma separated list of individual hosts\n" .
+		"    role         all configured hosts for a given role\n" .
+		"    ALL          all configured hosts with a given project\n\n" .
+		"  PROJECT:\n" .
+		"    proj1,proj2  comma separated list of individual projects\n" .
+		"    ALL          all configured projects\n\n" .
+		"  OPTION:\n" .
+		"    -d           echo the rsync commands as they're issued\n" .
+		"    -h           print helpful help\n" .
+		"    -i           information about projects and host roles\n" .
+		"    -t           rsync test run, not actual transfers\n\n" .
+		"  EXAMPLES:\n" .
+		"    $program->{'ident'} ALL:twig              sync twig to every host where it is installed\n" .
+		"    $program->{'ident'} host1,host2:twig      sync twig to host1 and host2\n" .
+		"    $program->{'ident'} payments:twig,stick   sync twig&stick to all 'payments' hosts\n" .
+		"    $program->{'ident'} payments1002:ALL      sync all projects to payments1002\n" .
+		"    $program->{'ident'} ALL:ALL               sync every project to every host\n" .
+		"\n";
+
+	if ((defined $ARGV[0]) or (defined $opt_t)) {
+		my $args = (defined $ARGV[0]) ?  join(' ',@ARGV) : '';
+		print "  [31mNo jobs found for your command arguments: '$args'[0m\n\n"; 
+	}
+
+	exit;
+
+}
+
+# present the user the list of rsync jobs about to happen and ask for confirmation
+print "\n[1mPlease confirm what we're about to sync[0m\n\n";
+print " Test mode, no data will transfer\n" if defined $opt_t;
+for my $h (sort keys %{$rsync_jobs}) {
+	print " [32m$h:[0m " . join (' ', sort keys %{$rsync_jobs->{$h}}) . "\n";
+}
+
+my $key = FrDeploy::random_key(3);
+my $proceed = FrDeploy::affirm("Enter the following 3-digit key to update. [ $key / n ]",$key);
+if ($proceed eq "no") {
+	print "\nOk, exiting.\n\n";
+	exit;
+}
+
+# run the rsync jobs, and collect a list of host+project that should be restarted
+FrDeploy::printlog('log_to_irc',"$program->{'ident'}: " . join(' ',@ARGV));
+my $restart;
+for my $h (sort keys %{$rsync_jobs}) {
+	print "\n[1m$h[0m\n";
+	for my $proj_name (sort keys %{$rsync_jobs->{$h}}) {
+		my $src = "$project->{$proj_name}->{'dir'}/$project->{$proj_name}->{'project_subdir'}";
+		my $dest = (defined $project->{$proj_name}->{'rsync-to'}) ? $project->{$proj_name}->{'rsync-to'} : $src;
+		print "\n [1m$src -> $h:$dest[0m\n";
+		my @args = split /\s+/, $rsync_args;
+		FrDeploy::printlog('log_to_irc',"$program->{'ident'}: rsync $rsync_args $src/ $program->{'remote_user'}\@$h:$dest/");
+		my $o = FrDeploy::execute_shell($program,['/usr/bin/rsync',@args,"$src/","$program->{'remote_user'}\@$h:$dest/"]);
+		for my $line (@{$o}) {
+			if ($line->{'stdout'}) {
+				print "$line->{'stdout'}\n";
+			} elsif ($line->{'stderr'}) {
+				print "[31m$line->{'stderr'}[0m\n";
+			}
+		}
+		push @{$restart->{$proj_name}}, $h if defined $project->{$proj_name}->{'service-restart'};
+	}
+}
+
+# if there are restart jobs, present the list and ask the user to confirm them
+print "\n[1mWe need to restart some stuff[0m\n\n" if keys %{$restart};
+for my $proj_name (keys %{$restart}) {
+	print "  command: \"$project->{$proj_name}->{'service-restart'}\"\n";
+	print "  hosts:  " . join(' ', @{$restart->{$proj_name}}) . "\n";
+	my $proceed = FrDeploy::affirm("Restart service? [y/n]",'y','y');
+	if ($proceed eq 'yes') {
+		# cycle through all the restart jobs and fire them off one at a time
+		for my $h (@{$restart->{$proj_name}}) {
+			FrDeploy::printlog('log_to_irc',"$program->{'ident'}: ssh $program->{'remote_user'}\@$h $project->{$proj_name}->{'service-restart'}");
+			my $o = FrDeploy::execute_shell($program,['/usr/bin/ssh',"$program->{'remote_user'}\@$h",$project->{$proj_name}->{'service-restart'}]);
+			for my $line (@{$o}) {
+				if ($line->{'stdout'}) {
+					print "$line->{'stdout'}\n";
+				} elsif ($line->{'stderr'}) {
+					print "[31m$line->{'stderr'}[0m\n";
+				}
+			}
+		}
+	} else {
+		print "\nskipped.\n\n";
+	}
+}
+
+print "\n[1mdone![0m\n\n";
+exit;
