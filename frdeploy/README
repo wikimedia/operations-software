@@ -16,9 +16,8 @@ fundraising_code_update preps the local staging area for one or more project.
 This command fetches the desired version of the software from version control,
 tweaks file attributes, overlays configuration files, and keeps track of
 current and previous revision IDs to make it easy to roll back to the previous
-release.  The staging area is owned by the configured deploy user and should
-not be writable by any other user, to guarantee the state of deployed code and
-configuration always reflects what is in revision control.
+release.  The staging area is owned by the configured deploy user and writable
+only by that user.
 
 rsync_blaster uses rsync over ssh to deploy whatever is in the staging area to
 the target hosts, and to optionally run a remote command 'service-restart' on
@@ -35,7 +34,7 @@ Features:
 
 - Deployers don't need accounts on the target machines.
 
-- Designed to apply consistent and granula file/directory attributes, similar
+- Designed to apply consistent and granular file/directory attributes, similar
   to how a deb/rpm package would.
 
 - Tools log actions and deployment state via syslog on the deployment server.
