@@ -41,8 +41,11 @@ $sync_settings = {
 # branch: git branch used for deployment
 # dir: local directory on deployment host, where this project will reside
 # project_subdir: local checkout directory, within 'dir' to be managed by git
-# files: files (* and ? globbing supported) with file attribute adjustments 
-# postinstall: file and directory tweezing on top of the git checkout
+# files: file/directory attribute adjustments to make (* and ? globbing supported)
+# postinstall: actions on top of the git checkout
+#   install - tweeze file from config_repository (localsettings repo)
+#   mkdir   - create directory recursively
+#   symlink - create symlink to anywhere on filesystem
 # versionfile: if used, write commit ID to this file for quick reference
 # tidy: (y|auto) y=interactively remove cruft, auto=non-interactively remove cruft
 # service-restart: optional command to be run remotely, over ssh, on target machines after code deployment
@@ -87,8 +90,7 @@ $project_settings = {
     'dir' => '/srv',
     'postinstall' => [
       'mkdir civi1001',
-      'mkdir mintaka',
-      'mkdir frdev1001',
+      'mkdir civi1002',
       'install */*.yaml',
     ],
     'project_subdir' => 'process-control',

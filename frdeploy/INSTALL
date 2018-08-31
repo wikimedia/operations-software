@@ -1,8 +1,3 @@
-In Fundraising this is all configured by a puppet module that is pretty
-specific to our platform. Certainly the install portion could be packaged, but
-there's a lot of fiddly user configuration both locally and on target hosts
-that is tedious without orchestration.
-
 On the deployment server . . .
 
 1) Install dependencies.
@@ -14,7 +9,7 @@ On the deployment server . . .
  mkdir -p /usr/local/FrDeploy/bin
  cp bin/fundraising_code_update /usr/local/FrDeploy/bin/
  cp bin/rsync_blaster /usr/local/FrDeploy/bin/
- cp lib/FrDeploy.pm /usr/share/perl5
+ cp lib/FrDeploy.pm /usr/share/perl5/
  cp bin/fundraising_code_update.wrapper /usr/local/bin/fundraising_code_update
  cp bin/rsync_blaster /usr/local/bin/rsync_blaster
 

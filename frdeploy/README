@@ -1,0 +1,77 @@
+WMF Fundraising Deployment Tools
+
+Overview:
+
+These tools were created to facilitate 'devopsy' software deployment across our
+Fundraising cluster in a relatively consistent, secure, visible, and auditable
+way. The high level concept is a shim between git, sudo, and rsync that ties
+git code repositories to a staging area on a deployment server, and ultimately
+to install areas on target servers. The tools are operated from a deployment
+server by an authorized user (having sudo privileges to run them); individual
+users do not need accounts on the target hosts.
+
+Tools:
+
+fundraising_code_update preps the local staging area for one or more project.
+This command fetches the desired version of the software from version control,
+tweaks file attributes, overlays configuration files, and keeps track of
+current and previous revision IDs to make it easy to roll back to the previous
+release.  The staging area is owned by the configured deploy user and should
+not be writable by any other user, to guarantee the state of deployed code and
+configuration always reflects what is in revision control.
+
+rsync_blaster uses rsync over ssh to deploy whatever is in the staging area to
+the target hosts, and to optionally run a remote command 'service-restart' on
+target hosts after the rsync. Rsync is efficient about only syncing files that
+are different on the source vs target, and in our experience deployment is
+quick on a small cluster like ours. However there is a lot of room for
+improvement here, which would be necessary for a large cluster.
+
+Features:
+
+- Deployers don't need (and shouldn't have) write access to the deployed code
+  and configuration. The goal is maintain the integrity of the relationship
+  between what is in revision control and what is deployed.
+
+- Deployers don't need accounts on the target machines.
+
+- Designed to apply consistent and granula file/directory attributes, similar
+  to how a deb/rpm package would.
+
+- Tools log actions and deployment state via syslog on the deployment server.
+
+- Normal operation tracks the head of the deployed branch, but deployers can to
+  override this by specifying commit ID.
+
+- Supports lint checks for YAML (yamllint) and PHP (php-cli), can be modified
+  easily to do other checks.
+
+- Minimal software dependencies on target server, just rsync and ssh.
+
+- Deployment to target servers is granular, so it is easy to have a workflow
+  that includes staging and canary-style deployment.
+
+- Uses a separate git repository for configuration files (see config_repository
+  in FrDeploy.conf), so it is feasible to use public code repositories with
+  private local configuration information.
+
+- Code is pushed from the deployment server to the target servers, and target
+  servers do not need any return access.
+
+Limitations:
+
+- As a glue layer that interacts via shell and filehandles with underlying
+  tools like git and yamllint, these tools will need modification when the
+  behavior of an underlying tool changes.
+
+- Although it is possible to run the tools from multiple deployment servers,
+  they're really not designed for it. An active/standby scheme is recommended.
+
+- Tools may not tolerate file, directory, or project names with spaces or
+  certain special characters.
+
+- No attempt is made to monitor the fate of target servers beyond displaying
+  the output of rsync and a service-restart command.
+
+- There's a lot of fiddly user configuration both locally and on target
+  hosts that would be tedious without puppet-like orchestration.
