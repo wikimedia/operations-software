@@ -1,3 +1,3 @@
 #!/bin/sh
 section=$1
-/usr/local/sbin/mysql.py -BN -h db1115 zarcillo -e "SELECT instances.server, instances.port FROM instances JOIN section_instances ON instances.name = section_instances.instance WHERE section_instances.section = '$section' ORDER BY instances.name DESC"
+/usr/local/sbin/mysql.py -BN -h db1115 zarcillo -e "SELECT instances.name FROM instances JOIN section_instances ON instances.name = section_instances.instance LEFT JOIN masters ON masters.instance = instances.name WHERE section_instances.section = '$section' ORDER BY masters.section, instances.name DESC"
