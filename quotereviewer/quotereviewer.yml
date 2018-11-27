@@ -1,0 +1,142 @@
+required:
+  '332-1286': 'US Order'
+  '350-BBBW': 'No Bezel'
+  '370-AAIP': 'Performance Optimized'
+  '384-BBBL': 'Performance BIOS Settings'
+  '385-BBKT': 'iDRAC9,Enterprise'
+  '421-5736': 'No Media Required'
+  '461-AADZ': 'No Trusted Platform Module'
+  '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
+  '619-ABVR': 'No Operating System'
+  '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
+  '900-9997': 'On-Site Installation Declined'
+  '989-3439': 'Thank you choosing Dell ProSupport. For tech support, visit //www.dell.com/support or call 1-800- 945-3355'
+
+optional:
+  # Model
+  '210-ALZE': 'PowerEdge R440 Server'
+  '210-AKWU': 'PowerEdge R640 Server'
+  '210-AKZR': 'PowerEdge R740XD Server'
+  # Chassis
+  ## R440
+  '321-BCUQ': '3.5" Chassis with up to 4 Hot Plug Hard Drives and Software RAID'
+  '321-BCUW': '2.5" Chassis with up to 8 Hot Plug Hard Drives and Software RAID'
+  '321-BCUX': '2.5" Chassis with up to 10 Hard Drives'
+  ## R640
+  '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
+  ## R740xd
+  '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
+  # Heatsinks and fans
+  '384-BBPZ': '6 Performance Fans forR740/740XD'
+  '384-BBQJ': '8 Standard Fans for R640'
+  '412-AAIQ': 'Standard 1U Heatsink'
+  # Power supply
+  '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
+  '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
+  # Rails
+  '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
+  '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
+  '770-BBBQ': 'ReadyRails Sliding Rails Without Cable Management Arm' # R740xd
+  # Motherboard
+  '384-BBQW': 'Motherboard' # R440
+  '329-BDKC': 'PowerEdge R640 Motherboard'
+  '329-BDKH': 'PowerEdge R740/R740XD Motherboard'
+  # Riser
+  '330-BBHL': 'Riser Config 1, 1 x 16 FH'
+  '330-BBHF': 'Riser Config 1, 4 x8 slots'
+  '330-BBGN': 'Riser Config 2, 3x16 LP'
+  '330-BBHO': 'Riser Config 3, 2 x 16 LP'
+  # CPUs
+  '338-BLUQ': 'Intel Xeon Silver 4110 2.1G, 8C/16T, 9.6GT/s , 11M Cache, Turbo, HT (85W) DDR4-2400'
+  '374-BBPN': 'Intel Xeon Silver 4110 2.1G, 8C/16T, 9.6GT/s , 11M Cache, Turbo, HT (85W) DDR4-2400'
+  '338-BLUS': 'Intel Xeon Silver 4114 2.2G, 10C/20T, 9.6GT/s , 14M Cache, Turbo, HT (85W) DDR4-2400'
+  '374-BBPP': 'Intel Xeon Silver 4114 2.2G, 10C/20T, 9.6GT/s , 14M Cache, Turbo, HT (85W) DDR4-2400'
+  '338-BLLX': 'Intel Xeon Gold 5122 3.6G, 4C/8T, 10.4GT/s , 16.5M Cache, Turbo, HT (105W) DDR4-2666 '
+  '374-BBNS': 'Intel Xeon Gold 5122 3.6G, 4C/8T, 10.4GT/s , 16.5M Cache, Turbo, HT (105W) DDR4-2666'
+  '338-BLMJ': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
+  '374-BBOE': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
+  # Heat sinks
+  '412-AAJT': 'Standard Heat Sink'
+  '412-AAJU': 'Standard Heat Sink for 2nd CPU'
+  # Memory
+  '370-ABWE': 'DIMM Blanks for System with 2 Processors'
+  '370-ADND': '16GB RDIMM, 2666MT/s, Dual Rank'
+  '370-ADNF': '32GB RDIMM 2666MT/s Dual Rank'
+  '370-ADNU': '2666MT/s RDIMMs'
+  # RAID
+  '405-AACD': 'No Controller'
+  '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # FIXME: should it always be minicard?
+  '405-AAOM': 'Internal PERC'
+  '405-AANT': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # for R640
+  '405-AAQU': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # for R740xd
+  '780-BCDM': 'No RAID with Embedded SATA'
+  '780-BCDI': 'No RAID'
+  '780-BCDS': 'Unconfigured RAID'
+  # Hard disks
+  '400-ASGC': '1.92TB SSD SATA Read Intensive 6Gpbs 512n 2.5in Hot-plug Drive, PM863a,1 DWPD,3504 TBW'
+  '400-ASIE': '4TB 7.2K RPM SATA 6Gbps 512n 3.5in Hot-plug Hard Drive'
+  '400-ASWK': '240GB SSD SATA Mix Use 6Gbps 512e 2.5in Hot-plug Drive,'
+  '400-ASWV': '200GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,1095 TBW'
+  '400-ASXK': '480GB SSD SATA Read Intensive 6Gbps 512e 2.5in Flex Bay'
+  '400-ASYC': '800GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,4380 TBW'
+  '400-AVMM': '1.6TB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,8760 TBW'
+  '400-BCRN': '1.92TB SSD SATA Read Intensive 6Gbps'
+  # Optical drives
+  '429-ABBF': 'No Internal Optical Drive for x4 and x8 HDD Chassis'
+  '429-AAIQ': 'No Internal Optical Drive'
+  # NIC, FIXME: verify those
+  '540-BBBZ': 'QLogic 57800 2x10Gb BT + 2x1Gb BT Network Daughter Card'
+  '540-BBCX': 'Broadcom 5720 DP 1Gb Network Interface Card'
+  '540-BBUH': 'Broadcom 57412 Dual Port 10Gb, SFP+, PCIe Adapter, Full Height'
+  '540-BBUL': 'Broadcom 57412 2 Port 10Gb SFP+ + 5720 2 Port 1Gb Base-T, rNDC'
+  '542-BBBP': 'On-Board LOM' # Broadcom 5720 Quad-Port Rack Network Daughter Card
+  # Shipping
+  '340-BSFX': 'PowerEdge R440 Shipping'
+  '340-BKNE': 'PowerEdge R640 Shipping'
+  '340-BLBE': 'PowerEdge R740XD Shipping'
+  # Shipping material
+  '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
+  '343-BBID': 'PowerEdge R440 x8 Drive Shipping Material'
+  '340-BLUC': 'PowerEdge R640 x4 and x10 Drive Shipping Material'
+  '343-BBFU': 'PowerEdge R740 Shipping Material'
+  # Delivery
+  '513-1790': 'Expedited Delivery'
+  '772-7488': 'Standard Delivery'
+  '839-6885': 'Standard Delivery'
+  # Warranty and support
+  ## R440
+  '815-3441': 'Dell Hardware Limited Warranty Plus Onsite Service'
+  '815-3482': 'ProSupport: Next Business Day Onsite Service After Problem Diagnosis, 3 Years'
+  '815-3494': 'ProSupport: 7x24 HW/SW Technical Support and Assistance, 3 Years'
+  ## R640
+  '813-9255': 'Dell Hardware Limited Warranty Plus On-Site Service'
+  '813-9262': 'ProSupport: Next Business Day On-Site Service After Problem Diagnosis, 3 Years'
+  '813-9274': 'ProSupport: 7x24 HW/SW Technical Support and Assistance, 3 Years'
+  ## R740xd
+  '813-6068': 'Dell Hardware Limited Warranty Plus On-Site Service'
+  '813-6075': 'ProSupport: Next Business Day On-Site Service After Problem Diagnosis, 3 Years'
+  '813-6087': 'ProSupport: 7x24 HW/SW Technical Support and Assistance, 3 Years'
+  # Dell Quick Sync (actual quick sync is blacklisted)
+  '350-BBKR': 'No Quick Sync' # R440
+  '350-BBKB': 'No Quick Sync' # R640
+  '350-BBJV': 'No Quick Sync' # R740xd
+  # Luggage tag
+  '350-BBKT': 'Dell EMC Luggage Tag'
+  '350-BBKS': 'Dell EMC Luggage Tag for x10'
+  '350-BBJT': 'Dell EMC Luggage Tag for x10'
+  '389-BTTO': 'PE R740XD Luggage Tag'
+
+  # FIXME: should be moved to either mandatory or blacklisted!
+  ## iDRAC
+  '379-BCSF': 'iDRAC,Factory Generated Password'
+  '379-BCSG': 'iDRAC,Legacy Password'
+  '379-BCQV': 'iDRAC Group Manager, Enabled'
+  '379-BCQY': 'iDRAC Group Manager, Disabled'
+  ## others
+  '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
+  '973-2426': 'Declined Remote Consulting Service'
+
+blacklist:
+  '350-BBKQ': 'Quick Sync 2 (At-the-box mgmt)'
+  '528-BBWT': 'OME Server Configuration Management'
+  '770-BBHJ': 'No Rack Rails or Cable Management Arm'
