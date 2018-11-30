@@ -77,6 +77,7 @@ optional:
   '780-BCDS': 'Unconfigured RAID'
   # Hard disks
   '400-ASGC': '1.92TB SSD SATA Read Intensive 6Gpbs 512n 2.5in Hot-plug Drive, PM863a,1 DWPD,3504 TBW'
+  '400-ASZL': '1.92TB SSD SATA Read Intensive 6Gpbs 512n 2.5in Hot-plug Drive, Hawk-M4R,1 DWPD,3504 TBW'
   '400-ASIE': '4TB 7.2K RPM SATA 6Gbps 512n 3.5in Hot-plug Hard Drive'
   '400-ASWK': '240GB SSD SATA Mix Use 6Gbps 512e 2.5in Hot-plug Drive,'
   '400-ASWV': '200GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,1095 TBW'
