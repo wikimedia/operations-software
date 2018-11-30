@@ -89,11 +89,11 @@ optional:
   # Optical drives
   '429-ABBF': 'No Internal Optical Drive for x4 and x8 HDD Chassis'
   '429-AAIQ': 'No Internal Optical Drive'
-  # NIC, FIXME: verify those
-  '540-BBCX': 'Broadcom 5720 DP 1Gb Network Interface Card'
+  # NICs
+  '540-BBVI': 'Broadcom 57412 Dual Port 10Gb, SFP+, PCIe Adapter, Low'
   '540-BBUH': 'Broadcom 57412 Dual Port 10Gb, SFP+, PCIe Adapter, Full Height'
   '540-BBUL': 'Broadcom 57412 2 Port 10Gb SFP+ + 5720 2 Port 1Gb Base-T, rNDC'
-  '542-BBBP': 'On-Board LOM' # Broadcom 5720 Quad-Port Rack Network Daughter Card
+  '542-BBBP': 'On-Board LOM' # Broadcom 5720 Dual-Port Rack Network Daughter Card
   # Shipping
   '340-BSFX': 'PowerEdge R440 Shipping'
   '340-BKNE': 'PowerEdge R640 Shipping'
@@ -138,4 +138,5 @@ blacklist:
   '405-AAML': 'PERC H740P Adapter RAID Controller' # doesn't work for us yet
   '528-BBWT': 'OME Server Configuration Management'
   '540-BBBZ': 'QLogic 57800 2x10Gb BT + 2x1Gb BT Network Daughter Card' # 10GBase-T
+  '540-BBCX': 'Broadcom 5720 DP 1Gb Network Interface Card' # add-on, not LOM
   '770-BBHJ': 'No Rack Rails or Cable Management Arm'
