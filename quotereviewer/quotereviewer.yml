@@ -4,12 +4,15 @@ required:
   '370-AAIP': 'Performance Optimized'
   '384-BBBL': 'Performance BIOS Settings'
   '385-BBKT': 'iDRAC9,Enterprise'
+  '379-BCQY': 'iDRAC Group Manager, Disabled'
+  '379-BCSF': 'iDRAC,Factory Generated Password'
   '421-5736': 'No Media Required'
   '461-AADZ': 'No Trusted Platform Module'
   '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
   '619-ABVR': 'No Operating System'
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
+  '973-2426': 'Declined Remote Consulting Service'
   '989-3439': 'Thank you choosing Dell ProSupport. For tech support, visit //www.dell.com/support or call 1-800- 945-3355'
 
 optional:
@@ -65,10 +68,10 @@ optional:
   '370-ADNU': '2666MT/s RDIMMs'
   # RAID
   '405-AACD': 'No Controller'
-  '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # FIXME: should it always be minicard?
-  '405-AAOM': 'Internal PERC'
-  '405-AANT': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # for R640
-  '405-AAQU': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # for R740xd
+  '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # R440, no minicard
+  '405-AAOM': 'Internal PERC' # probably cabling?
+  '405-AANT': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # R640
+  '405-AAQU': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # R740xd
   '780-BCDM': 'No RAID with Embedded SATA'
   '780-BCDI': 'No RAID'
   '780-BCDS': 'Unconfigured RAID'
@@ -81,11 +84,12 @@ optional:
   '400-ASYC': '800GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,4380 TBW'
   '400-AVMM': '1.6TB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,8760 TBW'
   '400-BCRN': '1.92TB SSD SATA Read Intensive 6Gbps'
+  ## must be selected if GPT disks are used but is otherwise optional
+  '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
   '429-ABBF': 'No Internal Optical Drive for x4 and x8 HDD Chassis'
   '429-AAIQ': 'No Internal Optical Drive'
   # NIC, FIXME: verify those
-  '540-BBBZ': 'QLogic 57800 2x10Gb BT + 2x1Gb BT Network Daughter Card'
   '540-BBCX': 'Broadcom 5720 DP 1Gb Network Interface Card'
   '540-BBUH': 'Broadcom 57412 Dual Port 10Gb, SFP+, PCIe Adapter, Full Height'
   '540-BBUL': 'Broadcom 57412 2 Port 10Gb SFP+ + 5720 2 Port 1Gb Base-T, rNDC'
@@ -126,17 +130,12 @@ optional:
   '350-BBJT': 'Dell EMC Luggage Tag for x10'
   '389-BTTO': 'PE R740XD Luggage Tag'
 
-  # FIXME: should be moved to either mandatory or blacklisted!
-  ## iDRAC
-  '379-BCSF': 'iDRAC,Factory Generated Password'
-  '379-BCSG': 'iDRAC,Legacy Password'
-  '379-BCQV': 'iDRAC Group Manager, Enabled'
-  '379-BCQY': 'iDRAC Group Manager, Disabled'
-  ## others
-  '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
-  '973-2426': 'Declined Remote Consulting Service'
-
 blacklist:
   '350-BBKQ': 'Quick Sync 2 (At-the-box mgmt)'
+  '379-BCQV': 'iDRAC Group Manager, Enabled'
+  '379-BCSG': 'iDRAC,Legacy Password'
+  '385-BBLD': 'iDRAC9 Basic'
+  '405-AAML': 'PERC H740P Adapter RAID Controller' # doesn't work for us yet
   '528-BBWT': 'OME Server Configuration Management'
+  '540-BBBZ': 'QLogic 57800 2x10Gb BT + 2x1Gb BT Network Daughter Card' # 10GBase-T
   '770-BBHJ': 'No Rack Rails or Cable Management Arm'
