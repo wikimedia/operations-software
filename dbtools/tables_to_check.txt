@@ -1,10 +1,10 @@
+actor actor_id
 archive ar_id
 change_tag ct_id
-comment	comment_id
+comment comment_id
 logging log_id
 page page_id
 revision rev_id
-tag_summary ts_id
 text old_id
 user user_id
 watchlist wl_id
