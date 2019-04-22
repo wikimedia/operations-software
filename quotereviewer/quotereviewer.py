@@ -92,15 +92,28 @@ except ImportError:
 
 def parse_pdf(pdf_file):
     """Parse the PDF quote, extract all SKUs and return them in a dict."""
-    item_re = r"(?P<sku>\d{3}-[0-9A-Z]{4}) +(?P<description>.+?) +(\d+) +- +-"
+    item_res = [
+        # ~2018-style quotes
+        r"(?P<sku>\d{3}-[0-9A-Z]{4}) +(?P<description>.+?) +(\d+) +- +-",
+        # ~2019-style quotes
+        r" +(?P<description>.+?) +(?P<sku>\d{3}-[0-9A-Z]{4}) + - + (\d+) +-",
+    ]
+
     parsed = {}
 
     pdf = extract_text_from_pdf(pdf_file)
     for page in pdf:
         for line in page.splitlines():
-            match = re.match(item_re, line)
+            # check against the multiple regexps
+            for item_re in item_res:
+                match = re.match(item_re, line)
+                if match is not None:
+                    break
+
+            # no matches found
             if match is None:
                 continue
+
             parsed[match.group("sku")] = match.group("description")
 
     return parsed
