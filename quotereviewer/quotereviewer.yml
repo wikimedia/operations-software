@@ -84,6 +84,7 @@ optional:
   '400-ASYC': '800GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,4380 TBW'
   '400-AVMM': '1.6TB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,8760 TBW'
   '400-BCRN': '1.92TB SSD SATA Read Intensive 6Gbps'
+  '400-BDSD': '480GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
