@@ -87,7 +87,9 @@ rm -f $makedir/$basedir/bin/mysqltest_embedded
 rm -f $makedir/$basedir/bin/mysql_embedded
 rm -f $makedir/$basedir/bin/mysql_client_test
 rm -f $makedir/$basedir/bin/test-connect-t
-
+rm -f $makedir/$basedir/lib/libmariadbd.a
+rm -f $makedir/$basedir/lib/libmariadbd.so
+rm -f $makedir/$basedir/lib/libmariadbd.so.19
 # making root the owner
 
 chown -R root:root $makedir

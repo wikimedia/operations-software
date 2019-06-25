@@ -27,7 +27,7 @@ ConditionPathExists=/etc/mysql/mysqld.conf.d/%I.cnf
 [Install]
 WantedBy=multi-user.target
 Alias=mysqld.service
-
+Alias=mysql.service
 
 [Service]
 
@@ -73,8 +73,8 @@ TimeoutSec=infinity
 
 # Create on start (but do not delete on stop) /run/mysqld
 # Enable it only starting with buster
-#RuntimeDirectory=mysqld
-#RuntimeDirectoryPreserve=yes
+RuntimeDirectory=mysqld
+RuntimeDirectoryPreserve=yes
 
 # WE DISABLE ALL GALERA RELATED FUNCTIONALITY
 
