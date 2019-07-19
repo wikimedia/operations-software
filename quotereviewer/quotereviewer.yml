@@ -57,6 +57,7 @@ optional:
   '374-BBNS': 'Intel Xeon Gold 5122 3.6G, 4C/8T, 10.4GT/s , 16.5M Cache, Turbo, HT (105W) DDR4-2666'
   '338-BLMJ': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
   '374-BBOE': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
+  '374-BBBX': 'No Additional Processor'
   # Heat sinks
   '412-AAJT': 'Standard Heat Sink'
   '412-AAJU': 'Standard Heat Sink for 2nd CPU'
@@ -85,6 +86,7 @@ optional:
   '400-AVMM': '1.6TB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,8760 TBW'
   '400-BCRN': '1.92TB SSD SATA Read Intensive 6Gbps'
   '400-BDSD': '480GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
+  '400-BDSS': '240GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
