@@ -1,6 +1,6 @@
 #!/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-RETEVAL=0
+RETVAL=0
 case "$1" in
   "")
     echo "Options:"
@@ -10,7 +10,7 @@ case "$1" in
     ;;
   --all)
 echo "All depooled hosts"
-dbctl instance all get  | jq 'select(..|.pooled? == false)' | egrep "db" | awk -F "\"" '{print $2}'  | uniq | while read instance; do dbctl instance $instance get ; done
+dbctl instance all get | jq 'select(..|.pooled? == false)' | jq -s 'unique'
 
 echo "To get more information about an specific host run: dbctl instance dbXXXX get"
 ;;
