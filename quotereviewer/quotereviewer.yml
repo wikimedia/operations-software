@@ -12,7 +12,8 @@ required:
   '619-ABVR': 'No Operating System'
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
-  '989-3439': 'Thank you choosing Dell ProSupport. For tech support, visit //www.dell.com/support or call 1-800- 945-3355'
+  '709-BBFM': 'Basic Next Business Day 36 Months'
+  '865-BBMY': 'ProSupport Next Business Day Onsite Service Initial, 36 Month(s)'
 
 optional:
   # Model
