@@ -2,9 +2,7 @@
 
 # Written by Mark Bergsma <mark@wikimedia.org>
 
-import argparse
 import collections
-import ConfigParser
 import errno
 import httplib
 import random
@@ -21,16 +19,14 @@ from cloudfiles.utils import unicode_quote
 
 from Queue import Queue, LifoQueue, Empty, Full
 
-
+container_regexp = sys.argv[2]  # "^wikipedia-en-local-thumb.[0-9a-f]{2}$"
+use_varnish = '-v' in sys.argv
 copy_headers = re.compile(r'^X-Content-Duration$', flags=re.IGNORECASE)
 
-NOBJECT = 1000
-LIMIT_MAX = 10000
+NOBJECT=1000
 
 src = {}
 dst = {}
-options = None
-containers = []
 
 class WorkingConnectionPool(cloudfiles.connection.ConnectionPool):
     def __init__(self, username=None, api_key=None, **kwargs):
@@ -45,7 +41,7 @@ def connect(params):
                                  api_key=(params['api_key'] or None),
                                  authurl=params['auth_url'],
                                  timeout=60,
-                                 poolsize=options.threads * 4)
+                                 poolsize=int(sys.argv[1]) * 4)
 
 def varnish_rewrite(obj):
     match = re.match(r'^(?P<proj>[^\-]+)-(?P<lang>[^\-]+)-(?P<repo>[^\-]+)-(?P<zone>[^\-\.]+)(\..*)?$', obj.container.name)
@@ -167,6 +163,8 @@ def send_object(dstobj, iterable, headers={}):
             dstobj._etag = hdr[1]
 
 def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
+    global use_varnish
+
     # Replace the connections
     srcobj.container.conn = srcconnpool.get()
     dstobj.container.conn = dstconnpool.get()
@@ -178,14 +176,14 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
             try:
                 self.count += 1
                 connection = None
-                if options.use_varnish:
+                if use_varnish:
                     # Try Varnish first
                     try:
                         response, connection = varnish_object_stream_prepare(srcobj)
                         self.hits += 1
                     except:
                         connection = None
-                if not options.use_varnish or connection is None:
+                if not use_varnish or connection is None:
                     # Start source GET request
                     response = object_stream_prepare(srcobj)
 
@@ -237,10 +235,6 @@ def replicate_object(srcobj, dstobj, srcconnpool, dstconnpool):
             pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
             print ("VARNISH: %d/%d (%d%%)" %
                    (self.hits, self.count, pct(self.hits, self.count)))
-# FIXME initialize
-replicate_object.count = 0
-replicate_object.hits = 0
-
 
 def get_container_objects(container, limit, marker, connpool):
 
@@ -285,10 +279,11 @@ def create_container(dstconn, name):
     else:
         print "Created container", name
 
-def sync_container(srccontainer, srcconnpool, dstconnpool, filename_regexp):
+def sync_container(srccontainer, srcconnpool, dstconnpool):
+    global NOBJECT
 
     last = ''
-    hits, processed, gets, skipped = 0, 0, 0, 0
+    hits, processed, gets = 0, 0, 0
 
     dstconn = dstconnpool.get()
     try:
@@ -305,21 +300,17 @@ def sync_container(srccontainer, srcconnpool, dstconnpool, filename_regexp):
     while True:
         srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
 
-        limit = NOBJECT
         while dstobjects is None or (len(dstobjects) >= limit and dstobjects[-1].name < srcobjects[-1].name):
             dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last, connpool=dstconnpool)
             if len(dstobjects) == limit:
                 limit *= 2
-                if limit > LIMIT_MAX:
+                if limit > 10000:
                     dstobjects = None
                     break
 
         for srcobj in srcobjects:
-            objname = srcobj.name.encode("ascii", errors="ignore")
-            if filename_regexp is not None and not filename_regexp.match(objname):
-                skipped += 1
-                continue
             processed += 1
+            objname = srcobj.name.encode("ascii", errors="ignore")
             last = srcobj.name.encode("utf-8")
             msg = "%s\t%s\t%s\t%s\t%s" % (srccontainer.name, srcobj.etag, srcobj.size, objname, srcobj.last_modified)
             try:
@@ -350,14 +341,11 @@ def sync_container(srccontainer, srcconnpool, dstconnpool, filename_regexp):
             replicate_object(srcobj, dstobj, srcconnpool, dstconnpool)
 
         pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
-        print ("STATS: %s processed: %d/%d (%d%%), hit rate: %d%%, skipped %d/%d (%d%%)" %
+        print ("STATS: %s processed: %d/%d (%d%%), hit rate: %d%%" %
                (srccontainer.name,
                 processed, srccontainer.object_count,
                 pct(processed, srccontainer.object_count),
-                pct(hits, processed),
-                skipped, srccontainer.object_count,
-                pct(skipped, srccontainer.object_count),
-                ))
+                pct(hits, processed)))
 
         if len(srcobjects) < NOBJECT:
             break
@@ -365,6 +353,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool, filename_regexp):
     print "FINISHED:", srccontainer.name
 
 def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
+    global NOBJECT
 
     dstconn = dstconnpool.get()
     try:
@@ -414,7 +403,8 @@ def sync_deletes_slow(srccontainer, srcconnpool, dstconnpool):
         srcconnpool.put(srccontainer.conn)
         srccontainer.conn = None
 
-def sync_deletes(srccontainer, srcconnpool, dstconnpool, filename_regexp):
+def sync_deletes(srccontainer, srcconnpool, dstconnpool):
+    global NOBJECT
 
     dstconn = dstconnpool.get()
     try:
@@ -430,7 +420,7 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool, filename_regexp):
     srclimit = int(srclimit * 1.2)
 
     last = ''
-    deletes, processed, skipped = 0, 0, 0
+    deletes, processed = 0, 0
     while True:
 
         dstobjects = get_container_objects(dstcontainer, limit=dstlimit, marker=last, connpool=dstconnpool)
@@ -446,9 +436,6 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool, filename_regexp):
         diff = dstset - srcset
 
         for dstname in diff:
-            if filename_regexp is not None and not filename_regexp.match(dstname):
-                skipped += 1
-                continue
             # do a HEAD to make sure it's gone
             srccontainer.conn = srcconnpool.get()
             try:
@@ -472,14 +459,11 @@ def sync_deletes(srccontainer, srcconnpool, dstconnpool, filename_regexp):
         processed += len(dstobjects)
 
         pct = lambda x, y: y != 0 and int(float(x) / y * 100) or 0
-        print ("STATS: %s processed: %d/%d (%d%%), deleted: %d, skipped %d/%d (%d%%)" %
+        print ("STATS: %s processed: %d/%d (%d%%), deleted: %d" %
                (srccontainer.name,
                 processed, dstcontainer.object_count,
                 pct(processed, dstcontainer.object_count),
-                deletes,
-                skipped, dstcontainer.object_count,
-                pct(skipped, dstcontainer.object_count),
-                ))
+                deletes))
 
         if len(dstobjects) < dstlimit:
             break
@@ -493,14 +477,12 @@ def replicator_thread(*args, **kwargs):
             except IndexError:
                 break
 
-            if options.sync_deletes:
-                sync_deletes(container, kwargs['srcconnpool'],
-                        kwargs['dstconnpool'], kwargs['filename_regexp'])
+            if '-d' in sys.argv:
+                sync_deletes(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
             else:
-                sync_container(container, kwargs['srcconnpool'],
-                        kwargs['dstconnpool'], kwargs['filename_regexp'])
+                sync_container(container, kwargs['srcconnpool'], kwargs['dstconnpool'])
 
-            if not options.once:  # once
+            if '-o' not in sys.argv:  # once
                 containers.append(container)
         except Exception as e:
             print >> sys.stderr, e, traceback.format_exc()
@@ -509,87 +491,45 @@ def replicator_thread(*args, **kwargs):
             containers.append(container)
 
 
-def parse_config(config_path):
-    config = ConfigParser.SafeConfigParser()
-    config.read(config_path)
-    src = {}
-    dst = {}
-    container_sets = {}
-    for option in 'username', 'api_key', 'auth_url':
-        src[option] = config.get('src', option)
-        dst[option] = config.get('dst', option)
-    if config.has_section('container_sets'):
-        container_sets = dict(config.items('container_sets'))
-    return src, dst, container_sets
+def parse_cli_params():
+    global src, dst
 
+    # FIXME
+    src['username'], src['api_key'], src['auth_url'], dst['username'], dst['api_key'], dst['auth_url'] = [l.strip() for l in file('swiftrepl.conf')]
 
-def main():
-    global options, containers, src, dst
+if __name__ == '__main__':
+    replicate_object.count = 0
+    replicate_object.hits = 0
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', dest='config', default='swiftrepl.conf')
-    parser.add_argument('--shuffle', '-r', dest='shuffle', action='store_true', default=False)
-    parser.add_argument('--threads', '-t', dest='threads', type=int, default=16)
-    parser.add_argument('--use-varnish', dest='use_varnish', action='store_true', default=False)
-    parser.add_argument('--once', '-o', dest='once', action='store_true', default=False)
-    parser.add_argument('--sync-deletes', '-d', dest='sync_deletes', action='store_true', default=False)
-    parser.add_argument('--container-set', dest='container_set', metavar='SET')
-    parser.add_argument('--container-regexp', dest='container_regexp', metavar='REGEXP')
-    parser.add_argument('--filename-regexp', dest='filename_regexp', metavar='REGEXP')
-    options = parser.parse_args()
-
-    src, dst, container_sets = parse_config(options.config)
-
-    if all([options.container_set, options.container_regexp]):
-        parser.error('use only one of container-set or container-regexp')
-
-    if not any([options.container_set, options.container_regexp]):
-        parser.error('use at least one of container-set or container-regexp')
-
-    container_regexp = options.container_regexp
-    if options.container_regexp:
-        container_regexp = options.container_regexp
-    elif options.container_set:
-        if not options.container_set in container_sets:
-            parser.error('container set %s not found in config' % options.container_set)
-        container_regexp = container_sets[options.container_set]
-
-    filename_regexp = None
-    if options.filename_regexp is not None:
-        try:
-            filename_regexp = re.compile(options.filename_regexp)
-        except re.error as e:
-            parser.error('cannot compile %r: %r' % (options.filename_regexp, e))
+    parse_cli_params()
 
     srcconnpool = connect(src)
     dstconnpool = connect(dst)
 
     srcconn = srcconnpool.get()
 
-    last = ''
+    containers=[]
+    limit=10000
+    last=''
     while True:
-        page = srcconn.get_all_containers(limit=LIMIT_MAX, marker=last)
+        page = srcconn.get_all_containers(limit=limit, marker=last)
         if len(page) == 0:
             break
         last = page[-1].name.encode("utf-8")
         containers.extend(page)
-        if len(page) < LIMIT_MAX:
+        if len(page) < limit:
             break
 
     containerlist = [container for container in containers
                      if re.match(container_regexp, container.name)]
-    if options.shuffle:
+    if '-r' in sys.argv:
         random.shuffle(containerlist)
-
     containers = collections.deque(containerlist)
     srcconnpool.put(srcconn)
 
     # Start threads
-    for i in range(options.threads):
-        t = threading.Thread(target=replicator_thread,
-                             kwargs={'srcconnpool': srcconnpool,
-                                     'dstconnpool': dstconnpool,
-                                     'filename_regexp': filename_regexp})
+    for i in range(int(sys.argv[1])):
+        t = threading.Thread(target=replicator_thread, kwargs={'srcconnpool': srcconnpool, 'dstconnpool': dstconnpool})
         t.daemon = True
         t.start()
 
@@ -597,7 +537,3 @@ def main():
         if thread is threading.currentThread():
             continue
         thread.join()
-
-
-if __name__ == '__main__':
-    sys.exit(main())

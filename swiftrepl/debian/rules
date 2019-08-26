@@ -1,6 +1,0 @@
-#!/usr/bin/make -f
-
-export PYBUILD_NAME=swiftrepl
-
-%:
-	dh $@ --with python2 --buildsystem=pybuild
