@@ -15,7 +15,9 @@ import traceback
 
 import cloudfiles
 import cloudfiles.errors
-from cloudfiles.utils import unicode_quote
+from cloudfiles.utils import unicode_quote, parse_url
+
+from httplib import HTTPSConnection, HTTPConnection
 
 from Queue import Queue, LifoQueue, Empty, Full
 
@@ -27,6 +29,23 @@ NOBJECT=1000
 
 src = {}
 dst = {}
+
+def https_authenticate(self):
+	(url, self.cdn_url, self.token) = self.auth.authenticate()
+	url = self._set_storage_url(url)
+	url = url.replace('http://', 'https://')
+	self.connection_args = parse_url(url)
+
+	self.conn_class = self.connection_args[3] and HTTPSConnection or \
+                                                              HTTPConnection
+	self.http_connect()
+	if self.cdn_url:
+		self.cdn_connect()
+
+
+# This monkeypatch has been long-used in production.
+cloudfiles.Connection._authenticate = https_authenticate
+
 
 class WorkingConnectionPool(cloudfiles.connection.ConnectionPool):
     def __init__(self, username=None, api_key=None, **kwargs):
