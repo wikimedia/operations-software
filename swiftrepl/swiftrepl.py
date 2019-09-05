@@ -318,7 +318,7 @@ def sync_container(srccontainer, srcconnpool, dstconnpool):
     dstobjects = None
     while True:
         srcobjects = get_container_objects(srccontainer, limit=NOBJECT, marker=last, connpool=srcconnpool)
-
+        limit = NOBJECT
         while dstobjects is None or (len(dstobjects) >= limit and dstobjects[-1].name < srcobjects[-1].name):
             dstobjects = get_container_objects(dstcontainer, limit=limit, marker=last, connpool=dstconnpool)
             if len(dstobjects) == limit:
