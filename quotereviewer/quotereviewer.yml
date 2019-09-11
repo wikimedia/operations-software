@@ -29,6 +29,8 @@ optional:
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
   ## R740xd
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
+  ## Motherboard
+  '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   # Heatsinks and fans
   '384-BBPZ': '6 Performance Fans forR740/740XD'
   '384-BBQJ': '8 Standard Fans for R640'
@@ -59,6 +61,7 @@ optional:
   '338-BLMJ': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
   '374-BBOE': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
   '374-BBBX': 'No Additional Processor'
+  '379-BDCO' : 'Additional Processor Selected'
   # Heat sinks
   '412-AAJT': 'Standard Heat Sink'
   '412-AAJU': 'Standard Heat Sink for 2nd CPU'
