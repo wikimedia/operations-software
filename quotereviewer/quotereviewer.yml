@@ -91,6 +91,7 @@ optional:
   '400-BCRN': '1.92TB SSD SATA Read Intensive 6Gbps'
   '400-BDSD': '480GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
   '400-BDSS': '240GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
+  '400-ASHT': '2TB 7.2K RPM SATA 6Gbps 512n 2.5in Hot-plug Hard Drive'
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
