@@ -17,10 +17,11 @@ confirm() {
 }
 
 package=$(grep 'Package:' $control | awk '{print $2}')
-vendor=$(echo $package | sed 's/wmf-\(mariadb\|mysql\|percona\).*/\1/')
+vendor=$(echo $package | sed 's/wmf-\(mariadb\|mysql\|percona-server\).*/\1/')
 release=$(grep 'Version:' $control | awk '{print $2}')
 version=$(echo $release | sed 's/\(.*\)-.*/\1/')
 debname="${package}_${release}_amd64"
+# for percona, it would be something like "${vendor}-${version}-${percona_release}-linux-x86_64.tar.gz"
 tarball="${vendor}-${version}-linux-x86_64.tar.gz"
 optname="${package}"
 tarname=$(echo $tarball | sed 's/\.tar\.gz$//')
@@ -62,13 +63,11 @@ mv $makedir/opt/$tarname $makedir/opt/$optname
 echo "adding WMF stuff..."
 
 # install systemd unit on stretch or higher
-if [[ "$vendor" == "mariadb" && "$version" > '10.1' || "$vendor" == "mysql" && "$version" > '5.7' ]]; then
-    initinstall="/bin/systemctl daemon-reload"
-    initrm="/bin/systemctl daemon-reload"
-    mkdir -p $makedir/lib/systemd/system
-    cat mysql.service | sed "s:BASEDIR:${basedir}:g" | sed "s:VENDOR:${vendor}:g" > $makedir/lib/systemd/system/$vendor.service
-    cat mysql@.service | sed "s:BASEDIR:${basedir}:g"| sed "s:VENDOR:${vendor}:g" > $makedir/lib/systemd/system/$vendor@.service
-fi
+initinstall="/bin/systemctl daemon-reload"
+initrm="/bin/systemctl daemon-reload"
+mkdir -p $makedir/lib/systemd/system
+cat mysql.service | sed "s:BASEDIR:${basedir}:g" | sed "s:VENDOR:${vendor}:g" > $makedir/lib/systemd/system/$vendor.service
+cat mysql@.service | sed "s:BASEDIR:${basedir}:g"| sed "s:VENDOR:${vendor}:g" > $makedir/lib/systemd/system/$vendor@.service
 
 postinst="$makedir/DEBIAN/postinst"
 cat mariadb-deb-postinst.tpl.sh | sed "s:BASEDIR:$basedir:g" | sed "s:INITINSTALL:$initinstall:g" > $postinst
