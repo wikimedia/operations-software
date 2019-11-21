@@ -13,6 +13,7 @@ required:
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
   '709-BBFM': 'Basic Next Business Day 36 Months'
+  '709-BBFK': 'Basic Next Business Day 36 Months'
   '865-BBMY': 'ProSupport Next Business Day Onsite Service Initial, 36 Month(s)'
 
 optional:
@@ -29,8 +30,10 @@ optional:
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
   ## R740xd
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
+  '321-BCPU': 'Chassis with Up to 12 x 3.5 Hard Drives for 2CPU Configuration'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
+  '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
   # Heatsinks and fans
   '384-BBPZ': '6 Performance Fans forR740/740XD'
   '384-BBQJ': '8 Standard Fans for R640'
@@ -51,6 +54,7 @@ optional:
   '330-BBHF': 'Riser Config 1, 4 x8 slots'
   '330-BBGN': 'Riser Config 2, 3x16 LP'
   '330-BBHO': 'Riser Config 3, 2 x 16 LP'
+  '330-BBHB': 'Riser Config 2, 3 x8, 1 x16 slots'
   # CPUs
   '338-BLUQ': 'Intel Xeon Silver 4110 2.1G, 8C/16T, 9.6GT/s , 11M Cache, Turbo, HT (85W) DDR4-2400'
   '374-BBPN': 'Intel Xeon Silver 4110 2.1G, 8C/16T, 9.6GT/s , 11M Cache, Turbo, HT (85W) DDR4-2400'
@@ -70,6 +74,8 @@ optional:
   '370-ADND': '16GB RDIMM, 2666MT/s, Dual Rank'
   '370-ADNF': '32GB RDIMM 2666MT/s Dual Rank'
   '370-ADNU': '2666MT/s RDIMMs'
+  '370-AEQH': '32GB RDIMM, 2933MT/s, Dual Rank'
+  '370-AEPP': '2933MT/s RDIMMs'
   # RAID
   '405-AACD': 'No Controller'
   '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # R440, no minicard
