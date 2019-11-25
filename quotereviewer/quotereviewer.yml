@@ -13,7 +13,6 @@ required:
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
   '709-BBFM': 'Basic Next Business Day 36 Months'
-  '709-BBFK': 'Basic Next Business Day 36 Months'
   '865-BBMY': 'ProSupport Next Business Day Onsite Service Initial, 36 Month(s)'
 
 optional:
@@ -127,6 +126,8 @@ optional:
   '815-3441': 'Dell Hardware Limited Warranty Plus Onsite Service'
   '815-3482': 'ProSupport: Next Business Day Onsite Service After Problem Diagnosis, 3 Years'
   '815-3494': 'ProSupport: 7x24 HW/SW Technical Support and Assistance, 3 Years'
+  '709-BBFM': 'Basic Next Business Day 36 Months'
+  '709-BBFK': 'Basic Next Business Day 36 Months'
   ## R640
   '813-9255': 'Dell Hardware Limited Warranty Plus On-Site Service'
   '813-9262': 'ProSupport: Next Business Day On-Site Service After Problem Diagnosis, 3 Years'
