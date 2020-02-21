@@ -25,6 +25,9 @@ optional:
   '321-BCUQ': '3.5" Chassis with up to 4 Hot Plug Hard Drives and Software RAID'
   '321-BCUW': '2.5" Chassis with up to 8 Hot Plug Hard Drives and Software RAID'
   '321-BCUX': '2.5" Chassis with up to 10 Hard Drives'
+  '321-BCUV': '2.5" Chassis with up to 8 Hot Plug Hard Drives'
+  '340-COSL': 'PowerEdge R440 x8 Shipping Material, V2'
+  '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking' # This is simply a CE cert sticker.
   ## R640
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
   ## R740xd
