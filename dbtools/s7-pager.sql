@@ -34,30 +34,31 @@ union select 2000000 as n, count(rev_user) from arwiki.revision where rev_user >
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE arwiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p150000 VALUES LESS THAN (150000),
-  PARTITION p250000 VALUES LESS THAN (250000),
-  PARTITION p500000 VALUES LESS THAN (500000),
-  PARTITION p750000 VALUES LESS THAN (750000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE arwiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p150000 VALUES LESS THAN (150000),
+--   PARTITION p250000 VALUES LESS THAN (250000),
+--   PARTITION p500000 VALUES LESS THAN (500000),
+--   PARTITION p750000 VALUES LESS THAN (750000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- cawiki
 
@@ -90,29 +91,30 @@ union select 1000000 as n, count(rev_user) from cawiki.revision where rev_user >
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE cawiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p5000 VALUES LESS THAN (5000),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p50000 VALUES LESS THAN (50000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE cawiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p5000 VALUES LESS THAN (5000),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p50000 VALUES LESS THAN (50000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- eswiki
 
@@ -172,42 +174,43 @@ union select 4000000 as n, count(rev_user) from eswiki.revision where rev_user >
 --   PARTITION p3000000 VALUES LESS THAN (3000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE eswiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p50000 VALUES LESS THAN (50000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p200000 VALUES LESS THAN (200000),
-  PARTITION p300000 VALUES LESS THAN (300000),
-  PARTITION p400000 VALUES LESS THAN (400000),
-  PARTITION p500000 VALUES LESS THAN (500000),
-  PARTITION p600000 VALUES LESS THAN (600000),
-  PARTITION p700000 VALUES LESS THAN (700000),
-  PARTITION p800000 VALUES LESS THAN (800000),
-  PARTITION p900000 VALUES LESS THAN (900000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION p1250000 VALUES LESS THAN (1250000),
-  PARTITION p1500000 VALUES LESS THAN (1500000),
-  PARTITION p1750000 VALUES LESS THAN (1750000),
-  PARTITION p2000000 VALUES LESS THAN (2000000),
-  PARTITION p2500000 VALUES LESS THAN (2500000),
-  PARTITION p3000000 VALUES LESS THAN (3000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE eswiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p50000 VALUES LESS THAN (50000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p200000 VALUES LESS THAN (200000),
+--   PARTITION p300000 VALUES LESS THAN (300000),
+--   PARTITION p400000 VALUES LESS THAN (400000),
+--   PARTITION p500000 VALUES LESS THAN (500000),
+--   PARTITION p600000 VALUES LESS THAN (600000),
+--   PARTITION p700000 VALUES LESS THAN (700000),
+--   PARTITION p800000 VALUES LESS THAN (800000),
+--   PARTITION p900000 VALUES LESS THAN (900000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION p1250000 VALUES LESS THAN (1250000),
+--   PARTITION p1500000 VALUES LESS THAN (1500000),
+--   PARTITION p1750000 VALUES LESS THAN (1750000),
+--   PARTITION p2000000 VALUES LESS THAN (2000000),
+--   PARTITION p2500000 VALUES LESS THAN (2500000),
+--   PARTITION p3000000 VALUES LESS THAN (3000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- fawiki
 
@@ -249,30 +252,31 @@ union select 1500000 as n, count(rev_user) from fawiki.revision where rev_user >
 --   PARTITION p400000 VALUES LESS THAN (400000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE fawiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p200000 VALUES LESS THAN (200000),
-  PARTITION p250000 VALUES LESS THAN (250000),
-  PARTITION p300000 VALUES LESS THAN (300000),
-  PARTITION p400000 VALUES LESS THAN (400000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE fawiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p200000 VALUES LESS THAN (200000),
+--   PARTITION p250000 VALUES LESS THAN (250000),
+--   PARTITION p300000 VALUES LESS THAN (300000),
+--   PARTITION p400000 VALUES LESS THAN (400000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- hewiki
 
@@ -306,28 +310,29 @@ union select 10000000 as n, count(rev_user) from hewiki.revision where rev_user 
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE hewiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p50000 VALUES LESS THAN (50000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE hewiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p50000 VALUES LESS THAN (50000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- huwiki
 
@@ -361,28 +366,29 @@ union select 10000000 as n, count(rev_user) from huwiki.revision where rev_user 
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE huwiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p50000 VALUES LESS THAN (50000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE huwiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p50000 VALUES LESS THAN (50000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- kowiki
 
@@ -415,27 +421,28 @@ union select 10000000 as n, count(rev_user) from kowiki.revision where rev_user 
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE kowiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE kowiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- metawiki
 
@@ -469,28 +476,29 @@ union select 9000000 as n, count(rev_user) from metawiki.revision where rev_user
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE metawiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p750000 VALUES LESS THAN (750000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE metawiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p750000 VALUES LESS THAN (750000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 
 -- rowiki
@@ -524,27 +532,28 @@ union select 2000000 as n, count(rev_user) from rowiki.revision where rev_user >
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE rowiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE rowiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- ukwiki
 
@@ -578,28 +587,29 @@ union select 2000000 as n, count(rev_user) from ukwiki.revision where rev_user >
 --   PARTITION p1000000 VALUES LESS THAN (1000000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE ukwiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p50000 VALUES LESS THAN (50000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p1000000 VALUES LESS THAN (1000000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE ukwiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p50000 VALUES LESS THAN (50000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p1000000 VALUES LESS THAN (1000000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
 -- viwiki
 
@@ -635,27 +645,28 @@ union select 1000000 as n, count(rev_user) from viwiki.revision where rev_user >
 --   PARTITION p400000 VALUES LESS THAN (400000),
 --   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
 
-ALTER TABLE viwiki.revision
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (rev_id, rev_user),
-  DROP INDEX user_timestamp,
-  ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_timestamp,
-  ADD KEY rev_timestamp (rev_timestamp, rev_id),
-  DROP KEY page_timestamp,
-  ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
-  DROP KEY usertext_timestamp,
-  ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
-  DROP KEY page_user_timestamp,
-  ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
-  DROP KEY rev_page_id,
-  ADD KEY rev_page_id (rev_page, rev_id)
-  PARTITION BY RANGE (rev_user) (
-  PARTITION p1 VALUES LESS THAN (1),
-  PARTITION p10000 VALUES LESS THAN (10000),
-  PARTITION p100000 VALUES LESS THAN (100000),
-  PARTITION p200000 VALUES LESS THAN (200000),
-  PARTITION p250000 VALUES LESS THAN (250000),
-  PARTITION p300000 VALUES LESS THAN (300000),
-  PARTITION p400000 VALUES LESS THAN (400000),
-  PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
+-- Not needed anymore T239453
+-- ALTER TABLE viwiki.revision
+--   DROP PRIMARY KEY,
+--   ADD PRIMARY KEY (rev_id, rev_user),
+--   DROP INDEX user_timestamp,
+--   ADD INDEX user_timestamp (rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_timestamp,
+--   ADD KEY rev_timestamp (rev_timestamp, rev_id),
+--   DROP KEY page_timestamp,
+--   ADD KEY page_timestamp (rev_page, rev_timestamp, rev_id),
+--   DROP KEY usertext_timestamp,
+--   ADD KEY usertext_timestamp (rev_user_text, rev_timestamp, rev_id),
+--   DROP KEY page_user_timestamp,
+--   ADD KEY page_user_timestamp (rev_page, rev_user, rev_timestamp, rev_id),
+--   DROP KEY rev_page_id,
+--   ADD KEY rev_page_id (rev_page, rev_id)
+--   PARTITION BY RANGE (rev_user) (
+--   PARTITION p1 VALUES LESS THAN (1),
+--   PARTITION p10000 VALUES LESS THAN (10000),
+--   PARTITION p100000 VALUES LESS THAN (100000),
+--   PARTITION p200000 VALUES LESS THAN (200000),
+--   PARTITION p250000 VALUES LESS THAN (250000),
+--   PARTITION p300000 VALUES LESS THAN (300000),
+--   PARTITION p400000 VALUES LESS THAN (400000),
+--   PARTITION pMAXVALUE VALUES LESS THAN MAXVALUE );
