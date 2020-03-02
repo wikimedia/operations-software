@@ -117,6 +117,7 @@ optional:
   '340-BLBE': 'PowerEdge R740XD Shipping'
   # Shipping material
   '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
+  '340-COSM': 'PowerEdge R440 x4 Shipping Material, V2'
   '343-BBID': 'PowerEdge R440 x8 Drive Shipping Material'
   '340-BLUC': 'PowerEdge R640 x4 and x10 Drive Shipping Material'
   '343-BBFU': 'PowerEdge R740 Shipping Material'
