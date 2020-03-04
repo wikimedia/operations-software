@@ -30,12 +30,15 @@ optional:
   '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking' # This is simply a CE cert sticker.
   ## R640
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
+  '321-BCYJ': '2.5 Chassis with up to 8 Hard Drives and 3PCIe slots,SATA (No PERC)'
+  '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking' # This is simply a CE cert sticker.
   ## R740xd
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
   '321-BCPU': 'Chassis with Up to 12 x 3.5 Hard Drives for 2CPU Configuration'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
+  '329-BEIJ': 'PowerEdge R640 MLK Motherboard'
   # Heatsinks and fans
   '384-BBPZ': '6 Performance Fans forR740/740XD'
   '384-BBQJ': '8 Standard Fans for R640'
@@ -114,6 +117,7 @@ optional:
   # Shipping
   '340-BSFX': 'PowerEdge R440 Shipping'
   '340-BKNE': 'PowerEdge R640 Shipping'
+  '340-COPS': 'PowerEdge R640 x8 Drive Shipping Material'
   '340-BLBE': 'PowerEdge R740XD Shipping'
   # Shipping material
   '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
@@ -125,6 +129,8 @@ optional:
   '513-1790': 'Expedited Delivery'
   '772-7488': 'Standard Delivery'
   '839-6885': 'Standard Delivery'
+  # Misc
+  '387-BBMK': 'Energy Star'
   # Warranty and support
   ## R440
   '815-3441': 'Dell Hardware Limited Warranty Plus Onsite Service'
@@ -149,6 +155,7 @@ optional:
   '350-BBKS': 'Dell EMC Luggage Tag for x10'
   '350-BBJT': 'Dell EMC Luggage Tag for x10'
   '389-BTTO': 'PE R740XD Luggage Tag'
+  '350-BBJS': 'Dell EMC Luggage Tag' #R640
   # Remote Support
   '973-2426': 'Declined Remote Consulting Service'
 
