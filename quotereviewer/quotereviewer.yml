@@ -39,6 +39,7 @@ optional:
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
   '329-BEIJ': 'PowerEdge R640 MLK Motherboard'
+  '384-BCHR': 'PowerEdge R440 MLK Motherboard V2'
   # Heatsinks and fans
   '384-BBPZ': '6 Performance Fans forR740/740XD'
   '384-BBQJ': '8 Standard Fans for R640'
