@@ -27,11 +27,9 @@ optional:
   '321-BCUX': '2.5" Chassis with up to 10 Hard Drives'
   '321-BCUV': '2.5" Chassis with up to 8 Hot Plug Hard Drives'
   '340-COSL': 'PowerEdge R440 x8 Shipping Material, V2'
-  '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking' # This is simply a CE cert sticker.
   ## R640
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
   '321-BCYJ': '2.5 Chassis with up to 8 Hard Drives and 3PCIe slots,SATA (No PERC)'
-  '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking' # This is simply a CE cert sticker.
   ## R740xd
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
   '321-BCPU': 'Chassis with Up to 12 x 3.5 Hard Drives for 2CPU Configuration'
@@ -47,6 +45,10 @@ optional:
   # Power supply
   '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
+  #CE Cert Stickers
+  '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking'
+  '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking'
+  '389-DSWP': 'PowerEdge R740 CE, CCC, BIS Marking'
   # Rails
   '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
@@ -61,6 +63,7 @@ optional:
   '330-BBGN': 'Riser Config 2, 3x16 LP'
   '330-BBHO': 'Riser Config 3, 2 x 16 LP'
   '330-BBHB': 'Riser Config 2, 3 x8, 1 x16 slots'
+  '330-BBHG': 'Riser Config 2, 3 x8, 1 x16 slots'
   # CPUs
   '338-BLUQ': 'Intel Xeon Silver 4110 2.1G, 8C/16T, 9.6GT/s , 11M Cache, Turbo, HT (85W) DDR4-2400'
   '374-BBPN': 'Intel Xeon Silver 4110 2.1G, 8C/16T, 9.6GT/s , 11M Cache, Turbo, HT (85W) DDR4-2400'
@@ -95,6 +98,7 @@ optional:
   '400-ASGC': '1.92TB SSD SATA Read Intensive 6Gpbs 512n 2.5in Hot-plug Drive, PM863a,1 DWPD,3504 TBW'
   '400-ASZL': '1.92TB SSD SATA Read Intensive 6Gpbs 512n 2.5in Hot-plug Drive, Hawk-M4R,1 DWPD,3504 TBW'
   '400-ASIE': '4TB 7.2K RPM SATA 6Gbps 512n 3.5in Hot-plug Hard Drive'
+  '400-ASIF': '8TB 7.2K RPM SATA 6Gbps 512e 3.5in Hot-plug Hard Drive'
   '400-ASWK': '240GB SSD SATA Mix Use 6Gbps 512e 2.5in Hot-plug Drive,'
   '400-ASWV': '200GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,1095 TBW'
   '400-ASXK': '480GB SSD SATA Read Intensive 6Gbps 512e 2.5in Flex Bay'
@@ -120,6 +124,7 @@ optional:
   '340-BKNE': 'PowerEdge R640 Shipping'
   '340-COPS': 'PowerEdge R640 x8 Drive Shipping Material'
   '340-BLBE': 'PowerEdge R740XD Shipping'
+  '340-CORZ': 'PowerEdge R740 Shipping Material'
   # Shipping material
   '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
   '340-COSM': 'PowerEdge R440 x4 Shipping Material, V2'
