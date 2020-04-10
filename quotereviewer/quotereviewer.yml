@@ -33,6 +33,9 @@ optional:
   ## R740xd
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
   '321-BCPU': 'Chassis with Up to 12 x 3.5 Hard Drives for 2CPU Configuration'
+  '330-BBHH': 'Riser Config 4, 3x8, 4 x16 slots'
+  '470-ACQQ': 'GPU Ready Configuration Cable Install Kit'
+  '750-AAXW': 'HS Install Kit,GPU Config,No cable'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
