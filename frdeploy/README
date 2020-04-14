@@ -1,5 +1,9 @@
 WMF Fundraising Deployment Tools
 
+Repository:
+
+https://gerrit.wikimedia.org/r/operations/software
+
 Overview:
 
 These tools were created to facilitate 'devopsy' software deployment across our

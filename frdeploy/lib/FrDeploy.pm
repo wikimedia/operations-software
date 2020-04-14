@@ -147,6 +147,7 @@ sub execute_shell {
 	close R;
 	close E;
 	$SIG{'INT'} = 'DEFAULT';
+	waitpid $child_pid, 0;
 	return $r;
 }
 
