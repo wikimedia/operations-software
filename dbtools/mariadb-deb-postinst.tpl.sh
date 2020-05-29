@@ -14,6 +14,7 @@ update-alternatives --install /usr/local/bin/mysql_upgrade mysql_upgrade $basedi
 update-alternatives --install /usr/local/bin/mysqlcheck mysqlcheck $basedir/bin/mysqlcheck 1
 
 update-alternatives --install /usr/local/bin/xtrabackup xtrabackup $basedir/bin/mariabackup 1
+update-alternatives --install /usr/local/bin/mbstream mbstream $basedir/bin/mbstream 1
 
 INITINSTALL
 

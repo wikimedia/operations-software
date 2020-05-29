@@ -13,6 +13,7 @@ update-alternatives --remove mysql_upgrade $basedir/bin/mysql_upgrade
 update-alternatives --remove mysqlcheck $basedir/bin/mysqlcheck
 
 update-alternatives --remove xtrabackup $basedir/bin/mariabackup
+update-alternatives --remove mbstream $basedir/bin/mbstream
 
 # Handled automatically
 # rmdir --ignore-fail-on-non-empty /usr/local/bin
