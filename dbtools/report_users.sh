@@ -36,9 +36,9 @@ $MYSQL -h $SOURCE_DB_HOST $SOURCE_DB -e "select server,port from $SOURCE_DB_TABL
 do
 
 # The following IPs are whitelisted as they are proxies and we cannot remove haproxy or set a password for it see: T199061#4426646
-# '10.64.0.198','10.64.32.157','10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.192.32.137'
+# '10.64.0.198','10.64.32.157','10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.192.32.179'
 
-	$MYSQL --connect-timeout $DB_TIMEOUT -h $server -P $port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.0.198','10.64.32.157','10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.192.32.137');" -BN | while read user host
+	$MYSQL --connect-timeout $DB_TIMEOUT -h $server -P $port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.0.198','10.64.32.157','10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.192.32.179');" -BN | while read user host
 	do
 		echo "INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL -h $DB_HOST -u $DB_USER $DATABASE
 	done
@@ -49,7 +49,7 @@ done
 # Not sending any kind of username/host on email to avoid any kind hint of over email
 
 # The following IPs are whitelisted as they are proxies and we cannot remove haproxy or set a password for it see: T199061#4426646
-# '10.64.0.198','10.64.32.157','10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137', '10.64.37.28', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.192.32.137'
+# '10.64.0.198','10.64.32.157','10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137', '10.64.37.28', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.192.32.179'
 
 USERS_COUNT=$($MYSQL -h $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from nil_grants;" -BN)
 
