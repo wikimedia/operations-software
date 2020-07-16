@@ -8,7 +8,7 @@ DB_HOST="db1115.eqiad.wmnet"
 DB_USER="root"
 
 # DB from where to get the list of live hosts
-SOURCE_DB_HOST="db2093.codfw.wmnet"
+SOURCE_DB_HOST="db1115.eqiad.wmnet"
 SOURCE_DB="zarcillo"
 SOURCE_DB_TABLE="instances"
 # Timeout in seconds
