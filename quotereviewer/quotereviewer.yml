@@ -8,7 +8,7 @@ required:
   '379-BCSF': 'iDRAC,Factory Generated Password'
   '421-5736': 'No Media Required'
   '461-AADZ': 'No Trusted Platform Module'
-  '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
+  '450-AAGG': 'No Power Cord'
   '619-ABVR': 'No Operating System'
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
@@ -140,6 +140,7 @@ optional:
   '839-6885': 'Standard Delivery'
   # Misc
   '387-BBMK': 'Energy Star'
+  '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
   # Warranty and support
   ## R440
   '815-3441': 'Dell Hardware Limited Warranty Plus Onsite Service'
