@@ -14,7 +14,7 @@ SOURCE_DB_TABLE="instances"
 # Timeout in seconds
 DB_TIMEOUT=5
 
-MYSQL="/usr/local/sbin/mysql.py"
+MYSQL="mysql.py"
 
 if [ ! -f "$MYSQL" ]
 then
