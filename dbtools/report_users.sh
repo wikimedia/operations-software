@@ -14,11 +14,11 @@ SOURCE_DB_TABLE="instances"
 # Timeout in seconds
 DB_TIMEOUT=5
 
-MYSQL="mysql.py"
+MYSQL="`which mysql.py`"
 
 if [ ! -f "$MYSQL" ]
 then
-    echo "$MYSQL is not present"
+    echo "mysql.py is not present"
     exit 1
 fi
 
