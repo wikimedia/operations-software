@@ -2,6 +2,7 @@ actor actor_id
 archive ar_id
 change_tag ct_id
 comment comment_id
+content content_id
 logging log_id
 page page_id
 revision rev_id
