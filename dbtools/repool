@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -euo pipefail
+
+wait_for_clean() {
+    printf "=======> wait for 'dbctl config diff' to be clean: "
+    while ! sudo dbctl config diff > /dev/null; do
+        printf .
+        sleep 5
+    done
+    echo "OK"
+}
+
+if [ $# -lt 3 ]; then
+    prog=${0##*/}
+    echo "Usage:"
+    echo "    $prog INSTANCE REASON PERCENTAGES..."
+    echo
+    echo "Repools a database instance using the supplied percentages, waiting 15mins between each step."
+    echo
+    echo "E.g.:"
+    echo "    $prog db1139:3316 'schema change T259831' 25 50 75 100"
+    exit 0
+fi
+
+instance="$1"; shift
+reason="$1"; shift
+
+echo "=======> checking the instance exists"
+dbctl instance "$instance" get > /dev/null
+
+while true; do
+    percent="$1"; shift
+    wait_for_clean
+    echo "=======> (re)pooling at $percent% [$(date -u -Isec)]"
+    sudo dbctl instance "$instance" pool -p $percent
+    sudo dbctl config commit -b -m "$instance (re)pooling @ $percent%: $reason"
+    if [ $# -eq 0 ]; then
+        break
+    fi
+    sleep 900
+done
