@@ -5,21 +5,18 @@ required:
   '384-BBBL': 'Performance BIOS Settings'
   '385-BBKT': 'iDRAC9,Enterprise'
   '379-BCQY': 'iDRAC Group Manager, Disabled'
-  '379-BCSF': 'iDRAC,Factory Generated Password'
-  '421-5736': 'No Media Required'
   '461-AADZ': 'No Trusted Platform Module'
   '450-AAGG': 'No Power Cord'
-  '619-ABVR': 'No Operating System'
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
-  '709-BBFM': 'Basic Next Business Day 36 Months'
   '865-BBMY': 'ProSupport Next Business Day Onsite Service Initial, 36 Month(s)'
 
-optional:
+optional: #Optional and items with multiple skus (example: idrac factory generated password has per chassis sku)
   # Model
   '210-ALZE': 'PowerEdge R440 Server'
   '210-AKWU': 'PowerEdge R640 Server'
   '210-AKZR': 'PowerEdge R740XD Server'
+  '210-ARCU': 'PowerEdge R740xd2 Server'
   # Chassis
   ## R440
   '321-BCUQ': '3.5" Chassis with up to 4 Hot Plug Hard Drives and Software RAID'
@@ -36,9 +33,14 @@ optional:
   '330-BBHH': 'Riser Config 4, 3x8, 4 x16 slots'
   '470-ACQQ': 'GPU Ready Configuration Cable Install Kit'
   '750-AAXW': 'HS Install Kit,GPU Config,No cable'
+  ## R740xd2
+  '330-BBMW': 'Riser Config 2, 2xLP, Dual CPU, R740xd2'
+  '412-AARI': '1 CPU Standard Thermal for 3.5" Chassis'
+  '575-BBXC': 'Low Profile PCIe Blank Bracket'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
+  '329-BFBM': 'PowerEdge R740xd2 MLK Motherboad, V2'
   '329-BEIJ': 'PowerEdge R640 MLK Motherboard'
   '384-BCHR': 'PowerEdge R440 MLK Motherboard V2'
   # Heatsinks and fans
@@ -46,16 +48,22 @@ optional:
   '384-BBQJ': '8 Standard Fans for R640'
   '412-AAIQ': 'Standard 1U Heatsink'
   # Power supply
+  '450-ADWM': 'Dual, Hot-plug, Redundant Power Supply (1+1), 1100W' #R740xd2
   '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
+  #iDRAC allowed options
+  '379-BCSF': 'iDRAC,Factory Generated Password'
+  '379-BCRG': 'iDRAC,Factory Generated Password' #R740xd2
   #CE Cert Stickers
   '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking'
   '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking'
   '389-DSWP': 'PowerEdge R740 CE, CCC, BIS Marking'
+  '389-DSVC': 'PowerEdge R740XD2 CE, CCC, BIS Marking'
   # Rails
   '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
   '770-BBBQ': 'ReadyRails Sliding Rails Without Cable Management Arm' # R740xd
+  '770-BCFZ': 'PEC Static Rails' # R740xd2
   # Motherboard
   '384-BBQW': 'Motherboard' # R440
   '329-BDKC': 'PowerEdge R640 Motherboard'
@@ -83,6 +91,7 @@ optional:
   '412-AAJU': 'Standard Heat Sink for 2nd CPU'
   # Memory
   '370-ABWE': 'DIMM Blanks for System with 2 Processors'
+  '370-ABXX': 'DIMM Blanks for System with 2 Processors' #R740xd2
   '370-ADND': '16GB RDIMM, 2666MT/s, Dual Rank'
   '370-ADNF': '32GB RDIMM 2666MT/s Dual Rank'
   '370-ADNU': '2666MT/s RDIMMs'
@@ -94,6 +103,7 @@ optional:
   '405-AAOM': 'Internal PERC' # probably cabling?
   '405-AANT': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # R640
   '405-AAQU': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # R740xd
+  '405-AAND': 'PERC H730P RAID Controller, 2GB NV Cache, Mini card' # R740xd
   '780-BCDM': 'No RAID with Embedded SATA'
   '780-BCDI': 'No RAID'
   '780-BCDS': 'Unconfigured RAID'
@@ -121,19 +131,31 @@ optional:
   '540-BBVI': 'Broadcom 57412 Dual Port 10Gb, SFP+, PCIe Adapter, Low'
   '540-BBUH': 'Broadcom 57412 Dual Port 10Gb, SFP+, PCIe Adapter, Full Height'
   '540-BBUL': 'Broadcom 57412 2 Port 10Gb SFP+ + 5720 2 Port 1Gb Base-T, rNDC'
+  '540-BBZE': 'Broadcom 57416 Dual Port 10 GbE SFP+ Network LOM Mezz Card'
   '542-BBBP': 'On-Board LOM' # Broadcom 5720 Dual-Port Rack Network Daughter Card
+  # Support (all servers must have basic support, but the sku differs by model)
+  '709-BBFM': 'Basic Next Business Day 36 Months'
+  '709-BBFK': 'Basic Next Business Day 36 Months'
   # Shipping
   '340-BSFX': 'PowerEdge R440 Shipping'
   '340-BKNE': 'PowerEdge R640 Shipping'
-  '340-COPS': 'PowerEdge R640 x8 Drive Shipping Material'
   '340-BLBE': 'PowerEdge R740XD Shipping'
-  '340-CORZ': 'PowerEdge R740 Shipping Material'
+  '340-COPN': 'PowerEdge R740XD2 Shipping'
   # Shipping material
   '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
   '340-COSM': 'PowerEdge R440 x4 Shipping Material, V2'
   '343-BBID': 'PowerEdge R440 x8 Drive Shipping Material'
   '340-BLUC': 'PowerEdge R640 x4 and x10 Drive Shipping Material'
+  '340-COPS': 'PowerEdge R640 x8 Drive Shipping Material'
   '343-BBFU': 'PowerEdge R740 Shipping Material'
+  '340-CORZ': 'PowerEdge R740 Shipping Material'
+  '340-CKUB': 'PowerEdge R740xd2 Shipping Material'
+  # Media (the manuals and cds we do not want)
+  '421-5736': 'No Media Required'
+  '605-BBFN': 'No Media Required' #R740xd2
+  # OS (we never want an OS installed)
+  '619-ABVR': 'No Operating System'
+  '611-BBBF': 'No Operating System'
   # Delivery
   '513-1790': 'Expedited Delivery'
   '772-7488': 'Standard Delivery'
