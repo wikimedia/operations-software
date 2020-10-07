@@ -54,6 +54,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   #iDRAC allowed options
   '379-BCSF': 'iDRAC,Factory Generated Password'
   '379-BCRG': 'iDRAC,Factory Generated Password' #R740xd2
+  '379-BCQX': 'iDRAC Service Module (ISM), NOT Installed'
   #CE Cert Stickers
   '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking'
   '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking'
@@ -97,6 +98,8 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '370-ADNU': '2666MT/s RDIMMs'
   '370-AEQH': '32GB RDIMM, 2933MT/s, Dual Rank'
   '370-AEPP': '2933MT/s RDIMMs'
+  '370-AEVN': '32GB RDIMM, 3200MT/s, Dual Rank'
+  '370-AEVR': '3200MT/s RDIMMs'
   # RAID
   '405-AACD': 'No Controller'
   '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # R440, no minicard
