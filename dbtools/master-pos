@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# Script to find a recent heartbeat transaction position in a master db's binlog,
+# and output the relevant `change master` command to start replicating from that point.
+
+if [ $# -eq 0 -o $# -gt 2 ]; then
+    echo "Usage:"
+    echo "    ${0##*/} DB_INSTANCE_FQDN [PORT]"
+    exit 0
+fi
+
+host="$1"; shift
+port="${1:-3306}"
+
+if ! echo $host | grep -q '\.'; then
+    echo "ERROR: hostname needs to be fqdn"
+    exit 1
+fi
+
+# Get current binlog file and position
+read file pos < <(sudo -H mysql.py -h "${host}" -P "${port}" -BN -e 'show master status')
+
+# Get datadir
+read datadir < <(sudo -H mysql.py -h "${host}" -P "${port}" -BN -e 'select @@datadir')
+
+# Find a heartbeat transaction, starting from the position given by `show master status`
+bin_log=$(SSH_AUTH_SOCK=/run/keyholder/proxy.sock ssh -l root "$host" "
+        mysqlbinlog --start-position=${pos:?} --database=heartbeat ${datadir:?}/${file:?} |
+        awk '/^COMMIT\// { getline; print; exit; }'
+    ")
+end_log_pos=$(echo ${bin_log:?} | sed -nE 's/# at ([[:digit:]]+)/\1/p')
+
+echo "=======> Host: $host"
+echo "=======> File: $file"
+echo "=======> Pos: ${end_log_pos:?}"
+echo
+echo "change master to master_host='$host', master_port=$port, master_ssl=1, master_log_file='$file', master_log_pos=$end_log_pos, master_user='repl', master_password='x';"
