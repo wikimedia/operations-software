@@ -1,0 +1,28 @@
+#!/bin/bash
+
+ZARCILLO_HOST=db1115
+
+set -euo pipefail
+
+if [ $# -ne 2 ]; then
+    prog=${0##*/}
+    echo "Usage:"
+    echo "    $prog SECTION HOST"
+    echo
+    echo "Takes a section and hostname, and returns a database instance by adding the port"
+    echo "if the host is multi-instance"
+    echo
+    echo "E.g.:"
+    echo "    $prog s2 db2088"
+    set +e
+    [ $# -eq 0 ]
+    exit
+fi
+
+section="$1"; shift
+host="$1"; shift
+
+# Strip off any domain.
+host=$(echo $host | cut -f1 -d.)
+
+sudo -H mysql.py -h $ZARCILLO_HOST -A -BN zarcillo -e "select instance from section_instances where section='$section' and instance like '$host%'"
