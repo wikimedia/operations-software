@@ -25,4 +25,8 @@ host="$1"; shift
 # Strip off any domain.
 host=$(echo $host | cut -f1 -d.)
 
-sudo -H mysql.py -h $ZARCILLO_HOST -A -BN zarcillo -e "select instance from section_instances where section='$section' and instance like '$host%'"
+ret=$(sudo -H mysql.py -h $ZARCILLO_HOST -A -BN zarcillo -e "select instance from section_instances where section='$section' and instance like '$host%'") || exit
+
+[ -n "$ret" ] || { echo "ERROR: no known $section instance on $host" >&2; exit 1; }
+
+echo "$ret"
