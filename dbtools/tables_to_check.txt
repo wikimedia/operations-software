@@ -1,17 +1,14 @@
 actor actor_id
 archive ar_id
-categorylinks cl_from
 change_tag ct_id
 comment comment_id
 content content_id
 logging log_id
 page page_id
-pagelinks pl_from
 revision rev_id
 revision_actor_temp revactor_rev
 revision_comment_temp revcomment_rev
 slots slot_revision_id
-templatelinks tl_from
 text old_id
 user user_id
 watchlist wl_id
