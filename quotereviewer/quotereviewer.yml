@@ -94,6 +94,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '370-ABWE': 'DIMM Blanks for System with 2 Processors'
   '370-ABXX': 'DIMM Blanks for System with 2 Processors' #R740xd2
   '370-ADND': '16GB RDIMM, 2666MT/s, Dual Rank'
+  '370-AEVQ': '16GB RDIMM, 3200MT/s, Dual Rank'
   '370-ADNF': '32GB RDIMM 2666MT/s Dual Rank'
   '370-ADNU': '2666MT/s RDIMMs'
   '370-AEQH': '32GB RDIMM, 2933MT/s, Dual Rank'
