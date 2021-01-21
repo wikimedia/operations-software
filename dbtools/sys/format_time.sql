@@ -1,3 +1,4 @@
+set session sql_log_bin=0;
 -- Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
 --
 -- This program is free software; you can redistribute it and/or modify
