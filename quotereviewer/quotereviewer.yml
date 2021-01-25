@@ -36,7 +36,9 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   ## R740xd2
   '330-BBMW': 'Riser Config 2, 2xLP, Dual CPU, R740xd2'
   '412-AARI': '1 CPU Standard Thermal for 3.5" Chassis'
+  '330-BBMU': 'Riser Config 3, 1xFH, Single CPU, R740xd2'
   '575-BBXC': 'Low Profile PCIe Blank Bracket'
+  '575-BBXD': 'Full Height PCIe Blank Bracket'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
