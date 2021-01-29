@@ -1,5 +1,4 @@
 required:
-  '332-1286': 'US Order'
   '350-BBBW': 'No Bezel'
   '370-AAIP': 'Performance Optimized'
   '384-BBBL': 'Performance BIOS Settings'
@@ -52,6 +51,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   # Power supply
   '450-ADWM': 'Dual, Hot-plug, Redundant Power Supply (1+1), 1100W' #R740xd2
   '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
+  '450-AJSC': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
   #iDRAC allowed options
   '379-BCSF': 'iDRAC,Factory Generated Password'
@@ -168,7 +168,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '839-6885': 'Standard Delivery'
   # Misc
   '387-BBMK': 'Energy Star'
-  '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
+  '332-1286': 'US Order'
   # Warranty and support
   ## R440
   '815-3441': 'Dell Hardware Limited Warranty Plus Onsite Service'
@@ -198,6 +198,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '973-2426': 'Declined Remote Consulting Service'
 
 blacklist:
+  '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
   '350-BBKQ': 'Quick Sync 2 (At-the-box mgmt)'
   '379-BCQV': 'iDRAC Group Manager, Enabled'
   '379-BCSG': 'iDRAC,Legacy Password'
