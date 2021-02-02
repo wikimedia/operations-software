@@ -59,6 +59,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '379-BCQX': 'iDRAC Service Module (ISM), NOT Installed'
   #CE Cert Stickers
   '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking'
+  '389-DSXN': 'PowerEdge R440 CCC and BIS Marking, No CE Marking'
   '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking'
   '389-DSWP': 'PowerEdge R740 CE, CCC, BIS Marking'
   '389-DSVC': 'PowerEdge R740XD2 CE, CCC, BIS Marking'
