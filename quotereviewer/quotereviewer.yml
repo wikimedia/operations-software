@@ -55,6 +55,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
   #iDRAC allowed options
   '379-BCSG': 'iDRAC,Legacy Password'
+  '379-BCRF': 'iDRAC,Legacy Password'
   '379-BCQX': 'iDRAC Service Module (ISM), NOT Installed'
   #CE Cert Stickers
   '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking'
@@ -62,6 +63,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking'
   '389-DSWP': 'PowerEdge R740 CE, CCC, BIS Marking'
   '389-DSVC': 'PowerEdge R740XD2 CE, CCC, BIS Marking'
+  '389-DSVD': 'PowerEdge R740XD2 CCC and BIS Marking, No CE Marking'
   # Rails
   '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
