@@ -157,7 +157,7 @@ def parse_config(config_file):
 
     return (
         config.get("required", {}),
-        config.get("blacklist", {}),
+        config.get("disallowed", {}),
         config.get("optional", {}),
     )
 
@@ -179,7 +179,7 @@ def main(argv=None):
     logger = setup_logging()
 
     try:
-        required, blacklist, optional = parse_config(args.config)
+        required, disallow, optional = parse_config(args.config)
         parsed = parse_pdf(args.filename)
     except (ConfigParseError, PdfParseError, PdfToTextNotFound) as exc:
         logger.critical(exc)
@@ -199,19 +199,19 @@ def main(argv=None):
         for sku in sorted(missing):
             logger.error("  • %s %s", sku, required[sku])
 
-    blacklisted = set(blacklist) & set(parsed)
-    if blacklisted:
-        logger.error("The following blacklisted SKUs are present:")
-        for sku in sorted(blacklisted):
-            logger.error("  • %s %s", sku, blacklist[sku])
+    disallowed = set(disallow) & set(parsed)
+    if disallowed:
+        logger.error("The following disallowed SKUs are present:")
+        for sku in sorted(disallowed):
+            logger.error("  • %s %s", sku, disallow[sku])
 
-    unknown = set(parsed) - set(required) - set(blacklist) - set(optional)
+    unknown = set(parsed) - set(required) - set(disallow) - set(optional)
     if unknown:
         logger.warning("The following SKUs are unknown:")
         for sku in sorted(unknown):
             logger.warning("  • %s %s", sku, parsed[sku])
 
-    if not missing | blacklisted | unknown:
+    if not missing | disallowed | unknown:
         logger.info("Quote looks good!")
     else:
         raise SystemExit(1)

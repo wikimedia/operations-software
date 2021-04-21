@@ -10,7 +10,7 @@ required:
   '900-9997': 'On-Site Installation Declined'
   '865-BBMY': 'ProSupport Next Business Day Onsite Service Initial, 36 Month(s)'
 
-optional: #Optional and items with multiple skus (example: idrac factory generated password has per chassis sku)
+optional: # Optional and items with multiple skus (example: idrac factory generated password has per chassis sku)
   # Model
   '210-ALZE': 'PowerEdge R440 Server'
   '210-AKWU': 'PowerEdge R640 Server'
@@ -188,7 +188,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   '813-6068': 'Dell Hardware Limited Warranty Plus On-Site Service'
   '813-6075': 'ProSupport: Next Business Day On-Site Service After Problem Diagnosis, 3 Years'
   '813-6087': 'ProSupport: 7x24 HW/SW Technical Support and Assistance, 3 Years'
-  # Dell Quick Sync (actual quick sync is blacklisted)
+  # Dell Quick Sync (actual quick sync is not allowed)
   '350-BBKR': 'No Quick Sync' # R440
   '350-BBKB': 'No Quick Sync' # R640
   '350-BBJV': 'No Quick Sync' # R740xd
@@ -201,7 +201,7 @@ optional: #Optional and items with multiple skus (example: idrac factory generat
   # Remote Support
   '973-2426': 'Declined Remote Consulting Service'
 
-blacklist:
+disallowed:
   '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
   '350-BBKQ': 'Quick Sync 2 (At-the-box mgmt)'
   '379-BCQV': 'iDRAC Group Manager, Enabled'
