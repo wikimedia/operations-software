@@ -32,6 +32,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBHH': 'Riser Config 4, 3x8, 4 x16 slots'
   '470-ACQQ': 'GPU Ready Configuration Cable Install Kit'
   '750-AAXW': 'HS Install Kit,GPU Config,No cable'
+  '370-ADPF': 'Blank for 1CPU Configuration'
   ## R740xd2
   '330-BBMW': 'Riser Config 2, 2xLP, Dual CPU, R740xd2'
   '412-AARI': '1 CPU Standard Thermal for 3.5" Chassis'
@@ -70,6 +71,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
   '770-BBBQ': 'ReadyRails Sliding Rails Without Cable Management Arm' # R740xd
   '770-BCFZ': 'PEC Static Rails' # R740xd2
+  '770-BCKW': 'ReadyRails Sliding Rails Without Cable Management Arm, CK' # R440 with NVMe Disk
   # Motherboard
   '384-BBQW': 'Motherboard' # R440
   '329-BDKC': 'PowerEdge R640 Motherboard'
@@ -132,6 +134,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '400-BDSS': '240GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
   '400-ASHT': '2TB 7.2K RPM SATA 6Gbps 512n 2.5in Hot-plug Hard Drive'
   '400-ASHX': '2TB 7.2K RPM SATA 6Gbps 512n 3.5in Hot-plug Hard Drive'
+  '403-BCLL': '1.6TB Enterprise NVMe Mixed Use AG Drive, AIC, PCIe 4.0, DIB'
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
