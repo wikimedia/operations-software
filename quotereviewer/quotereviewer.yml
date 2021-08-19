@@ -66,6 +66,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '389-DSWS': 'PowerEdge R740 CCC and BIS Marking, No CE Marking'
   '389-DSVC': 'PowerEdge R740XD2 CE, CCC, BIS Marking'
   '389-DSVD': 'PowerEdge R740XD2 CCC and BIS Marking, No CE Marking'
+  '389-DSWO': 'PowerEdge R740 CE and BIS Marking, No CCC Marking'
   # Rails
   '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
@@ -108,6 +109,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '370-AEPP': '2933MT/s RDIMMs'
   '370-AEVN': '32GB RDIMM, 3200MT/s, Dual Rank'
   '370-AEVR': '3200MT/s RDIMMs'
+  '370-AGDS': '32GB RDIMM, 3200MT/s, Dual Rank 16Gb BASE'
   # RAID
   '405-AACD': 'No Controller'
   '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # R440, no minicard
@@ -203,6 +205,14 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '350-BBJS': 'Dell EMC Luggage Tag' #R640
   # Remote Support
   '973-2426': 'Declined Remote Consulting Service'
+  # Dell System Services (shipping notification)
+  '360-2786': 'System Integration,Load Info F ile,SFW __'
+  '364-1846': 'CFI Titan Code for CFI FIDA or Bypass SI'
+  '364-7502': 'CFI Bypass EIDO'
+  '365-0257': 'CFI Routing SKU'
+  '368-0001': 'Configuration Services'
+  '368-4207': 'CFI,Advance Delivery Notice,Servers'
+  '375-3088': 'CFI,Information,CSRouting,Elig ible,Factory Install'
 
 disallowed:
   '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
