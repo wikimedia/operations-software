@@ -132,7 +132,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '400-ASHX': '2TB 7.2K RPM SATA 6Gbps 512n 3.5in Hot-plug Hard Drive'
   '400-ASIE': '4TB 7.2K RPM SATA 6Gbps 512n 3.5in Hot-plug Hard Drive'
   '400-ASIF': '8TB 7.2K RPM SATA 6Gbps 512e 3.5in Hot-plug Hard Drive'
-
+  '403-BCLL': '1.6TB Enterprise NVMe Mixed Use AG Drive, AIC, PCIe 4.0, DIB'
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
