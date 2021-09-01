@@ -21,6 +21,10 @@
 [Unit]
 Description=VENDOR database server
 After=network.target
+# If available, cause the relevant prometheus-mysqld-exporter to be
+# started when mariadb is
+Before=prometheus-mysqld-exporter@%i.service
+Wants=prometheus-mysqld-exporter@%i.service
 
 ConditionPathExists=/etc/mysql/mysqld.conf.d/%I.cnf
 
