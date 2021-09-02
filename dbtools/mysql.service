@@ -17,6 +17,10 @@
 [Unit]
 Description=VENDOR database server
 After=network.target
+# If available, cause prometheus-mysqld-exporter to be started when
+# mariadb is
+Before=prometheus-mysqld-exporter.service
+Wants=prometheus-mysqld-exporter.service
 
 [Install]
 WantedBy=multi-user.target
