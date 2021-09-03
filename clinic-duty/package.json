@@ -1,8 +1,12 @@
 {
-  "scripts": {
-    "test": "jest"
-  },
-  "devDependencies": {
-    "jest": "^27.1.0"
-  }
+	"scripts": {
+		"lint": "eslint .",
+		"test": "qunit && eslint .",
+		"test-watch": "qunit --watch",
+		"fix": "eslint --fix ."
+	},
+	"devDependencies": {
+		"eslint-config-wikimedia": "^0.20.0",
+		"qunit": "^2.16.0"
+	}
 }

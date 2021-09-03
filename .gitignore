@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .tox/
+
+# clinic-duty
+package-lock.json
+node_modules
