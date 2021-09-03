@@ -35,13 +35,14 @@ class Work {
 			endDateGcal = endAllday.toISOString().replace( /-|T.*/g, '' );
 		}
 
-		let href = 'https://www.google.com/calendar/event?action=TEMPLATE';
-		href += '&src=' + encodeURIComponent( calendar );
-		href += '&text=' + encodeURIComponent( this.message.title );
-		href += '&details=' + encodeURIComponent( this.message.inviteDetails );
-		href += '&location=' + encodeURIComponent( this.details );
-		href += '&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal );
-		return href;
+		const link = document.createElement( 'a' );
+		link.href = 'https://www.google.com/calendar/event?action=TEMPLATE' +
+			'&src=' + encodeURIComponent( calendar ) +
+			'&text=' + encodeURIComponent( this.message.title ) +
+			'&details=' + encodeURIComponent( this.message.inviteDetails ) +
+			'&location=' + encodeURIComponent( this.details ) +
+			'&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal );
+		return link;
 	}
 
 	/* Assume the first capture group from start/end re will have the date we're looking for */
@@ -208,15 +209,15 @@ class Message {
 			return this.textCache;
 		}
 
-		// join all html-blob innerText together
+		// join all html-blob text together
 		const htmlBlobs = this.message.getElementsByTagName( 'html-blob' );
 		if ( htmlBlobs.length < 1 ) {
 			return null;
 		}
 
 		let res = '';
-		for ( let i = 0, len = htmlBlobs.length; i < len; i++ ) {
-			res += htmlBlobs[ i ].innerText + '\n';
+		for ( let i = 0; i < htmlBlobs.length; i++ ) {
+			res += htmlBlobs[ i ].textContent + '\n';
 		}
 
 		this.textCache = res;
@@ -274,7 +275,7 @@ function addLinks( verbose ) {
 			console.log( work );
 		}
 
-		let sender = messages[ i ].getElementsByTagName( 'h3' )[ 0 ];
+		let sender = messages[ i ].querySelector( 'h3' );
 		sender.append( '    Add to calendar: ' );
 		work.forEach( ( item, index ) => {
 			const link = document.createElement( 'a' );
