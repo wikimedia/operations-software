@@ -2,7 +2,7 @@
 
 const CALENDAR_ID = 'd2lraW1lZGlhLm9yZ181OXJwOTczY243NmV2YWdzcmlxanMwZXV0OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t';
 
-// XXX add equinix and cyrusone
+// XXX add cyrusone
 
 /**
  * Represent work to do.
@@ -11,16 +11,30 @@ const CALENDAR_ID = 'd2lraW1lZGlhLm9yZ181OXJwOTczY243NmV2YWdzcmlxanMwZXV0OEBncm9
  * and the Message it is attached to
  */
 class Work {
-	constructor( start, end, details, message ) {
+	constructor( start, end, details, message, allday = false ) {
 		this.start = start;
 		this.end = end;
 		this.details = details;
 		this.message = message;
+		this.allday = allday;
 	}
 
 	gcalendarLink( calendar, text ) {
-		const startDateGcal = this.start.toISOString().replace( /-|:|\.\d\d\d/g, '' );
-		const endDateGcal = this.end.toISOString().replace( /-|:|\.\d\d\d/g, '' );
+		let startDateGcal = this.start.toISOString().replace( /-|:|\.\d\d\d/g, '' );
+		let endDateGcal = this.end.toISOString().replace( /-|:|\.\d\d\d/g, '' );
+		if ( this.allday ) {
+			const startAllday = this.start;
+			let endAllday = this.end;
+			if ( this.end - this.start < 86400000 ) {
+				// Same day, need to bump end date by one day to make gcal do the right thing
+				endAllday = new Date( this.end.valueOf() );
+				endAllday.setDate( endAllday.getDate() + 1 );
+			}
+
+			// Leave out time for all day events
+			startDateGcal = startAllday.toISOString().replace( /-|T.*/g, '' );
+			endDateGcal = endAllday.toISOString().replace( /-|T.*/g, '' );
+		}
 
 		const link = document.createElement( 'a' );
 		link.href = 'https://www.google.com/calendar/event?action=TEMPLATE';
@@ -35,25 +49,61 @@ class Work {
 	}
 
 	/* Assume the first capture group from start/end re will have the date we're looking for */
-	static find( startRe, endRe, locationRe, message ) {
+	static find( startRe, endRe, locationRe, message, tz = null ) {
 		const startDateMatch = startRe.exec( message.text );
 		if ( !startDateMatch ) {
 			return null;
 		}
 		// Make Firefox happy with Date() input.
 		// replace with global regex in place of replaceAll for node to work
-		const startDate = new Date( startDateMatch[ 1 ].replace( /-/g, '/' ) );
+		let startDateStr = startDateMatch[ 1 ].replace( /-/g, '/' );
+		if ( tz !== null ) {
+			startDateStr = startDateStr + ' ' + tz;
+		}
+		const startDate = new Date( startDateStr );
 
 		const endDateMatch = endRe.exec( message.text );
 		if ( !endDateMatch ) {
 			return null;
 		}
-		const endDate = new Date( endDateMatch[ 1 ].replace( /-/g, '/' ) );
+
+		let endDateStr = endDateMatch[ 1 ].replace( /-/g, '/' );
+		if ( tz !== null ) {
+			endDateStr = endDateStr + ' ' + tz;
+		}
+		const endDate = new Date( endDateStr );
 
 		const locationMatch = locationRe.exec( message.text );
 		let details = locationMatch ? locationMatch[ 1 ] : '';
 
 		return [ new Work( startDate, endDate, details, message ) ];
+	}
+}
+
+class Equinix {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /Equinix Customer/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new Equinix( message );
+	}
+
+	// XXX support multiple spans
+	get work() {
+		const startDateRe = /^SPAN:\s+(\S+)/m;
+		const endDateRe = /^SPAN:\s+\S+\s+-\s+(\S+)/m;
+		const locationRe = /^IBX(?:\(s\))?:\s+(\S+)/m;
+		const w = Work.find( startDateRe, endDateRe, locationRe, this.message, 'UTC' );
+		// No start/end time in spans, thus set work as all day
+		w.forEach( function ( item ) {
+			item.allday = true;
+		} );
+		return w;
 	}
 }
 
@@ -172,6 +222,11 @@ class Message {
 		}
 
 		w = Lumen.fromMessage( this );
+		if ( w !== null ) {
+			return w.work;
+		}
+
+		w = Equinix.fromMessage( this );
 		if ( w !== null ) {
 			return w.work;
 		}

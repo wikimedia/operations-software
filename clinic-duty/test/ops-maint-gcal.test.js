@@ -28,6 +28,7 @@ IC-ID	Wavelength Single Link	1 x 6 hours
 	const work = msg.work[ 0 ];
 	delete work.message;
 	assert.propEqual( work, {
+		allday: false,
 		details: 'Scottsville/VA, US',
 		end: new Date( '2021-08-31T12:00:00.000Z' ),
 		start: new Date( '2021-08-31T04:00:00.000Z' )
@@ -67,6 +68,7 @@ Click here to manage your notification subscriptions via the Lumen Portal.
 	const work = msg.work[ 0 ];
 	delete work.message;
 	assert.propEqual( work, {
+		allday: false,
 		details: 'BUDE, United Kingdom',
 		end: new Date( '2021-09-24T05:00:00.000Z' ),
 		start: new Date( '2021-09-23T23:00:00.000Z' )
@@ -111,8 +113,82 @@ Dallas, Texas, USA
 	const work = msg.work[ 0 ];
 	delete work.message;
 	assert.propEqual( work, {
+		allday: false,
 		details: 'stub description',
 		end: new Date( '2021-09-01T10:00:00.000Z' ),
 		start: new Date( '2021-09-01T07:00:00.000Z' )
 	} );
+} );
+
+test( 'Equinix single work single day', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Dear Equinix Customer,
+
+DATE: 12-SEP-2021
+
+SPAN: 12-SEP-2021 - 12-SEP-2021
+
+LOCAL: SUNDAY, 12 SEP 01:00 - SUNDAY, 12 SEP 05:00
+UTC: SATURDAY, 11 SEP 17:00 - SATURDAY, 11 SEP 21:00
+
+IBX(s): SG1,SG2,SG3,SG4,SG5
+
+DESCRIPTION:Please be advised that one of our upstream providers will be performing a software upgrade
+
+There will be no impact to your services as traffic will be automatically rerouted to our alternate provider.
+`;
+	assert.equal( msg.work.length, 1 );
+	const work = msg.work[ 0 ];
+	delete work.message;
+	assert.equal( work.allday, true );
+	assert.equal( work.details, 'SG1,SG2,SG3,SG4,SG5' );
+	assert.deepEqual( work.start, new Date( '2021-09-12T00:00:00.000Z' ) );
+	assert.deepEqual( work.end, new Date( '2021-09-12T00:00:00.000Z' ) );
+	/*
+	const linkElement = work.gcalendarLink( 'calendar_id', 'link text' );
+	const datesMatch = /dates=([^&]+)/.exec( linkElement.getAttribute('href') );
+	assert.equal( datesMatch[ 1 ], '20210912/20210913' );
+	*/
+} );
+
+test( 'Equinix multiple work multiple days', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Dear Equinix Customer,
+
+DATE: 02-SEP-2021 - 06-SEP-2021
+
+SPAN: 02-SEP-2021 - 06-SEP-2021
+
+LOCAL: THURSDAY, 02 SEP 14:00 - FRIDAY, 03 SEP 06:00
+UTC: THURSDAY, 02 SEP 19:00 - FRIDAY, 03 SEP 11:00
+
+LOCAL: FRIDAY, 03 SEP 14:00 - SATURDAY, 04 SEP 06:00
+UTC: FRIDAY, 03 SEP 19:00 - SATURDAY, 04 SEP 11:00
+
+LOCAL: SATURDAY, 04 SEP 14:00 - SUNDAY, 05 SEP 06:00
+UTC: SATURDAY, 04 SEP 19:00 - SUNDAY, 05 SEP 11:00
+
+LOCAL: SUNDAY, 05 SEP 14:00 - MONDAY, 06 SEP 06:00
+UTC: SUNDAY, 05 SEP 19:00 - MONDAY, 06 SEP 11:00
+
+IBX: CH2
+
+DESCRIPTION: Equinix engineering staff along with the UPS vendor will be performing corrective repairs on
+
+The equipment being maintained supports your circuits indicated in the table.
+`;
+	assert.equal( msg.work.length, 1 );
+	const work = msg.work[ 0 ];
+	delete work.message;
+	assert.equal( work.allday, true );
+	assert.equal( work.details, 'CH2' );
+	assert.deepEqual( work.start, new Date( '2021-09-02T00:00:00.000Z' ) );
+	assert.deepEqual( work.end, new Date( '2021-09-06T00:00:00.000Z' ) );
+	/*
+	const linkElement = work.gcalendarLink( 'calendar_id', 'link text' );
+	const datesMatch = /dates=([^&]+)/.exec( linkElement.getAttribute('href') );
+	assert.equal( datesMatch[ 1 ], '20210902/20210906' );
+	*/
 } );
