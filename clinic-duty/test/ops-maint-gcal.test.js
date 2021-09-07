@@ -27,12 +27,10 @@ IC-ID	Wavelength Single Link	1 x 6 hours
 	assert.equal( msg.work.length, 1 );
 	const work = msg.work[ 0 ];
 	delete work.message;
-	assert.propEqual( work, {
-		allday: false,
-		details: 'Scottsville/VA, US',
-		end: new Date( '2021-08-31T12:00:00.000Z' ),
-		start: new Date( '2021-08-31T04:00:00.000Z' )
-	} );
+	assert.equal( work.allday, false );
+	assert.equal( work.details, 'Scottsville/VA, US' );
+	assert.deepEqual( work.start, new Date( '2021-08-31T04:00:00.000Z' ) );
+	assert.deepEqual( work.end, new Date( '2021-08-31T12:00:00.000Z' ) );
 } );
 
 test( 'Lumen', ( assert ) => {
@@ -67,12 +65,10 @@ Click here to manage your notification subscriptions via the Lumen Portal.
 	assert.equal( msg.work.length, 1 );
 	const work = msg.work[ 0 ];
 	delete work.message;
-	assert.propEqual( work, {
-		allday: false,
-		details: 'BUDE, United Kingdom',
-		end: new Date( '2021-09-24T05:00:00.000Z' ),
-		start: new Date( '2021-09-23T23:00:00.000Z' )
-	} );
+	assert.equal( work.allday, false );
+	assert.equal( work.details, 'BUDE, United Kingdom' );
+	assert.deepEqual( work.start, new Date( '2021-09-23T23:00:00.000Z' ) );
+	assert.deepEqual( work.end, new Date( '2021-09-24T05:00:00.000Z' ) );
 } );
 
 test( 'NTT', ( assert ) => {
@@ -112,12 +108,10 @@ Dallas, Texas, USA
 	assert.equal( msg.work.length, 1 );
 	const work = msg.work[ 0 ];
 	delete work.message;
-	assert.propEqual( work, {
-		allday: false,
-		details: 'stub description',
-		end: new Date( '2021-09-01T10:00:00.000Z' ),
-		start: new Date( '2021-09-01T07:00:00.000Z' )
-	} );
+	assert.equal( work.allday, false );
+	assert.equal( work.details, 'stub description' );
+	assert.deepEqual( work.start, new Date( '2021-09-01T07:00:00.000Z' ) );
+	assert.deepEqual( work.end, new Date( '2021-09-01T10:00:00.000Z' ) );
 } );
 
 test( 'Equinix single work single day', ( assert ) => {
