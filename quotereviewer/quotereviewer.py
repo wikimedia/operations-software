@@ -36,6 +36,7 @@ except ImportError:
     LOG_FORMAT = "%(message)s"
 
 
+logger = logging.getLogger()
 FORMAT_IDENTIFIER = 'Your Shopping Cart'
 
 
@@ -131,7 +132,7 @@ def parse_legacy_pdf(pdf):
 
 def parse_portal_pdf(pdf):
     parsed = {}
-    for page in pdf:
+    for page_num, page in enumerate(pdf, 1):
         if not page:
             continue
 
@@ -153,7 +154,12 @@ def parse_portal_pdf(pdf):
 
             in_token = True
 
-        start = tokens.index('Category')
+        try:
+            start = tokens.index('Category')
+        except ValueError:
+            logger.warning('No SKUs found on page {num}'.format(num=page_num))
+            continue
+
         headers = ['Category', 'Description', 'Code', 'SKU', 'ID']
         key_index = 3
         value_index = 1
@@ -218,19 +224,15 @@ def parse_config(config_file):
 
 def setup_logging(level=logging.DEBUG):
     """Sets up a logger instance."""
-    logger = logging.getLogger()
-    logger.setLevel(level)
     handler = StreamHandler()
     handler.setFormatter(Formatter(LOG_FORMAT))
     logger.addHandler(handler)
-
-    return logger
 
 
 def main(argv=None):
     """Main entry point"""
     args = parse_args(argv)
-    logger = setup_logging()
+    setup_logging()
 
     try:
         required, disallow, optional = parse_config(args.config)
