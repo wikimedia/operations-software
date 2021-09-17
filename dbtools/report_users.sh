@@ -40,7 +40,7 @@ do
 
 	$MYSQL --connect-timeout $DB_TIMEOUT -h $server -P $port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.64.32.179');" -BN | while read user host
 	do
-		echo "INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL -h $DB_HOST -u $DB_USER $DATABASE
+		echo "set session binlog_format=row; INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL -h $DB_HOST -u $DB_USER $DATABASE
 	done
 done
 
