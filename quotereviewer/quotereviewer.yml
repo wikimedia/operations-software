@@ -9,6 +9,8 @@ required:
   '631-AACK': 'No Systems Documentation, No OpenManage DVD Kit'
   '900-9997': 'On-Site Installation Declined'
   '865-BBMY': 'ProSupport Next Business Day Onsite Service Initial, 36 Month(s)'
+  '368-4207': 'CFI,Advance Delivery Notice,Servers' # This ensures we're contacted before delivery is attempted to provide a ticket #.
+
 
 optional: # Optional and items with multiple skus (example: idrac factory generated password has per chassis sku)
   # Model
@@ -34,6 +36,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '750-AAXW': 'HS Install Kit,GPU Config,No cable'
   '370-ADPF': 'Blank for 1CPU Configuration'
   ## R740xd2
+  '321-BDXV': 'Chassis Config 1, 24x3.5" HDD + 2x3.5" Rear HDD, Single PERC, for Riser Config 2 or 3'
   '330-BBMW': 'Riser Config 2, 2xLP, Dual CPU, R740xd2'
   '412-AARI': '1 CPU Standard Thermal for 3.5" Chassis'
   '330-BBMU': 'Riser Config 3, 1xFH, Single CPU, R740xd2'
@@ -62,6 +65,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '389-DSXL': 'PowerEdge R440 CE, CCC, BIS Marking'
   '389-DSXN': 'PowerEdge R440 CCC and BIS Marking, No CE Marking'
   '389-DSVE': 'PowerEdge R640 CE, CCC, BIS Marking'
+  '389-DSVJ': 'PowerEdge R640 CCC and BIS Marking, No CE Marking'
   '389-DSWP': 'PowerEdge R740 CE, CCC, BIS Marking'
   '389-DSWS': 'PowerEdge R740 CCC and BIS Marking, No CE Marking'
   '389-DSWO': 'PowerEdge R740 CE and BIS Marking, No CCC Marking'
@@ -88,22 +92,21 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   # CPUs
   '338-BSWX': 'Intel Xeon Silver 4208 2.1G, 8C/16T, 9.6 GT/s, 11M Cache, Turbo, HT (85W) DDR 4-2400'
   '338-BVKD': 'Intel Xeon Silver 4210R 2.4G, 10C/ 20T, 9.6GT/s, 13.75M Cache, Turbo, H T (100W) DDR4-2400'
+  '338-BLUS': 'Intel Xeon Silver 4214 2.2G, 12C/24T, 9. 6GT/s, 16.5M Cache, Turbo, HT (85W) DDR4-2400'
+  '374-BBPP': 'Intel Xeon Silver 4214 2.2G, 12C/24T, 9. 6GT/s, 16.5M Cache, Turbo, HT (85W) DDR4-2400'
   '338-BVJX': 'Intel Xeon Silver 4214R 2.4G, 12C/2 4T, 9.6GT/s, 16.5M Cache, Turbo, HT (1 00W) DDR4-2400'
+  '338-BSDS': 'Intel Xeon Gold 5215 2.5G, 10C/20T, 10.4GT/s, 13.75M Cache, Turbo, HT (85 W) DDR4-2666'
   '338-BSDT': 'Intel Xeon Gold 5217 3.0G, 8C/16T, 1 0.4GT/s, 11M Cache, Turbo, HT (115W) DDR4-2666'
-  '338-BLLX': 'Intel Xeon Gold 5122 3.6G, 4C/8T, 10.4GT/s , 16.5M Cache, Turbo, HT (105W) DDR4-2666 '
-  '374-BBNS': 'Intel Xeon Gold 5122 3.6G, 4C/8T, 10.4GT/s , 16.5M Cache, Turbo, HT (105W) DDR4-2666'
-  '338-BLMJ': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
-  '374-BBOE': 'Intel Xeon Gold 6140 2.3G, 18C/36T, 10.4GT/s , 24.75M Cache, Turbo, HT (140W) DDR4-2666'
+  '338-BSDI': 'Intel Xeon Gold 5220 2.2G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (12 5W) DDR4-2666'
+  '338-BSGN': 'Intel Xeon Gold 6240 2.6G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (15 0W) DDR4-2933'
   '374-BBBX': 'No Additional Processor'
-  '379-BDCO' : 'Additional Processor Selected'
+  '379-BDCO': 'Additional Processor Selected'
   # Heat sinks
   '412-AAJT': 'Standard Heat Sink'
   '412-AAJU': 'Standard Heat Sink for 2nd CPU'
   # Memory
   '370-ABWE': 'DIMM Blanks for System with 2 Processors'
   '370-ABXX': 'DIMM Blanks for System with 2 Processors' #R740xd2
-  '370-ADND': '16GB RDIMM, 2666MT/s, Dual Rank'
-  '370-AEVQ': '16GB RDIMM, 3200MT/s, Dual Rank'
   '370-ADNF': '32GB RDIMM 2666MT/s Dual Rank'
   '370-ADNU': '2666MT/s RDIMMs'
   '370-AEQH': '32GB RDIMM, 2933MT/s, Dual Rank'
@@ -111,6 +114,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '370-AEVN': '32GB RDIMM, 3200MT/s, Dual Rank'
   '370-AEVR': '3200MT/s RDIMMs'
   '370-AGDS': '32GB RDIMM, 3200MT/s, Dual Rank 16Gb BASE'
+  '370-AEVP': '64GB RDIMM, 3200MT/s, Dual Rank'
   # RAID
   '405-AACD': 'No Controller'
   '405-AAOE': 'PERC H730P RAID Controller, 2GB NV Cache, Adapter, Low Profile' # R440, no minicard
@@ -124,8 +128,11 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '780-BCDS': 'Unconfigured RAID'
   # Hard disks
   '400-ASXK': '480GB SSD SATA Read Intensive 6Gbps 512e 2.5in Flex Bay'
+  '400-AXRT': '480GB SSD SATA Read Intensive 6G bps 512 2.5in Flex Bay AG Drive,3.5in HYB CARR, 1 DWPD'
   '400-BDSD': '480GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
   '400-AXTV': '480GB SSD SATA Read Intensive 6G bps 512 2.5in Hot-plug AG Drive'
+  '400-AXTB': '480GB SSD SATA Read Intensive 6G bps 512 2.5in Flex Bay AG Drive, 1 DWPD'
+  '400-AZUT': '480GB SSD SATA Mix Use 6Gbps 51 2 2.5in Hot-plug AG Drive, 3 DWPD'
   '400-ASYC': '800GB SSD SATA Mix Use 6Gbps 512n 2.5in Hot-plug Drive, Hawk-M4E,3 DWPD,4380 TBW'
   '400-AXSW': '960GB SSD SATA Read Intensive 6Gbps 512 2.5in Hot-plug AG Drive, 1 DWPD'
   '400-AZVM': '960GB SSD SATA Mix Use 6Gbps 51 2 2.5in Hot-plug AG Drive, 3 DWPD'
@@ -151,6 +158,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '540-BBUL': 'Broadcom 57412 2 Port 10Gb SFP+ + 5720 2 Port 1Gb Base-T, rNDC'
   '540-BBZE': 'Broadcom 57416 Dual Port 10 GbE SFP+ Network LOM Mezz Card'
   '542-BBBP': 'On-Board LOM' # Broadcom 5720 Dual-Port Rack Network Daughter Card
+  '540-BBBW': 'Broadcom 5720 Quad Port 1GbE BASET, rNDC' # onboard 1GBe for R640
   # Support (all servers must have basic support, but the sku differs by model)
   '709-BBFM': 'Basic Next Business Day 36 Months'
   '709-BBFK': 'Basic Next Business Day 36 Months'
@@ -214,7 +222,6 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '364-7502': 'CFI Bypass EIDO'
   '365-0257': 'CFI Routing SKU'
   '368-0001': 'Configuration Services'
-  '368-4207': 'CFI,Advance Delivery Notice,Servers'
   '375-3088': 'CFI,Information,CSRouting,Elig ible,Factory Install'
 
 disallowed:
