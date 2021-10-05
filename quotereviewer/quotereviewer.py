@@ -227,6 +227,7 @@ def setup_logging(level=logging.DEBUG):
     handler = StreamHandler()
     handler.setFormatter(Formatter(LOG_FORMAT))
     logger.addHandler(handler)
+    logger.setLevel(level)
 
 
 def main(argv=None):
