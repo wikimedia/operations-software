@@ -55,7 +55,7 @@ USERS_COUNT=$($MYSQL -h $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from 
 
 if [ $USERS_COUNT != 0 ]
 then
-	echo "There are users with empty passwords. Please check $DATABASE.$TABLE table on $DB_HOST - this email address isn't monitored"  | mail -s "Users with empty passwords detected" marostegui@wikimedia.org -aFrom:checkusers@wikimedia.org
+	echo "There are users with empty passwords. Please check $DATABASE.$TABLE table on $DB_HOST - this email address isn't monitored"  | mail -s "Users with empty passwords detected" sre-data-persistence@wikimedia.org -aFrom:checkusers@wikimedia.org
 fi
 
  ;;
