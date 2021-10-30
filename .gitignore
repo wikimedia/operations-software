@@ -1,7 +1,10 @@
+/clinic-duty/package-lock.json
+/clinic-duty/node_modules
+
+/misc/package.json
+/misc/package-lock.json
+/misc/node_modules
+
 __pycache__/
 *.pyc
 .tox/
-
-# clinic-duty
-package-lock.json
-node_modules
