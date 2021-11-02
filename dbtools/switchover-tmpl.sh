@@ -30,7 +30,7 @@ cat << EOF
     |when=2021-08-24 23:00 SF
     |length=0.5
     |window=Database primary switchover for s7
-    |who={{ircnick|kormat|Stevie Beth Mhaol}}, {{ircnick|marostegui|Manuel 'Early Bird' Arostegui}}
+    |who={{ircnick|kormat|Stevie Beth Mhaol}}, {{ircnick|marostegui|Manuel 'Early Bird' Arostegui}}, {{ircnick|Amir1|Amir}}
     |what=https://phabricator.wikimedia.org/${taskid}
 }}
 \`\`\`
