@@ -58,8 +58,19 @@ class ReplicaSet(object):
             host = Host(replica, self.section)
             replicas_to_downtime = []
             if host.has_replicas():
-                if not self._handle_host_with_replicas(host):
-                    continue
+                if not self.is_master_of_active_dc(host):
+                    replicas_to_downtime = host.get_replicas(recursive=True)
+                if '--include-masters' not in sys.argv:
+                    replicas_to_question = ','.join([i.host for i in replicas_to_downtime])
+                    question_mark = input(
+                        'This host has these hanging replicas: {}, '
+                        'Are you sure you want to continue? (y or yes): '
+                        .format(replicas_to_question)).lower().strip()
+                    if question_mark not in ['y', 'yes', 'si', 'ja']:
+                        print(
+                            'Ignoring {} as it has hanging replicas'.format(
+                                host.host))
+                        continue
             should_depool_this_host = should_depool
 
             # don't depool replicas that are not pooled in the first place
@@ -120,21 +131,4 @@ class ReplicaSet(object):
         if host.host.replace(':3306', '') not in [i.replace(
                 ':3306', '') for i in self.section_masters]:
             return False
-        return True
-
-    def _handle_host_with_replicas(self, host):
-        if not self.is_master_of_active_dc(host):
-            replicas_to_downtime = host.get_replicas(recursive=True)
-        if '--include-masters' not in sys.argv:
-            question_mark = input(
-                'This host has these hanging replicas: {}, '
-                'Are you sure you want to continue? (y or yes)'
-                .format(','.join(replicas_to_downtime))).lower().strip()
-            if question_mark in ['y', 'yes', 'si',
-                                 'ja'] and '--run' in sys.argv:
-                print(
-                    'Ignoring {} as it has hanging replicas'.format(
-                        host.host))
-                return False
-
         return True
