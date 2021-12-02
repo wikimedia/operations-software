@@ -89,7 +89,11 @@ class Host(object):
 
         for percent in [10, 25, 75, 100]:
             run('dbctl instance {} pool -p {}'.format(self.host, percent))
-            run('dbctl config commit -b -m "After maintenance {} ({})"'.format(self.host, ticket))
+            comment = 'After maintenance {}'.format(self.host)
+            # Only comment in the ticket for first and last repool
+            if percent in [10, 100]:
+                comment += ' ({})'.format(ticket)
+            run('dbctl config commit -b -m "{}"'.format(comment))
             if '--run' in sys.argv and percent != 100:
                 print('Waiting for the next round')
                 time.sleep(900)
