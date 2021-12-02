@@ -3,7 +3,7 @@ from auto_schema.schema_change import SchemaChange
 # Copy this file and make adjustments
 
 section = 's4'
-should_depool = True
+should_depool = 'auto'
 downtime_hours = 4
 should_downtime = True
 ticket = 'T277354'

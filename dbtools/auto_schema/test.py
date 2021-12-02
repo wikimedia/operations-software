@@ -7,7 +7,7 @@ section = 's4'
 replica = None
 
 
-config = Config(dc)
+config = Config()
 if not replica:
     replicas = config.get_replicas(section) + ['db1138:3306'] + ['db1138']
 else:
@@ -16,5 +16,5 @@ for replica in replicas:
     db = Host(replica, section)
 
 replica_set = ReplicaSet(replicas, section)
-for host in replica_set._per_replica_gen(None, None, None):
-    print(replica_set.is_master_of_active_dc(host))
+for host in replica_set._per_replica_gen(None, 'auto', None):
+    print(replica_set.detect_depool(host))

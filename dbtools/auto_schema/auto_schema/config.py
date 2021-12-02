@@ -44,3 +44,7 @@ class Config():
             with open('og_config.json', 'w') as f:
                 f.write(json.dumps(self.config))
         return self.config[dc]
+
+    def active_dc(self):
+        # TODO Automated discovery
+        return 'eqiad'

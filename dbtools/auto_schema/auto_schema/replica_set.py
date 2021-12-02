@@ -9,13 +9,13 @@ from .host import Host
 
 class ReplicaSet(object):
     def __init__(self, replicas, section):
-        config = Config()
+        self.config = Config()
         if replicas is None:
-            replicas = config.get_replicas(section)
+            replicas = self.config.get_replicas(section)
         self.replicas = replicas
         self.section = section
-        self.pooled_replicas = config.get_replicas(section)
-        self.section_masters = config.get_section_masters(section)
+        self.pooled_replicas = self.config.get_replicas(section)
+        self.section_masters = self.config.get_section_masters(section)
         # TODO: Add a check to avoid running schema change on master of another
         # section
         self.dbs = []
@@ -71,6 +71,8 @@ class ReplicaSet(object):
                             'Ignoring {} as it has hanging replicas'.format(
                                 host.host))
                         continue
+            if str(should_depool).lower() == 'auto':
+                should_depool = self.detect_depool(host)
             should_depool_this_host = should_depool
 
             # don't depool replicas that are not pooled in the first place
@@ -124,11 +126,16 @@ class ReplicaSet(object):
         return res
 
     def is_master_of_active_dc(self, host):
-        # TODO: Automatic discovery of active dc
-        active_dc = 'eqiad'
-        if active_dc != host.dc:
+        if self.config.active_dc() != host.dc:
             return False
         if host.host.replace(':3306', '') not in [i.replace(
                 ':3306', '') for i in self.section_masters]:
+            return False
+        return True
+
+    def detect_depool(self, host):
+        if self.config.active_dc() != host.dc:
+            return False
+        if host.host not in self.pooled_replicas:
             return False
         return True
