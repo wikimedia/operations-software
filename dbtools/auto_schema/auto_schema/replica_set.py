@@ -74,8 +74,9 @@ class ReplicaSet(object):
                                 host.host))
                         continue
             if str(should_depool).lower() == 'auto':
-                should_depool = self.detect_depool(host)
-            should_depool_this_host = should_depool
+                should_depool_this_host = self.detect_depool(host)
+            else:
+                should_depool_this_host = should_depool
 
             # don't depool replicas that are not pooled in the first place
             # (dbstore, backup source, etc.)
