@@ -36,7 +36,7 @@ class ReplicaSet(object):
             if 'error' in res.lower():
                 print('PANIC: Schema change errored. Not repooling and stopping')
                 sys.exit()
-            if check and not check(host):
+            if check and not check(host) and '--run' in sys.argv:
                 print('PANIC: Schema change was not applied. Not repooling and stopping')
                 sys.exit()
 
@@ -119,10 +119,10 @@ class ReplicaSet(object):
                     print('Already applied, skipping')
                     continue
             res += db.run_sql(sql)
-            if check:
+            if check and '--run' in sys.argv:
                 if not check(db):
-                    print('Schema change was not applied, panicking')
-                    res += 'Error: Schema change was not applied, panicking'
+                    print('Schema change was not applied, panic')
+                    res += 'Error: Schema change was not applied, panic'
         return res
 
     def is_master_of_active_dc(self, host):
