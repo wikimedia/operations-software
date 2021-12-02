@@ -28,10 +28,11 @@ class ReplicaSet(object):
                 if check(host):
                     print('Already applied, skipping')
                     continue
+            sql_for_this_host = sql
             if not host.has_replicas() or self.is_master_of_active_dc(host):
-                sql = 'set session sql_log_bin=0; ' + sql
+                sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
 
-            res = host.run_sql(sql)
+            res = host.run_sql(sql_for_this_host)
 
             if 'error' in res.lower():
                 print('PANIC: Schema change errored. Not repooling and stopping')
@@ -44,10 +45,11 @@ class ReplicaSet(object):
             self, sql, ticket=None, should_depool=True, downtime_hours=4, check=None):
         for host in self._per_replica_gen(
                 ticket, should_depool, downtime_hours):
+            sql_for_this_host = sql
             if not host.has_replicas() or self.is_master_of_active_dc(host):
-                sql = 'set session sql_log_bin=0; ' + sql
+                sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
 
-            res = self.run_sql_per_db(host, sql, check)
+            res = self.run_sql_per_db(host, sql_for_this_host, check)
 
             if 'error' in res.lower():
                 print('PANIC: Schema change errored. Not repooling')
