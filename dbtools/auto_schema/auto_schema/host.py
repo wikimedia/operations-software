@@ -89,7 +89,7 @@ class Host(object):
 
         for percent in [10, 25, 75, 100]:
             run('dbctl instance {} pool -p {}'.format(self.host, percent))
-            comment = 'After maintenance {}'.format(self.host)
+            comment = 'Repooling after maintenance {}'.format(self.host)
             # Only comment in the ticket for first and last repool
             if percent in [10, 100]:
                 comment += ' ({})'.format(ticket)
