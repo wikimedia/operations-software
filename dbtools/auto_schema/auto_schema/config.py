@@ -45,6 +45,17 @@ class Config():
                 f.write(json.dumps(self.config))
         return self.config[dc]
 
+    def get_dbs(self, section):
+        if section.startswith('s'):
+            url = 'https://noc.wikimedia.org/conf/dblists/{}.dblist'.format(
+                section)
+            wikis = [i.strip() for i in requests.get(url).text.split(
+                '\n') if not i.startswith('#') and i.strip()]
+            return wikis
+        else:
+            # TODO: Build a way to get dbs of es and pc, etc.
+            return []
+
     def active_dc(self):
         # TODO Automated discovery
         return 'eqiad'
