@@ -88,10 +88,7 @@ class ReplicaSet(object):
                 should_depool_this_host = False
 
             if downtime_hours:
-                host.downtime(
-                    ticket,
-                    str(downtime_hours),
-                    replicas_to_downtime)
+                host.downtime(str(downtime_hours), replicas_to_downtime)
             if should_depool_this_host:
                 host.depool(ticket)
 

@@ -98,10 +98,10 @@ class Host(object):
                 print('Waiting for the next round')
                 time.sleep(900)
 
-    def downtime(self, ticket, hours, more_to_downtime=[]):
+    def downtime(self, hours, more_to_downtime=[]):
         more_to_downtime.append(self)
         hosts = ','.join([i.fqn for i in more_to_downtime])
-        run('cookbook sre.hosts.downtime --hours {} -r "Maintenance {}" {}'.format(hours, ticket, hosts))
+        run('cookbook sre.hosts.downtime --hours {} -r "Maintenance" {}'.format(hours, hosts))
 
     def has_replicas(self):
         return self.run_sql('show slave hosts;').strip() != ''

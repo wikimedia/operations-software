@@ -18,7 +18,7 @@ if not replicas:
 for replica in replicas:
     # TODO: Handle multiinstance
     db = Host(replica, section)
-    db.downtime(ticket, 24)
+    db.downtime(24)
     db.depool(ticket)
     db.run_sql('stop slave; SET GLOBAL innodb_buffer_pool_dump_at_shutdown = OFF;')
     db.run_on_host('systemctl stop mariadb')

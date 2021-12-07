@@ -21,6 +21,6 @@ for replica in replicas:
     if replica not in pooled_replicas:
         should_depool = False
 
-    db.downtime(ticket, str(downtime_hours))
+    db.downtime(str(downtime_hours))
     if should_depool:
         db.depool(ticket)
