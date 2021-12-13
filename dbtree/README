@@ -1,6 +1,0 @@
-This tool has moved into its own subrepository at
-operations/software/dbtree
-
-git clone https://gerrit.wikimedia.org/r/p/operations/software/dbtree
-
-Bug: T90837
