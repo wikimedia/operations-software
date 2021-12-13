@@ -36,7 +36,7 @@ class Host(object):
     def run_on_host(self, command):
         if '"' in command:
             command = command.replace('"', '\\"')
-        return run('cumin {} "{}"'.format(self.fqn, command))
+        return run('cumin {} "{}" --force --no-progress'.format(self.fqn, command))
 
     def depool(self, ticket):
         # TODO: check if it's depoolable
