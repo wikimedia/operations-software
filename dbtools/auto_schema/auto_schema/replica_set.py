@@ -50,9 +50,9 @@ class ReplicaSet(object):
 
             yield host
             if should_depool_this_host:
-                logger.log_file('Start of repool for {}'.format(host.host))
+                logger.log_file('Start repooling {}'.format(host.host))
                 host.repool(ticket)
-                logger.log_file('End of repool for {}'.format(host.host))
+                logger.log_file('End the repool of {}'.format(host.host))
 
     def get_dbs(self):
         if not self.dbs:
