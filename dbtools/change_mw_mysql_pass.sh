@@ -26,7 +26,7 @@ case "$1" in
   if [[ "$REPLY" = y ]]
   then
 	echo "Changing password for $USER in CODFW"
-        mysql.py -h $TENDRIL_HOST $DATABASE -e "select host,port from servers" -BN | grep codfw | while read host port; do echo "Updating: **$host:$port**" ; mysql.py --connect-timeout=5  -h$host -P$port -e "set session sql_log_bin=0; select user,host from mysql.user where user='$USER'; update mysql.user SET Password=PASSWORD('$PASSWORD') where User='$USER'; FLUSH PRIVILEGES;";done
+        db-mysql $TENDRIL_HOST $DATABASE -e "select host,port from servers" -BN | grep codfw | while read host port; do echo "Updating: **$host:$port**" ; db-mysql $host:$port --connect-timeout=5 -e "set session sql_log_bin=0; select user,host from mysql.user where user='$USER'; update mysql.user SET Password=PASSWORD('$PASSWORD') where User='$USER'; FLUSH PRIVILEGES;";done
   fi
     ;;
   eqiad)
@@ -35,7 +35,7 @@ case "$1" in
   if [[ "$REPLY" = y ]]
   then
 	echo "Changing password for $USER in EQIAD"
-        mysql.py -h $TENDRIL_HOST $DATABASE -e "select host,port from servers" -BN | grep eqiad | while read host port; do echo "Updating: **$host:$port**" ; mysql.py --connect-timeout=5  -h$host -P$port -e "set session sql_log_bin=0; select user,host from mysql.user where user='$USER'; update mysql.user SET Password=PASSWORD('$PASSWORD') where User='$USER'; FLUSH PRIVILEGES;";done
+        db-mysql $TENDRIL_HOST $DATABASE -e "select host,port from servers" -BN | grep eqiad | while read host port; do echo "Updating: **$host:$port**" ; db-mysql $host:$port --connect-timeout=5 -e "set session sql_log_bin=0; select user,host from mysql.user where user='$USER'; update mysql.user SET Password=PASSWORD('$PASSWORD') where User='$USER'; FLUSH PRIVILEGES;";done
   fi
     ;;
 esac
