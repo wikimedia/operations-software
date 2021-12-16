@@ -46,7 +46,10 @@ class ReplicaSet(object):
                 host.downtime(str(downtime_hours), replicas_to_downtime)
             if should_depool_this_host:
                 logger.log_file('Depooling {}'.format(host.host))
-                host.depool(ticket)
+                depooled = host.depool(ticket)
+                if not depooled:
+                    logger.log_file('Depool failed for {}'.format(host.host))
+                    continue
 
             yield host
             if should_depool_this_host:

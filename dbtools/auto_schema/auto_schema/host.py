@@ -40,12 +40,18 @@ class Host(object):
         # TODO: check if it's depoolable
         run('dbctl instance {} depool'.format(self.host))
         run('dbctl config commit -b -m "Depooling {} ({})"'.format(self.host, ticket))
+        start_depool_time = time.time()
         while True:
+            if (time.time() - start_depool_time) > 3600:
+                print('Depool timed out, repooling')
+                self.repool(ticket)
+                return False
             if self.has_traffic() and '--run' in sys.argv:
                 print('Sleeping for the traffic to drain')
                 time.sleep(60)
             else:
                 break
+        return True
 
     def has_traffic(self):
         # TODO: Make the users check more strict and include root
@@ -97,8 +103,12 @@ class Host(object):
                 time.sleep(900)
 
     def downtime(self, hours, more_to_downtime=[]):
-        more_to_downtime.append(self)
-        hosts = ','.join([i.fqn for i in more_to_downtime])
+        self._downtime_hosts(hours, self.fqn)
+        if more_to_downtime:
+            self._downtime_hosts(
+                int(hours) * 2, ','.join([i.fqn for i in more_to_downtime]))
+
+    def _downtime_hosts(self, hours, hosts):
         run('cookbook sre.hosts.downtime --hours {} -r "Maintenance" {}'.format(hours, hosts))
 
     def has_replicas(self):
