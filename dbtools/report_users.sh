@@ -14,11 +14,11 @@ SOURCE_DB_TABLE="instances"
 # Timeout in seconds
 DB_TIMEOUT=5
 
-MYSQL="`which mysql.py`"
+MYSQL="`which db-mysql`"
 
 if [ ! -f "$MYSQL" ]
 then
-    echo "mysql.py is not present"
+    echo "db-mysql is not present"
     exit 1
 fi
 
@@ -30,17 +30,17 @@ case "$1" in
   --empty-password)
 
 # Empty the table before start
-$MYSQL -h $DB_HOST $DATABASE -e " truncate table $TABLE;"
+$MYSQL $DB_HOST $DATABASE -e " truncate table $TABLE;"
 
-$MYSQL -h $SOURCE_DB_HOST $SOURCE_DB -e "select server,port from $SOURCE_DB_TABLE;" -BN | while read server port
+$MYSQL $SOURCE_DB_HOST $SOURCE_DB -e "select server,port from $SOURCE_DB_TABLE;" -BN | while read server port
 do
 
 # The following IPs are whitelisted as they are proxies and we cannot remove haproxy or set a password for it see: T199061#4426646
 # '10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.64.32.179'. '10.192.48.47'
 
-	$MYSQL --connect-timeout $DB_TIMEOUT -h $server -P $port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.64.32.179','10.192.48.47');" -BN | while read user host
+	$MYSQL $server:$port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.37.28','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.64.32.179','10.192.48.47');" -BN | while read user host
 	do
-		echo "set session binlog_format=row; INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL -h $DB_HOST -u $DB_USER $DATABASE
+		echo "set session binlog_format=row; INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL $DB_HOST -u $DB_USER $DATABASE
 	done
 done
 
@@ -51,7 +51,7 @@ done
 # The following IPs are whitelisted as they are proxies and we cannot remove haproxy or set a password for it see: T199061#4426646
 # '10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137', '10.64.37.28', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.64.32.179'
 
-USERS_COUNT=$($MYSQL -h $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from nil_grants;" -BN)
+USERS_COUNT=$($MYSQL $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from nil_grants;" -BN)
 
 if [ $USERS_COUNT != 0 ]
 then
@@ -63,10 +63,10 @@ fi
 --unused-grants)
   echo "unused-grants report"
 
-$MYSQL -h $SOURCE_DB_HOST $SOURCE_DB -e "select server,port from $SOURCE_DB_TABLE;" -BN | while read server port
+$MYSQL $SOURCE_DB_HOST $SOURCE_DB -e "select server,port from $SOURCE_DB_TABLE;" -BN | while read server port
 do
  echo "======$server:$port======="
- $MYSQL --connect-timeout $DB_TIMEOUT -h$server -P $port -e "select User,Host from mysql.user where host like '208.80.154.%' or host='208.80.152.161' or host='208.80.152.165' or user='globaldev' or user='prefetch' or user='test' or user='repl'" -BN
+ $MYSQL $server:$port -e "select User,Host from mysql.user where host like '208.80.154.%' or host='208.80.152.161' or host='208.80.152.165' or user='globaldev' or user='prefetch' or user='test' or user='repl'" -BN
 done
 
 ;;
