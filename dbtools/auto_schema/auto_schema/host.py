@@ -21,8 +21,6 @@ class Host(object):
         self.dbs = []
 
     def run_sql(self, sql):
-        args = '-h{} -P{}'.format(self.host.split(':')[0], self.host.split(':')[
-                                  1]) if ':' in self.host else '-h' + self.host
         if '"' in sql:
             sql = sql.replace('"', '\\"')
         if '`' in sql:
@@ -31,7 +29,7 @@ class Host(object):
             sql = sql.replace('\n', ' ')
         if not sql.strip().endswith(';'):
             sql += ';'
-        return run('mysql.py {} -e "{}"'.format(args, sql))
+        return run('db-mysql {} -e "{}"'.format(self.host, sql))
 
     def run_on_host(self, command):
         if '"' in command:
