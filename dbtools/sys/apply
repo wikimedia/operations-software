@@ -31,4 +31,4 @@ inst="${1}"
         format_statement.sql \
         format_time.sql \
         sys.sql
-) | sudo -H mysql.py -h "$inst"
+) | sudo db-mysql "$inst"
