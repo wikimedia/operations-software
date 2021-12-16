@@ -20,7 +20,7 @@ if ! echo $host | grep -q '\.'; then
 fi
 
 # Get current binlog file and position
-read file pos < <(sudo -H mysql.py -h "${host}" -P "${port}" -BN -e 'show master status')
+read file pos < <(sudo -H db-mysql "${host}" -P "${port}" -BN -e 'show master status')
 
 echo "=======> Host: $host"
 echo "=======> File: ${file:?}"
