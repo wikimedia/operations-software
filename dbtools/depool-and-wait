@@ -40,7 +40,7 @@ sudo dbctl config commit -b -m "$instance depooling: $reason"
 printf "=======> Wait for wikiuser/wikiadmin connections to finish: "
 for i in {1..60}; do
     sleep 5
-    if [ $(sudo -H mysql.py -BN -h "$instance" -e "select count(*) from information_schema.processlist where user regexp '(wikiuser|wikiadmin|root)'") == 1 ]; then
+    if [ $(sudo db-mysql "$instance" -BN -e "select count(*) from information_schema.processlist where user regexp '(wikiuser|wikiadmin|root)'") == 1 ]; then
         # == 1 because the check itself will generate one entry for 'root'
         echo " OK"
         exit 0
