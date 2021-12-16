@@ -77,8 +77,8 @@ sudo dbctl config commit -m "Set ${section} ${dc} as read-only for maintenance -
 [] Switch primaries:
 \`\`\`
 sudo db-switchover --skip-slave-move ${oldpri} ${newpri}
-echo "===== ${oldpri} (OLD)"; sudo mysql.py -h ${oldpri} -e 'show slave status\G'
-echo "===== ${newpri} (NEW)"; sudo mysql.py -h ${newpri} -e 'show slave status\G'
+echo "===== ${oldpri} (OLD)"; sudo db-mysql ${oldpri} -e 'show slave status\G'
+echo "===== ${newpri} (NEW)"; sudo db-mysql ${newpri} -e 'show slave status\G'
 \`\`\`
 
 [] Promote NEW primary in dbctl, and remove read-only
