@@ -1,36 +1,19 @@
 
+from auto_schema.replica_set import ReplicaSet
+from auto_schema.bash import run
 
-import sys
-import time
-
-from auto_schema.config import Config
-from auto_schema.host import Host
-
-dc = 'eqiad'
 section = 's4'
 ticket = 'T296143'
-replicas = []
+replicas = None
 
-config = Config(dc)
-if not replicas:
-    replicas = config.get_replicas(section)
-
-for replica in replicas:
-    # TODO: Handle multiinstance
-    db = Host(replica, section)
-    db.downtime(24)
-    db.depool(ticket)
-    db.run_sql('stop slave; SET GLOBAL innodb_buffer_pool_dump_at_shutdown = OFF;')
-    db.run_on_host('systemctl stop mariadb')
-    db.run_on_host('apt full-upgrade -y')
-    db.run_on_host('umount /srv')
-    db.run_on_host('swapoff -a')
-    db.run_on_host('reboot')
-    if '--run' in sys.argv:
-        time.sleep(900)
-    db.run_on_host(
-        'systemctl set-environment MYSQLD_OPTS="--skip-slave-start"')
-    db.run_on_host('systemctl start mariadb')
-    db.run_on_host('mysql_upgrade')
-    db.run_sql('start slave;')
-    db.repool(ticket)
+replica_set = ReplicaSet(replicas, section)
+for db in replica_set._per_replica_gen(ticket, 24):
+    sqldata_paths = db.run_on_host('ls /srv/')
+    if 'sqldata.' in sqldata_paths:
+        # TODO: Handle multiinstance
+        print('multiinstance, skipping')
+        continue
+    if db.has_replicas():
+        print('This host {} has replicas, skipping '.format(db.host))
+        continue
+    run('cookbook sre.mysql.upgrade {}'.format(db.fqn))
