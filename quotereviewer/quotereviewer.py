@@ -146,7 +146,8 @@ def parse_portal_pdf(pdf):
             if not in_token:
                 tokens.append(line)
             else:
-                if tokens[-1] == FORMAT_IDENTIFIER:  # Missing separator on new page
+                # Missing separator on new page, CFI number before Category in the first page.
+                if tokens[-1] == FORMAT_IDENTIFIER or tokens[-1].startswith('CFI Project Number'):
                     tokens.append(line)
                 else:
                     last = tokens.pop()
