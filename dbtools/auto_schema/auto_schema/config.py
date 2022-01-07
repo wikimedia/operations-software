@@ -1,5 +1,7 @@
 import json
+import re
 
+from conftool import configuration, kvobject, loader
 import requests
 
 
@@ -10,6 +12,7 @@ class Config():
         else:
             self.dcs[dc]
         self.config = {}
+        self._active_dc = None
 
     def get_replicas(self, section):
         replicas = []
@@ -57,5 +60,13 @@ class Config():
             return []
 
     def active_dc(self):
-        # TODO Automated discovery
-        return 'eqiad'
+        if self._active_dc:
+            return self._active_dc
+
+        schema = loader.Schema.from_file('/etc/conftool/schema.yaml')
+        kvobject.KVObject.setup(configuration.get('/etc/conftool/config.yaml'))
+        config = schema.entities["mwconfig"].query(
+            {"name": re.compile("WMFMasterDatacenter")})
+        matching = [obj for obj in config]
+        self._active_dc = matching[0].val
+        return self._active_dc
