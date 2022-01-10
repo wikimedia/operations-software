@@ -32,11 +32,6 @@ class ReplicaSet(object):
                 continue
             should_depool_this_host = self.detect_depool(host)
 
-            # don't depool replicas that are not pooled in the first place
-            # (dbstore, backup source, etc.)
-            if host.host not in self.pooled_replicas:
-                should_depool_this_host = False
-
             # never depool the master:
             if host.host in self.section_masters:
                 should_depool_this_host = False
