@@ -93,6 +93,7 @@ class ReplicaSet(object):
     def detect_depool(self, host):
         if self.config.active_dc() != host.dc:
             return False
-        if host.host not in self.pooled_replicas:
+        if host.host.replace(':3306', '') not in [i.replace(
+                ':3306', '') for i in self.pooled_replicas]:
             return False
         return True
