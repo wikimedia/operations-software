@@ -23,14 +23,14 @@ class ReplicaSet(object):
         # section
         self.dbs = []
 
-    def _per_replica_gen(self, ticket, downtime_hours):
+    def _per_replica_gen(self, ticket, downtime_hours, multidc_depool=False):
         logger = Logger(ticket)
         for host in self.replicas:
             replicas_to_downtime = self.check_host_for_replicas(host)
             if replicas_to_downtime is False:
                 logger.log_file('Skipping {} as requested'.format(host.host))
                 continue
-            should_depool_this_host = self.detect_depool(host)
+            should_depool_this_host = self.detect_depool(host, multidc_depool)
 
             # never depool the master:
             if host.host in self.section_masters:
@@ -85,8 +85,8 @@ class ReplicaSet(object):
             return False
         return True
 
-    def detect_depool(self, host):
-        if self.config.active_dc() != host.dc:
+    def detect_depool(self, host, multidc_depool):
+        if self.config.active_dc() != host.dc and not multidc_depool:
             return False
         if host.host.replace(':3306', '') not in [i.replace(
                 ':3306', '') for i in self.pooled_replicas]:
