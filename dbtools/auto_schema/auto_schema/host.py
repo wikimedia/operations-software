@@ -11,7 +11,7 @@ from .bash import run
 # multiinstance host
 class Host(object):
     def __init__(self, host, section):
-        self.host = host
+        self.host = host.replace(':3306', '')
         self.section = section
         if re.findall(r'\w1\d{3}', host):
             self.dc = 'eqiad'
