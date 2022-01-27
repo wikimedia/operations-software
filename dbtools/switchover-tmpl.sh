@@ -106,7 +106,6 @@ events_coredb_slave.sql on the new slave ${oldpri}
 sudo dbctl instance ${oldpri} set-candidate-master --section ${section} true
 sudo dbctl instance ${newpri} set-candidate-master --section ${section} false
 \`\`\`
-[] Check tendril was updated
 [] Check zarcillo was updated
 ** db-switchover should do this. If it fails, do it manually: https://phabricator.wikimedia.org/P13956
 [] Depool OLD primary, as it's running 10.1, replicating from a 10.4 primary
