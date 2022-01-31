@@ -108,10 +108,10 @@ sudo dbctl instance ${newpri} set-candidate-master --section ${section} false
 \`\`\`
 [] Check zarcillo was updated
 ** db-switchover should do this. If it fails, do it manually: https://phabricator.wikimedia.org/P13956
-[] Depool OLD primary, as it's running 10.1, replicating from a 10.4 primary
+[] (If needed): Depool ${oldpri} for maintenance.
 \`\`\`
 sudo dbctl instance ${oldpri} depool
-sudo dbctl config commit -m "Depool ${oldpri} until it's reimaged to buster ${taskid}"
+sudo dbctl config commit -m "Depool ${oldpri} ${taskid}"
 \`\`\`
 [] Apply outstanding schema changes to ${oldpri} (if any)
 [] Update/resolve this ticket.
