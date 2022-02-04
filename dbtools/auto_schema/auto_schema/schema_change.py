@@ -49,11 +49,13 @@ class SchemaChange(object):
                     continue
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))
             sql_for_this_host = sql
+            host.run_sql('stop slave;')
             if not host.has_replicas() or self.replica_set.is_master_of_active_dc(host):
                 sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
 
             res = host.run_sql(sql_for_this_host)
             self.logger.log_file('End of schema change sql on {}'.format(host.host))
+            host.run_sql('start slave;')
 
             if 'error' in res.lower():
                 self.logger.log_file('PANIC: Schema change errored. Not repooling and stopping')
@@ -80,6 +82,7 @@ class SchemaChange(object):
 
     def run_sql_per_db(self, host, sql, check):
         res = ''
+        host.run_sql('stop slave;')
         for db_name in self.replica_set.get_dbs():
             db = Db(host, db_name)
             if check:
@@ -93,4 +96,5 @@ class SchemaChange(object):
                     res += 'Error: Schema change was not applied'
                 else:
                     self.logger.log_file('Schema change finished on {} in {}'.format(db_name, host.host))
+        host.run_sql('start slave;')
         return res
