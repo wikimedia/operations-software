@@ -7,7 +7,7 @@ PASSWORD=""
 
 # Host and database to grab the hosts from
 TENDRIL_HOST="db1115.eqiad.wmnet"
-DATABASE="tendril"
+DATABASE="tendril" # Tendril is gone, this needs changing to zarcillo database and the query needs to be re-done to grab the list of hosts from there https://phabricator.wikimedia.org/T297605
 
 if [ -z "$USER" ] || [ -z "$PASSWORD" ]
 then
