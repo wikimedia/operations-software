@@ -1,5 +1,7 @@
-import os
 import sys
+
+from wmflib.interactive import ensure_shell_is_durable
+from wmflib.exceptions import WmflibError
 
 from .db import Db
 from .logger import Logger
@@ -18,9 +20,12 @@ class SchemaChange(object):
         self.logger = Logger(ticket)
 
     def run(self):
-        if '--run' in sys.argv and not os.environ.get('STY'):
-            self.logger.log_file('Schema changes must be put in a screen, exiting.')
-            sys.exit()
+        if '--run' in sys.argv:
+            try:
+                ensure_shell_is_durable()
+            except WmflibError:
+                self.logger.log_file('Schema changes must be done in screen/tmux/etc, exiting.')
+                sys.exit(1)
         self.logger.log_file('Starting schema change on {}'.format(
             ','.join([i.host for i in self.replica_set.replicas])))
         self.logger.log_file('SQL of schema change: ' + self.command)
