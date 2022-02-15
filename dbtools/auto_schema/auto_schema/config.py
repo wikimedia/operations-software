@@ -1,4 +1,3 @@
-import json
 import re
 
 from conftool import configuration, kvobject, loader
@@ -44,8 +43,6 @@ class Config():
         if not self.config.get(dc):
             self.config[dc] = requests.get(
                 'https://noc.wikimedia.org/dbconfig/{}.json'.format(dc)).json()
-            with open('og_config.json', 'w') as f:
-                f.write(json.dumps(self.config))
         return self.config[dc]
 
     def get_dbs(self, section):
