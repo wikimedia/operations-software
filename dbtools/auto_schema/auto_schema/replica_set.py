@@ -43,7 +43,7 @@ class ReplicaSet(object):
                 logger.log_file('Depooling {}'.format(host.host))
                 depooled = host.depool(ticket)
                 if not depooled:
-                    logger.log_file('Depool failed for {}'.format(host.host))
+                    logger.log_file('Draining failed for {}'.format(host.host))
                     continue
 
             yield host
