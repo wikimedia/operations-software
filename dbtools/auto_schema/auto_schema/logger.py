@@ -1,15 +1,20 @@
 import os
+import sys
 import time
 from datetime import datetime
 
 
 class Logger(object):
     def __init__(self, ticket):
+        if '--run' in sys.argv:
+            file_name = ticket + '.log'
+        else:
+            file_name = ticket + '-dry.log'
         self.file_path = os.path.join(
             os.path.dirname(__file__),
             '..',
             'logs',
-            ticket + '.log'
+            file_name
         )
 
     def log(self, msg):
