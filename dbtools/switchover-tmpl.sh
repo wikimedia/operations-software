@@ -29,7 +29,7 @@ cat << EOF
 {{Deployment calendar event card
     |when=2021-08-24 23:00 SF
     |length=0.5
-    |window=Database primary switchover for s7
+    |window=Database primary switchover for ${section}
     |who={{ircnick|kormat|Stevie Beth Mhaol}}, {{ircnick|marostegui|Manuel 'Early Bird' Arostegui}}, {{ircnick|Amir1|Amir}}
     |what=https://phabricator.wikimedia.org/${taskid}
 }}
