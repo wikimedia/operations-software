@@ -32,7 +32,7 @@ IC-ID	Wavelength Single Link	1 x 6 hours
 			end: Date.parse( '2021-08-31T12:00:00.000Z' )
 		}
 	} );
-	assert.equal( msg.work.length, 1 );
+	assert.strictEqual( msg.work.length, 1 );
 } );
 
 test( 'Lumen', ( assert ) => {
@@ -72,7 +72,7 @@ Click here to manage your notification subscriptions via the Lumen Portal.
 			end: Date.parse( '2021-09-24T05:00:00.000Z' )
 		}
 	} );
-	assert.equal( msg.work.length, 1 );
+	assert.strictEqual( msg.work.length, 1 );
 } );
 
 test( 'NTT', ( assert ) => {
@@ -117,7 +117,7 @@ Dallas, Texas, USA
 			end: Date.parse( '2021-09-01T10:00:00.000Z' )
 		}
 	} );
-	assert.equal( msg.work.length, 1 );
+	assert.strictEqual( msg.work.length, 1 );
 } );
 
 test( 'Equinix single work single day', ( assert ) => {
@@ -146,12 +146,10 @@ There will be no impact to your services as traffic will be automatically rerout
 			end: Date.parse( '2021-09-12T00:00:00.000Z' )
 		}
 	} );
-	assert.equal( msg.work.length, 1 );
-	/*
-	const linkElement = work.gcalendarLink( 'calendar_id', 'link text' );
-	const datesMatch = /dates=([^&]+)/.exec( linkElement.getAttribute('href') );
-	assert.equal( datesMatch[ 1 ], '20210912/20210913' );
-	*/
+	assert.strictEqual( msg.work.length, 1 );
+
+	const link = msg.work[ 0 ].gcalendarLink( 'calendar_id', 'link text' );
+	assert.strictEqual( new URL( link ).searchParams.get( 'dates' ), '20210912/20210913' );
 } );
 
 test( 'Equinix multiple work multiple days', ( assert ) => {
@@ -189,10 +187,8 @@ The equipment being maintained supports your circuits indicated in the table.
 			end: Date.parse( '2021-09-06T00:00:00.000Z' )
 		}
 	} );
-	assert.equal( msg.work.length, 1 );
-	/*
-	const linkElement = work.gcalendarLink( 'calendar_id', 'link text' );
-	const datesMatch = /dates=([^&]+)/.exec( linkElement.getAttribute('href') );
-	assert.equal( datesMatch[ 1 ], '20210902/20210906' );
-	*/
+	assert.strictEqual( msg.work.length, 1 );
+
+	const link = msg.work[ 0 ].gcalendarLink( 'calendar_id', 'link text' );
+	assert.strictEqual( new URL( link ).searchParams.get( 'dates' ), '20210902/20210906' );
 } );

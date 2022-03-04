@@ -5,8 +5,11 @@
 		"test-watch": "qunit --watch",
 		"fix": "eslint --fix ."
 	},
+	"engines": {
+		"node": ">=12"
+	},
 	"devDependencies": {
-		"eslint-config-wikimedia": "^0.20.0",
+		"eslint-config-wikimedia": "^0.22.1",
 		"qunit": "^2.18.0"
 	}
 }
