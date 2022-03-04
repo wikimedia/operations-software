@@ -20,14 +20,13 @@ class Work {
 	}
 
 	gcalendarLink( calendar, text ) {
-		let startDateGcal = this.start.toISOString().replace( /-|:|\.\d\d\d/g, '' );
-		let endDateGcal = this.end.toISOString().replace( /-|:|\.\d\d\d/g, '' );
+		let startDateGcal = new Date( this.start ).toISOString().replace( /-|:|\.\d\d\d/g, '' );
+		let endDateGcal = new Date( this.end ).toISOString().replace( /-|:|\.\d\d\d/g, '' );
 		if ( this.allday ) {
-			const startAllday = this.start;
-			let endAllday = this.end;
+			const startAllday = new Date( this.start );
+			let endAllday = new Date( this.end );
 			if ( this.end - this.start < 86400000 ) {
 				// Same day, need to bump end date by one day to make gcal do the right thing
-				endAllday = new Date( this.end.valueOf() );
 				endAllday.setDate( endAllday.getDate() + 1 );
 			}
 
@@ -60,7 +59,7 @@ class Work {
 		if ( tz !== null ) {
 			startDateStr = startDateStr + ' ' + tz;
 		}
-		const startDate = new Date( startDateStr );
+		const startDate = Date.parse( startDateStr );
 
 		const endDateMatch = endRe.exec( message.text );
 		if ( !endDateMatch ) {
@@ -71,7 +70,7 @@ class Work {
 		if ( tz !== null ) {
 			endDateStr = endDateStr + ' ' + tz;
 		}
-		const endDate = new Date( endDateStr );
+		const endDate = Date.parse( endDateStr );
 
 		const locationMatch = locationRe.exec( message.text );
 		let details = locationMatch ? locationMatch[ 1 ] : '';

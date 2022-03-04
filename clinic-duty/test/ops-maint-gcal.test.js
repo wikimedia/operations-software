@@ -7,7 +7,7 @@ const { test } = QUnit;
 test( 'No parser found', ( assert ) => {
 	const msg = new Message( 'stub' );
 	msg.textCache = 'unparseable text';
-	assert.equal( msg.work, null );
+	assert.strictEqual( msg.work, null );
 } );
 
 test( 'Telia single work', ( assert ) => {
@@ -24,13 +24,15 @@ Service window end:	2021-08-31 12:00 UTC
 Impacted Services
 IC-ID	Wavelength Single Link	1 x 6 hours
 `;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'Scottsville/VA, US',
+			start: Date.parse( '2021-08-31T04:00:00.000Z' ),
+			end: Date.parse( '2021-08-31T12:00:00.000Z' )
+		}
+	} );
 	assert.equal( msg.work.length, 1 );
-	const work = msg.work[ 0 ];
-	delete work.message;
-	assert.equal( work.allday, false );
-	assert.equal( work.details, 'Scottsville/VA, US' );
-	assert.deepEqual( work.start, new Date( '2021-08-31T04:00:00.000Z' ) );
-	assert.deepEqual( work.end, new Date( '2021-08-31T12:00:00.000Z' ) );
 } );
 
 test( 'Lumen', ( assert ) => {
@@ -62,13 +64,15 @@ Click here for immediate information on scheduled maintenances via the Lumen Cus
 
 Click here to manage your notification subscriptions via the Lumen Portal.
 `;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'BUDE, United Kingdom',
+			start: Date.parse( '2021-09-23T23:00:00.000Z' ),
+			end: Date.parse( '2021-09-24T05:00:00.000Z' )
+		}
+	} );
 	assert.equal( msg.work.length, 1 );
-	const work = msg.work[ 0 ];
-	delete work.message;
-	assert.equal( work.allday, false );
-	assert.equal( work.details, 'BUDE, United Kingdom' );
-	assert.deepEqual( work.start, new Date( '2021-09-23T23:00:00.000Z' ) );
-	assert.deepEqual( work.end, new Date( '2021-09-24T05:00:00.000Z' ) );
 } );
 
 test( 'NTT', ( assert ) => {
@@ -105,13 +109,15 @@ Dallas, Texas, USA
 
 	Email:noc@ntt.net
 `;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'stub description',
+			start: Date.parse( '2021-09-01T07:00:00.000Z' ),
+			end: Date.parse( '2021-09-01T10:00:00.000Z' )
+		}
+	} );
 	assert.equal( msg.work.length, 1 );
-	const work = msg.work[ 0 ];
-	delete work.message;
-	assert.equal( work.allday, false );
-	assert.equal( work.details, 'stub description' );
-	assert.deepEqual( work.start, new Date( '2021-09-01T07:00:00.000Z' ) );
-	assert.deepEqual( work.end, new Date( '2021-09-01T10:00:00.000Z' ) );
 } );
 
 test( 'Equinix single work single day', ( assert ) => {
@@ -132,13 +138,15 @@ DESCRIPTION:Please be advised that one of our upstream providers will be perform
 
 There will be no impact to your services as traffic will be automatically rerouted to our alternate provider.
 `;
+	assert.propContains( msg.work, {
+		0: {
+			allday: true,
+			details: 'SG1,SG2,SG3,SG4,SG5',
+			start: Date.parse( '2021-09-12T00:00:00.000Z' ),
+			end: Date.parse( '2021-09-12T00:00:00.000Z' )
+		}
+	} );
 	assert.equal( msg.work.length, 1 );
-	const work = msg.work[ 0 ];
-	delete work.message;
-	assert.equal( work.allday, true );
-	assert.equal( work.details, 'SG1,SG2,SG3,SG4,SG5' );
-	assert.deepEqual( work.start, new Date( '2021-09-12T00:00:00.000Z' ) );
-	assert.deepEqual( work.end, new Date( '2021-09-12T00:00:00.000Z' ) );
 	/*
 	const linkElement = work.gcalendarLink( 'calendar_id', 'link text' );
 	const datesMatch = /dates=([^&]+)/.exec( linkElement.getAttribute('href') );
@@ -173,13 +181,15 @@ DESCRIPTION: Equinix engineering staff along with the UPS vendor will be perform
 
 The equipment being maintained supports your circuits indicated in the table.
 `;
+	assert.propContains( msg.work, {
+		0: {
+			allday: true,
+			details: 'CH2',
+			start: Date.parse( '2021-09-02T00:00:00.000Z' ),
+			end: Date.parse( '2021-09-06T00:00:00.000Z' )
+		}
+	} );
 	assert.equal( msg.work.length, 1 );
-	const work = msg.work[ 0 ];
-	delete work.message;
-	assert.equal( work.allday, true );
-	assert.equal( work.details, 'CH2' );
-	assert.deepEqual( work.start, new Date( '2021-09-02T00:00:00.000Z' ) );
-	assert.deepEqual( work.end, new Date( '2021-09-06T00:00:00.000Z' ) );
 	/*
 	const linkElement = work.gcalendarLink( 'calendar_id', 'link text' );
 	const datesMatch = /dates=([^&]+)/.exec( linkElement.getAttribute('href') );
