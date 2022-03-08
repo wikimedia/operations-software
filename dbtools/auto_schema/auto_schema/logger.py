@@ -6,7 +6,9 @@ from datetime import datetime
 
 class Logger(object):
     def __init__(self, ticket):
-        if '--run' in sys.argv:
+        if '--check' in sys.argv:
+            file_name = ticket + '-check.log'
+        elif '--run' in sys.argv:
             file_name = ticket + '.log'
         else:
             file_name = ticket + '-dry.log'
