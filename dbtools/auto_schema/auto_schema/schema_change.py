@@ -12,8 +12,8 @@ from .replica_set import ReplicaSet
 
 class SchemaChange(object):
     def __init__(self, replicas, section, command, check,
-                 all_dbs, ticket, downtime_hours):
-        self.replica_set = ReplicaSet(replicas, section)
+                 all_dbs, ticket, downtime_hours, skip=None):
+        self.replica_set = ReplicaSet(replicas, section, skip)
         self.command = command
         self.check = check
         self.all_dbs = all_dbs
@@ -62,7 +62,7 @@ class SchemaChange(object):
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))
             sql_for_this_host = sql
             host.run_sql('stop slave;')
-            if not host.has_replicas() or self.replica_set.is_master_of_active_dc(host):
+            if self.replica_set.change_without_replication(host):
                 sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
 
             res = host.run_sql(sql_for_this_host)
@@ -81,7 +81,7 @@ class SchemaChange(object):
     def sql_on_each_db_of_each_replica(self, sql, check=None):
         for host in self.gen:
             sql_for_this_host = sql
-            if not host.has_replicas() or self.replica_set.is_master_of_active_dc(host):
+            if self.replica_set.change_without_replication(host):
                 sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
 
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))

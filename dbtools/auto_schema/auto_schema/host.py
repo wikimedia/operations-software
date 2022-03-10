@@ -129,3 +129,13 @@ class Host(object):
             replicas_to_check += replica_replicas.copy()
 
         return hosts
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            return str(self) == other
+        if isinstance(other, Host):
+            return self.host == other.host
+        return False
+
+    def __str__(self) -> str:
+        return self.host

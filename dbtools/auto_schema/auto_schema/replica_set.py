@@ -6,22 +6,51 @@ from .logger import Logger
 
 
 class ReplicaSet(object):
-    def __init__(self, replicas, section):
+    def __init__(self, replicas, section, skip=None):
         self.config = Config()
-        if replicas is None:
-            master = self.config.get_section_master_for_dc(
-                section,
-                self.config.active_dc())
-            # TODO: Add master as well
-            self.replicas = Host(master, section).get_replicas()
-        else:
-            self.replicas = [Host(i, section) for i in replicas]
         self.section = section
         self.pooled_replicas = self.config.get_replicas(section)
         self.section_masters = self.config.get_section_masters(section)
         # TODO: Add a check to avoid running schema change on master of another
         # section
         self.dbs = []
+        self.avoid_replicated_changes = []
+        self._init_replicas(replicas, skip)
+
+    def _init_replicas(self, replicas, skip):
+        if not skip:
+            skip = []
+
+        if replicas is None:
+            master = self.config.get_section_master_for_dc(
+                self.section,
+                self.config.active_dc())
+            replicas = Host(master, self.section).get_replicas()
+        else:
+            replicas = [Host(i, self.section) for i in replicas]
+
+        # We don't have to skip anything, life is good
+        if not skip:
+            self.replicas = replicas
+            return
+
+        final_list = []
+        skip = [i.replace(':3306', '') for i in skip]
+        for replica in replicas:
+            if replica in skip:
+                continue
+            complex = False
+            replica_replicas = replica.get_replicas()
+            for i in skip:
+                if i in replica_replicas:
+                    complex = True
+            if not complex:
+                final_list.append(replica)
+                continue
+            self.avoid_replicated_changes.append(replica)
+            final_list.append(replica)
+            final_list += [i for i in replica_replicas if i not in skip]
+        self.replicas = final_list
 
     def _per_replica_gen(self, ticket, downtime_hours, multidc_depool=False):
         logger = Logger(ticket)
@@ -90,5 +119,14 @@ class ReplicaSet(object):
             return False
         if host.host.replace(':3306', '') not in [i.replace(
                 ':3306', '') for i in self.pooled_replicas]:
+            return False
+        return True
+
+    def change_without_replication(self, host: Host):
+        if host in self.avoid_replicated_changes:
+            return True
+        if self.is_master_of_active_dc(host):
+            return True
+        if host.has_replicas():
             return False
         return True
