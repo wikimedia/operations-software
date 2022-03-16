@@ -19,21 +19,9 @@ oldpri=${oldpri%%.*}
 newpri=${newpri%%.*}
 
 cat << EOF
-**When:** FIXME
+**When:** During a pre-defined DBA maintenance windows
 
 **Checklist:**
-[] Create a task to communicate the chosen date and send an announcement to the community: FIXME
-[] Create a calendar entry for the maintenance, invite sre-data-persistence@
-[] Add to deployments calendar. E.g.:
-\`\`\`
-{{Deployment calendar event card
-    |when=2021-08-24 23:00 SF
-    |length=0.5
-    |window=Database primary switchover for ${section}
-    |who={{ircnick|kormat|Stevie Beth Mhaol}}, {{ircnick|marostegui|Manuel 'Early Bird' Arostegui}}, {{ircnick|Amir1|Amir}}
-    |what=https://phabricator.wikimedia.org/${taskid}
-}}
-\`\`\`
 
 NEW primary: ${newpri}
 OLD primary: ${oldpri}
