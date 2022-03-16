@@ -101,10 +101,12 @@ events_coredb_master.sql on the new primary ${newpri}
 events_coredb_slave.sql on the new slave ${oldpri}
 \`\`\`
 [] Update DNS: FIXME
-[] Update candidate primary dbctl notes
+[] Update candidate primary dbctl and orchestrator notes
 \`\`\`
 sudo dbctl instance ${oldpri} set-candidate-master --section ${section} true
 sudo dbctl instance ${newpri} set-candidate-master --section ${section} false
+(dborch1001): sudo orchestrator-client -c untag -i ${newpri} --tag name=candidate
+(dborch1001): sudo orchestrator-client -c tag -i ${oldpri} --tag name=candidate
 \`\`\`
 [] Check zarcillo was updated
 ** db-switchover should do this. If it fails, do it manually: https://phabricator.wikimedia.org/P13956
