@@ -19,15 +19,14 @@ class Work {
 		this.allday = allday;
 	}
 
-	gcalendarLink( calendar, text ) {
-		let startDateGcal = this.start.toISOString().replace( /-|:|\.\d\d\d/g, '' );
-		let endDateGcal = this.end.toISOString().replace( /-|:|\.\d\d\d/g, '' );
+	gcalendarLink( calendar ) {
+		let startDateGcal = new Date( this.start ).toISOString().replace( /-|:|\.\d\d\d/g, '' );
+		let endDateGcal = new Date( this.end ).toISOString().replace( /-|:|\.\d\d\d/g, '' );
 		if ( this.allday ) {
-			const startAllday = this.start;
-			let endAllday = this.end;
+			const startAllday = new Date( this.start );
+			let endAllday = new Date( this.end );
 			if ( this.end - this.start < 86400000 ) {
 				// Same day, need to bump end date by one day to make gcal do the right thing
-				endAllday = new Date( this.end.valueOf() );
 				endAllday.setDate( endAllday.getDate() + 1 );
 			}
 
@@ -36,16 +35,13 @@ class Work {
 			endDateGcal = endAllday.toISOString().replace( /-|T.*/g, '' );
 		}
 
-		const link = document.createElement( 'a' );
-		link.href = 'https://www.google.com/calendar/event?action=TEMPLATE';
-		link.href += '&src=' + encodeURIComponent( calendar );
-		link.href += '&text=' + encodeURIComponent( this.message.title );
-		link.href += '&details=' + encodeURIComponent( this.message.inviteDetails );
-		link.href += '&location=' + encodeURIComponent( this.details );
-		link.href += '&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal );
-		link.target = '_blank';
-		link.textContent = text;
-		return link;
+		let href = 'https://www.google.com/calendar/event?action=TEMPLATE';
+		href += '&src=' + encodeURIComponent( calendar );
+		href += '&text=' + encodeURIComponent( this.message.title );
+		href += '&details=' + encodeURIComponent( this.message.inviteDetails );
+		href += '&location=' + encodeURIComponent( this.details );
+		href += '&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal );
+		return href;
 	}
 
 	/* Assume the first capture group from start/end re will have the date we're looking for */
@@ -60,7 +56,7 @@ class Work {
 		if ( tz !== null ) {
 			startDateStr = startDateStr + ' ' + tz;
 		}
-		const startDate = new Date( startDateStr );
+		const startDate = Date.parse( startDateStr );
 
 		const endDateMatch = endRe.exec( message.text );
 		if ( !endDateMatch ) {
@@ -71,7 +67,7 @@ class Work {
 		if ( tz !== null ) {
 			endDateStr = endDateStr + ' ' + tz;
 		}
-		const endDate = new Date( endDateStr );
+		const endDate = Date.parse( endDateStr );
 
 		const locationMatch = locationRe.exec( message.text );
 		let details = locationMatch ? locationMatch[ 1 ] : '';
@@ -174,19 +170,16 @@ class Telia {
 /* Represent a maintenance message we have received. Within each message we're
  * looking for at least one "work" to do */
 class Message {
-	constructor( message ) {
+	constructor( message, title = '-', url = '#' ) {
 		this.message = message;
 		this.textCache = null;
-	}
-
-	get title() {
-		// XXX replace with sth non-global
-		return document.querySelector( 'div[role=list]' ).attributes[ 'aria-label' ].textContent;
+		this.title = title;
+		this.url = url;
 	}
 
 	get inviteDetails() {
 		// XXX replace with sth non-global
-		return location.href + '\n\n' + this.text;
+		return this.url + '\n\n' + this.text;
 	}
 
 	get text() {
@@ -239,9 +232,11 @@ class Message {
 /* exported addLinks */
 function addLinks( verbose ) {
 	const messages = document.querySelectorAll( 'section[role="listitem"]' );
+	const title = document.querySelector( 'div[role=list]' ).getAttribute( 'aria-label' );
+	const url = location.href;
 
 	for ( let i = 0, len = messages.length; i < len; i++ ) {
-		const msg = new Message( messages[ i ] );
+		const msg = new Message( messages[ i ], title, url );
 
 		const work = msg.work;
 		if ( work === null ) {
@@ -253,16 +248,17 @@ function addLinks( verbose ) {
 			console.log( work );
 		}
 
-		let inviteLinks = [];
-		work.forEach( function ( item, index ) {
-			inviteLinks.push( item.gcalendarLink( CALENDAR_ID, 'work ' + ( index + 1 ) ) );
-		} );
-
 		let sender = messages[ i ].getElementsByTagName( 'h3' )[ 0 ];
 		sender.append( '    Add to calendar: ' );
-		inviteLinks.forEach( function ( item, index ) {
-			sender.appendChild( item );
-			if ( index < ( inviteLinks.length - 1 ) ) {
+		work.forEach( ( item, index ) => {
+			const link = document.createElement( 'a' );
+			link.href = item.gcalendarLink( CALENDAR_ID );
+			link.target = '_blank';
+			link.textContent = 'work ' + ( index + 1 );
+
+			sender.appendChild( link );
+
+			if ( index < ( work.length - 1 ) ) {
 				sender.append( ' | ' );
 			}
 		} );
