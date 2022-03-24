@@ -21,6 +21,8 @@ newpri=${newpri%%.*}
 cat << EOF
 **When:** During a pre-defined DBA maintenance windows
 
+**Affected wikis:**: TO-DO
+
 **Checklist:**
 
 NEW primary: ${newpri}
