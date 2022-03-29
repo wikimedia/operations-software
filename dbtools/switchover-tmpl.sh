@@ -60,7 +60,7 @@ sudo cumin '${oldpri}* or ${newpri}*' 'disable-puppet "primary switchover ${task
 \`\`\`
 [] Set section read-only:
 \`\`\`
-sudo dbctl --scope ${dc} section ${section} ro "Maintenance until 05:15 UTC - ${taskid}"
+sudo dbctl --scope ${dc} section ${section} ro "Maintenance until 06:15 UTC - ${taskid}"
 sudo dbctl config commit -m "Set ${section} ${dc} as read-only for maintenance - ${taskid}"
 \`\`\`
 [] Check ${section} is indeed read-only
