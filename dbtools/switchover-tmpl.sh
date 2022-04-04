@@ -21,6 +21,10 @@ newpri=${newpri%%.*}
 cat << EOF
 **When:** During a pre-defined DBA maintenance windows
 
+** Prerequisites **: https://wikitech.wikimedia.org/wiki/MariaDB/Primary_switchover
+
+[] Team calendar invite
+
 **Affected wikis:**: TO-DO
 
 **Checklist:**
