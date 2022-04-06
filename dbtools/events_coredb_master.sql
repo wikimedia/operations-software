@@ -69,7 +69,7 @@ create definer='root'@'localhost' event wmf_master_wikiuser_sleep
             select ps.id
             from information_schema.processlist ps
             where ps.command = 'Sleep'
-                and ps.user = 'wikiuser'
+                and ps.user = 'wikiuser2022'
                 and ps.time between 300 and 1000000
                 and ps.info is null
             order by ps.time desc;
