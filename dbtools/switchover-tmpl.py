@@ -60,7 +60,7 @@ sudo pt-config-diff --defaults-file /root/.my.cnf h={oldpri}.{dc}.wmnet h={newpr
 ```
 sudo cookbook sre.hosts.downtime --hours 1 -r "Primary switchover {section} {taskid}" 'A:db-section-{section}'
 ```
-[] Set NEW primary with weight 0
+[] Set NEW primary with weight 0 (and depool it from API or vslow/dump groups if it is present).
 ```
 sudo dbctl instance {newpri} set-weight 0
 sudo dbctl config commit -m "Set {newpri} with weight 0 {taskid}"
