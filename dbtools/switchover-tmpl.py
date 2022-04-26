@@ -67,7 +67,7 @@ sudo dbctl config commit -m "Set {newpri} with weight 0 {taskid}"
 ```
 [] Topology changes, move all replicas under NEW primary
 ```
-sudo db-switchover --timeout=15 --only-slave-move {oldpri} {newpri}
+sudo db-switchover --timeout=25 --only-slave-move {oldpri} {newpri}
 ```
 [] Disable puppet on both nodes
 ```
