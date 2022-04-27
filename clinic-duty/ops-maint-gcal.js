@@ -151,7 +151,7 @@ class Telia {
 	}
 
 	static fromMessage( message ) {
-		const re = /Telia Carrier/;
+		const re = /(Telia Carrier|Arelion)/;
 		if ( !re.exec( message.text ) ) {
 			return null;
 		}
