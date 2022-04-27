@@ -192,3 +192,126 @@ The equipment being maintained supports your circuits indicated in the table.
 	const link = msg.work[ 0 ].gcalendarLink( 'calendar_id', 'link text' );
 	assert.strictEqual( new URL( link ).searchParams.get( 'dates' ), '20210902/20210906' );
 } );
+
+test( 'euNetworks single', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Maintenance Announcement
+
+Dear Customer,
+
+Please be advised that euNetworks will perform an urgently required hardware replacement on the dates and times shown below.
+This is an emergency. Every delay of these works could have a critical impact on our network and therefore on your service stability.
+Should you have any questions please contact our Change Management Team by replying to this e-mail.
+
+Best Regards,
+Your euNetworks Change Management Team
+
+Sehr geehrter Kunde,
+mit diesem Schreiben möchten wir Sie über einen dringend notwendigen Hardwaretausch im Netz der euNetworks informieren.
+Dies ist eine Notfall-Situation. Jede Verzögerung der Arbeiten könnte die Funktionalität unseres Netzes und damit die Stabilität Ihres Services gefährden.
+Bei Fragen antworten Sie bitte auf diese E-Mail. Unser Change Management Team ist Ihnen gerne behilflich.
+
+Mit freundlichen Grüßen
+Ihr euNetworks Change Management Team
+
+Ticket Number: 666
+
+Service Affecting: Yes
+Impact: 2 Hours Outage
+
+Reason for Request: Hardware Defect
+
+Location Description: Road
+
+Start Time: 2022-05-06 22:01 GMT
+End Time: 2022-05-07 03:00 GMT
+
+Service:
+Number, ID, Name	Location A
+Location Z	Work
+Status
+S0000000, null,
+A: aaa
+Z: zzz
+
+
+
+ref:00000:ref
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'Road',
+			start: Date.parse( '2022-05-06T22:01:00.000Z' ),
+			end: Date.parse( '2022-05-07T03:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );
+
+test( 'euNetworks update', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Maintenance Announcement
+
+UPDATE #8: Ticket 00000 has been updated. Updated values are marked bold.
+
+Dear Customer,
+
+Please be advised that euNetworks will perform a necessary cable relocation on the dates and times shown below.
+
+Should you have any further questions regarding these works please contact our Change Management Team by replying to this e-mail.
+
+Best Regards,
+
+euNetworks Change Management Team
+
+Sehr geehrter Kunde,
+
+mit diesem Schreiben möchten wir Sie über einen notwendigen Kabel-Umzug im Netz der euNetworks informieren.
+
+Für weitere Fragen bezüglich dieser Arbeiten antworten Sie bitte auf diese Email. Unser Change Management Team ist Ihnen gerne behilflich.
+
+Mit freundlichen Grüßen
+
+euNetworks Change Management Team
+
+Ticket Number: 00000
+
+Service Affecting: Yes
+Impact: 8 Hours Outage
+
+Reason for Request: Road Works
+
+Additional Customer Information: Info
+
+Location Description: Road
+
+Start Time: 2022-05-09 20:00 GMT
+End Time: 2022-05-10 04:00 GMT
+
+Start Time (OLD): 2022-05-03 20:00 GMT
+End Time (OLD): 2022-05-04 04:00 GMT
+
+
+Service:
+Number, ID, Name Location A
+Location Z Work
+Status
+S0000, null,
+A: XXX
+Z: XXX
+
+ref:0000:ref
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'Road',
+			start: Date.parse( '2022-05-09T20:00:00.000Z' ),
+			end: Date.parse( '2022-05-10T04:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );

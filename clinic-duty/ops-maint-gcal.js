@@ -167,6 +167,27 @@ class Telia {
 	}
 }
 
+class EuNetworks {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /euNetworks Change/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new EuNetworks( message );
+	}
+
+	get work() {
+		const startDateRe = /Start Time:\s+(.*)$/m;
+		const endDateRe = /End Time:\s+(.*)$/m;
+		const locationRe = /^Location Description:\s*(.*)$/m;
+		return Work.find( startDateRe, endDateRe, locationRe, this.message );
+	}
+}
+
 /* Represent a maintenance message we have received. Within each message we're
  * looking for at least one "work" to do */
 class Message {
@@ -220,6 +241,11 @@ class Message {
 		}
 
 		w = Equinix.fromMessage( this );
+		if ( w !== null ) {
+			return w.work;
+		}
+
+		w = EuNetworks.fromMessage( this );
 		if ( w !== null ) {
 			return w.work;
 		}
