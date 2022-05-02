@@ -315,3 +315,110 @@ ref:0000:ref
 	} );
 	assert.strictEqual( msg.work.length, 1 );
 } );
+
+test( 'orange', ( assert ) => {
+	const msg = new Message( 'stub' );
+	// Note: the text trailing/leading spaces are significant here.
+	msg.textCache = `
+      This is an automatically generated message, please do not reply. To reply, kindly click on the following e-mail address: csciw@orange.com
+    
+      Friday 29/Apr/2022 08:07 (UTC)
+    
+            You 
+            WIKIMEDIA FOUNDATION, INC. 
+             
+            To 
+             
+       NOC 
+    
+      noc@wikimedia.org 
+    
+            Us
+CSCIW
+CSCIW , F.O. Reception
+Phone:
+Fax:
+Email: csciw@orange.com
+    
+      Service impacting change N° T00000 impacting Orange's network
+    
+ 
+Hello,
+ 
+       As part of improving the quality of our infrastructures, we need to work on our network soon.
+ 
+ 
+Characteristics of the operation 
+    
+      Type: Service impacting change 
+    
+      Nature: Orange intervention 
+    
+      Cause: Software upgrade 
+    
+      Beginning: Thursday 12/May/2022 at 22:00 (UTC) 
+    
+      End: Friday 13/May/2022 at 01:00 (UTC) 
+    
+      Duration: 3h 
+    
+      Impact: Complete failure 
+    
+      Number of impacted services: 1 
+    
+ 
+ 
+The services concerned by the operation are listed in the table hereafter. 
+ 
+    
+    Thanks for your faithful.
+    
+    
+      Your Orange customer service
+    
+ 
+  Table with the critical product
+ 
+          No critical product identified
+  
+   Table with the other product
+  
+      Product type
+    
+    
+      Product ID
+    
+    
+      Ends
+    
+    
+      Sites
+    
+    
+      Corporate name
+    
+     
+      Service set
+    
+    
+      Role
+    
+  
+    
+      All routes 
+    
+    
+      XXX
+    
+       - - - - - -  
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'Complete failure',
+			start: Date.parse( '2022-05-12T22:00:00.000Z' ),
+			end: Date.parse( '2022-05-13T01:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );

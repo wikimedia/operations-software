@@ -44,7 +44,9 @@ class Work {
 		return href;
 	}
 
-	/* Assume the first capture group from start/end re will have the date we're looking for */
+	/* Assume the first capture group from start/end re will have the date we're looking for.
+	 * If present, the second capture group will have the work' scheduled time.
+	 */
 	static find( startRe, endRe, locationRe, message, tz = null ) {
 		const startDateMatch = startRe.exec( message.text );
 		if ( !startDateMatch ) {
@@ -53,6 +55,9 @@ class Work {
 		// Make Firefox happy with Date() input.
 		// replace with global regex in place of replaceAll for node to work
 		let startDateStr = startDateMatch[ 1 ].replace( /-/g, '/' );
+		if ( startDateMatch[ 2 ] ) {
+			startDateStr = startDateStr + ' ' + startDateMatch[ 2 ];
+		}
 		if ( tz !== null ) {
 			startDateStr = startDateStr + ' ' + tz;
 		}
@@ -64,6 +69,9 @@ class Work {
 		}
 
 		let endDateStr = endDateMatch[ 1 ].replace( /-/g, '/' );
+		if ( endDateMatch[ 2 ] ) {
+			endDateStr = endDateStr + ' ' + endDateMatch[ 2 ];
+		}
 		if ( tz !== null ) {
 			endDateStr = endDateStr + ' ' + tz;
 		}
@@ -167,6 +175,27 @@ class Telia {
 	}
 }
 
+class Orange {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /Orange customer/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new Orange( message );
+	}
+
+	get work() {
+		const startDateRe = /Beginning:\s*(.*?) at (.*?)\s*$/m;
+		const endDateRe = /End:\s*(.*?) at (.*?)\s*$/m;
+		const locationRe = /Impact:\s*(.*?)\s*$/m; // Not exact but location isn't available
+		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'UTC' );
+	}
+}
+
 class EuNetworks {
 	constructor( message ) {
 		this.message = message;
@@ -246,6 +275,11 @@ class Message {
 		}
 
 		w = EuNetworks.fromMessage( this );
+		if ( w !== null ) {
+			return w.work;
+		}
+
+		w = Orange.fromMessage( this );
 		if ( w !== null ) {
 			return w.work;
 		}
