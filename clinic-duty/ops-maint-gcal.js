@@ -35,14 +35,13 @@ class Work {
 			endDateGcal = endAllday.toISOString().replace( /-|T.*/g, '' );
 		}
 
-		const link = document.createElement( 'a' );
-		link.href = 'https://www.google.com/calendar/event?action=TEMPLATE' +
+		let href = 'https://www.google.com/calendar/event?action=TEMPLATE' +
 			'&src=' + encodeURIComponent( calendar ) +
 			'&text=' + encodeURIComponent( this.message.title ) +
 			'&details=' + encodeURIComponent( this.message.inviteDetails ) +
 			'&location=' + encodeURIComponent( this.details ) +
 			'&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal );
-		return link;
+		return href;
 	}
 
 	/* Assume the first capture group from start/end re will have the date we're looking for */
