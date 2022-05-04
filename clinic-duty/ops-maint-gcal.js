@@ -217,8 +217,11 @@ class EuNetworks {
 	}
 }
 
-/* Represent a maintenance message we have received. Within each message we're
- * looking for at least one "work" to do */
+/**
+ * Represent a maintenance message we have received.
+ *
+ * Within each message, we're looking for at least one "work" to do.
+ */
 class Message {
 	constructor( message, title = '-', url = '#' ) {
 		this.message = message;
@@ -228,7 +231,6 @@ class Message {
 	}
 
 	get inviteDetails() {
-		// XXX replace with sth non-global
 		return this.url + '\n\n' + this.text;
 	}
 
@@ -253,39 +255,21 @@ class Message {
 	}
 
 	get work() {
-		let w;
-		w = Telia.fromMessage( this );
+		let w = (
+			Telia.fromMessage( this ) ||
+			NTT.fromMessage( this ) ||
+			Lumen.fromMessage( this ) ||
+			Equinix.fromMessage( this ) ||
+			EuNetworks.fromMessage( this ) ||
+			Orange.fromMessage( this )
+		);
+
 		if ( w !== null ) {
 			return w.work;
+		} else {
+			console.log( '# Unable to find a parser for ' + this.text );
+			return null;
 		}
-
-		w = NTT.fromMessage( this );
-		if ( w !== null ) {
-			return w.work;
-		}
-
-		w = Lumen.fromMessage( this );
-		if ( w !== null ) {
-			return w.work;
-		}
-
-		w = Equinix.fromMessage( this );
-		if ( w !== null ) {
-			return w.work;
-		}
-
-		w = EuNetworks.fromMessage( this );
-		if ( w !== null ) {
-			return w.work;
-		}
-
-		w = Orange.fromMessage( this );
-		if ( w !== null ) {
-			return w.work;
-		}
-
-		console.log( '# Unable to find a parser for ' + this.text );
-		return null;
 	}
 }
 
