@@ -29,7 +29,7 @@ class Host(object):
             sql = sql.replace('\n', ' ')
         if not sql.strip().endswith(';'):
             sql += ';'
-        return run('db-mysql {} -e "{}"'.format(self.host, sql))
+        return run('db-mysql {} -N -e "{}"'.format(self.host, sql))
 
     def run_on_host(self, command):
         if '"' in command:
@@ -61,7 +61,7 @@ class Host(object):
 
     def get_replag(self):
         query_res = self.run_sql("""
-        SELECT greatest(0, TIMESTAMPDIFF(MICROSECOND, max(ts), UTC_TIMESTAMP(6)) - 500000)/1000000 AS lag
+        SELECT greatest(0, TIMESTAMPDIFF(MICROSECOND, max(ts), UTC_TIMESTAMP(6)) - 500000)/1000000
         FROM heartbeat.heartbeat
         WHERE datacenter='{}'
         GROUP BY shard
@@ -74,8 +74,6 @@ class Host(object):
             if not line.strip():
                 continue
             count = line.strip()
-            if count == 'lag':
-                continue
             try:
                 count = float(count)
             except BaseException:
