@@ -1,14 +1,13 @@
 import os
-import sys
 import time
 from datetime import datetime
 
 
 class Logger(object):
-    def __init__(self, ticket):
-        if '--check' in sys.argv:
+    def __init__(self, ticket, run=False, check=False):
+        if check:
             file_name = ticket + '-check.log'
-        elif '--run' in sys.argv:
+        elif run:
             file_name = ticket + '.log'
         else:
             file_name = ticket + '-dry.log'

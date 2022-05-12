@@ -5,6 +5,7 @@ from collections import defaultdict
 from wmflib.exceptions import WmflibError
 from wmflib.interactive import ensure_shell_is_durable
 
+from .argparser import parse_args
 from .db import Db
 from .logger import Logger
 from .replica_set import ReplicaSet
@@ -12,13 +13,16 @@ from .replica_set import ReplicaSet
 
 class SchemaChange(object):
     def __init__(self, replicas, section, command, check,
-                 all_dbs, ticket, downtime_hours, skip=None):
-        self.replica_set = ReplicaSet(replicas, section, skip)
+                 all_dbs, ticket, downtime_hours, skip=None,
+                 check_only=None):
+        args = parse_args()
+        self.replica_set = ReplicaSet(replicas, section, skip, args)
         self.command = command
         self.check = check
         self.all_dbs = all_dbs
-        self.check_only = '--check' in sys.argv
-        self.logger = Logger(ticket)
+        self.check_only = check_only or args.check
+        self.args = args
+        self.logger = Logger(ticket, args.run, args.check)
         self.cases = defaultdict(list)
         if self.check_only:
             self.gen = self.replica_set.replicas
@@ -27,7 +31,7 @@ class SchemaChange(object):
                 ticket, downtime_hours)
 
     def run(self):
-        if '--run' in sys.argv and not self.check_only:
+        if self.args.run and not self.check_only:
             try:
                 ensure_shell_is_durable()
             except WmflibError:
@@ -64,9 +68,7 @@ class SchemaChange(object):
             sql_for_this_host = sql
             host.run_sql('stop slave;')
             try:
-                if self.replica_set.change_without_replication(host):
-                    sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
-
+                sql_for_this_host = self._prepare_sql(host, sql_for_this_host)
                 res = host.run_sql(sql_for_this_host)
                 self.logger.log_file('End of schema change sql on {}'.format(host.host))
             finally:
@@ -76,19 +78,16 @@ class SchemaChange(object):
                 self.cases['errored'].append(host.host)
                 self.logger.log_file('PANIC: Schema change errored. Not repooling and stopping')
                 break
-            if check and not check(host) and '--run' in sys.argv:
+            if check and not check(host) and self.args.run:
                 self.cases['errored'].append(host.host)
                 self.logger.log_file('PANIC: Schema change was not applied. Not repooling and stopping')
                 break
 
     def sql_on_each_db_of_each_replica(self, sql, check=None):
         for host in self.gen:
-            sql_for_this_host = sql
-            if self.replica_set.change_without_replication(host):
-                sql_for_this_host = 'set session sql_log_bin=0; ' + sql_for_this_host
-
+            sql = self._prepare_sql(host, sql)
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))
-            res = self.run_sql_per_db(host, sql_for_this_host, check)
+            res = self.run_sql_per_db(host, sql, check)
             self.logger.log_file('End of schema change sql on {}'.format(host.host))
 
             if 'error' in res.lower():
@@ -125,10 +124,18 @@ class SchemaChange(object):
         if self.check_only:
             return (True, res)
         res = db.run_sql(sql)
-        if check and '--run' in sys.argv:
+        if check and self.args.run:
             if not check(db):
                 self.logger.log_file('Schema change was not applied on {} in {}'.format(db_name, host.host))
                 res += 'Error: Schema change was not applied'
             else:
                 self.logger.log_file('Schema change finished on {} in {}'.format(db_name, host.host))
         return (True, res)
+
+    def _prepare_sql(self, host, sql):
+        if self.replica_set.is_master_of_active_dc(host):
+            return ('SET SESSION sql_log_bin=0; SET SESSION innodb_lock_wait_timeout=1; ' +
+                    'SET SESSION lock_wait_timeout=30; ' + sql)
+        if self.replica_set.change_without_replication(host):
+            return 'SET SESSION sql_log_bin=0; ' + sql
+        return sql

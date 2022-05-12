@@ -20,7 +20,7 @@ def run_dbctl(command):
     # Make sure you get a clean dbctl before changing config
     if not command.startswith('dbctl config '):
         diff_res = 'Something'
-        while diff_res:
+        while diff_res.strip():
             diff_res = run_dbctl('dbctl config diff')
             if diff_res:
                 print(diff_res)
