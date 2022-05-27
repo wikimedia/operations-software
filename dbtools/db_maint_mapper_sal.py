@@ -214,6 +214,7 @@ while True:
                 text, get_day(i)))
     final_result += '== Last seven days ==\n' + \
         build_report(transform_section_repot(last_seven_days_data))
+    final_result += '\n\n[[Category:MariaDB]]'
     if no_pywikibot:
         print(final_result)
     else:
