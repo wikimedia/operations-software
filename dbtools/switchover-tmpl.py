@@ -107,6 +107,9 @@ sudo cumin '{oldpri}* or {newpri}*' 'run-puppet-agent -e "primary switchover {ta
 
 **Clean up tasks:**
 [] Clean up heartbeat table(s).
+```
+sudo db-mysql {newpri} heartbeat -e "delete from heartbeat where file like '{oldpri}%';"
+```
 [] change events for query killer:
 ```
 events_coredb_master.sql on the new primary {newpri}
@@ -122,6 +125,9 @@ sudo dbctl instance {newpri} set-candidate-master --section {section} false
 ```
 [] Check zarcillo was updated
 ** db-switchover should do this. If it fails, do it manually: https://phabricator.wikimedia.org/P13956
+```
+sudo db-mysql db1115 zarcillo -e "select * from masters where section = '{section}';"
+```
 [] (If needed): Depool {oldpri} for maintenance.
 ```
 sudo dbctl instance {oldpri} depool
