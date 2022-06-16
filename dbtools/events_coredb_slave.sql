@@ -70,7 +70,7 @@ do begin
     declare slow_queries cursor for
         SELECT ps.PROCESSLIST_ID, substring(ps.PROCESSLIST_INFO,1,100)
         FROM performance_schema.threads ps
-        WHERE ps.processlist_user = 'wikiuser2022'
+        WHERE ps.processlist_user = 'wikiuser202206'
             AND ps.type='FOREGROUND'
             AND ps.PROCESSLIST_COMMAND <> 'Sleep'
             AND ps.processlist_time between 60 and 1000000
@@ -129,7 +129,7 @@ do begin
     declare threads_sleeping cursor for
         SELECT ps.PROCESSLIST_ID
         FROM performance_schema.threads ps
-        WHERE ps.processlist_user = 'wikiuser2022'
+        WHERE ps.processlist_user = 'wikiuser202206'
             AND ps.type='FOREGROUND'
             AND ps.PROCESSLIST_COMMAND = 'Sleep'
             AND ps.processlist_time between 60 and 1000000
@@ -191,7 +191,7 @@ create definer='root'@'localhost' event wmf_slave_overload
         declare active_queries cursor for
             SELECT ps.PROCESSLIST_ID, substring(ps.PROCESSLIST_INFO,1,100)
             FROM performance_schema.threads ps
-            WHERE ps.processlist_user = 'wikiuser2022'
+            WHERE ps.processlist_user = 'wikiuser202206'
                 AND ps.type='FOREGROUND'
                 AND ps.processlist_time between 10 and 1000000
            ORDER BY ps.processlist_time DESC

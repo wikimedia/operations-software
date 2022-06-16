@@ -23,7 +23,7 @@ CREATE DEFINER=`root`@`localhost` EVENT `wmf_slave_overload` ON SCHEDULE EVERY 1
             select ps.id, substring(info,1,100)
             from information_schema.processlist ps
             where ps.command = 'Query'
-                and ps.user = 'wikiuser2022'
+                and ps.user = 'wikiuser202206'
                 and ps.time between 10 and 1000000
                 and ps.info is not null
                 and lower(ps.info) regexp '^[[:space:]]*select'
@@ -102,7 +102,7 @@ CREATE DEFINER=`root`@`localhost` EVENT `wmf_slave_wikiuser_sleep` ON SCHEDULE E
             select ps.id
             from information_schema.processlist ps
             where ps.command = 'Sleep'
-                and ps.user = 'wikiuser2022'
+                and ps.user = 'wikiuser202206'
                 and ps.time between 300 and 1000000
                 and ps.info is null
             order by ps.time desc;
@@ -154,7 +154,7 @@ CREATE DEFINER=`root`@`localhost` EVENT `wmf_slave_wikiuser_slow` ON SCHEDULE EV
             select ps.id, substring(info,1,100)
             from information_schema.processlist ps
             where ps.command = 'Query'
-                and ps.user = 'wikiuser2022'
+                and ps.user = 'wikiuser202206'
                 and ps.info is not null
                 and lower(ps.info) regexp '^[[:space:]]*select'
                 and not lower(ps.info) regexp 'wikiexporter'
