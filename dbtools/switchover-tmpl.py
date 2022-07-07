@@ -133,6 +133,10 @@ sudo db-mysql db1115 zarcillo -e "select * from masters where section = '{sectio
 sudo dbctl instance {oldpri} depool
 sudo dbctl config commit -m "Depool {oldpri} {taskid}"
 ```
+[] Change {oldpri} weight to mimic the previous weight {newpri}:
+```
+sudo dbctl instance {oldpri} edit
+```
 [] Apply outstanding schema changes to {oldpri} (if any)
 [] Update/resolve this ticket."""
 
