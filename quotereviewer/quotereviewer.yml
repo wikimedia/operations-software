@@ -24,6 +24,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '321-BCUW': '2.5" Chassis with up to 8 Hot Plug Hard Drives and Software RAID'
   '321-BCUX': '2.5" Chassis with up to 10 Hard Drives'
   '321-BHDK': '2.5" Chassis up to 10 HDDs,PERC/HBA11'
+  '321-BHDL': '2.5" Chassis up to 8 HP HDDs,PERC/HBA11'
   '321-BCUV': '2.5" Chassis with up to 8 Hot Plug Hard Drives'
   '340-COSL': 'PowerEdge R440 x8 Shipping Material, V2'
   ## R640
