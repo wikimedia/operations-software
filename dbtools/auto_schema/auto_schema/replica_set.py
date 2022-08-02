@@ -1,18 +1,17 @@
-import sys
-
 from .config import Config
 from .host import Host
 from .logger import Logger
 
 
 class ReplicaSet(object):
-    def __init__(self, replicas, section, skip=None):
+    def __init__(self, replicas, section, skip=None, args=None):
         self.config = Config()
+        if args and args.section:
+            section = args.section
         self.section = section
+        self.args = args
         self.pooled_replicas = self.config.get_replicas(section)
         self.section_masters = self.config.get_section_masters(section)
-        # TODO: Add a check to avoid running schema change on master of another
-        # section
         self.dbs = []
         self.avoid_replicated_changes = []
         self._init_replicas(replicas, skip)
@@ -20,7 +19,11 @@ class ReplicaSet(object):
     def _init_replicas(self, replicas, skip):
         if not skip:
             skip = []
-
+        if self.args.primary_master:
+            master = self.config.get_section_master_for_dc(
+                self.section, self.config.active_dc())
+            self.replicas = [Host(master, self.section)]
+            return
         if replicas is None:
             master = self.config.get_section_master_for_dc(
                 self.section,
@@ -93,7 +96,7 @@ class ReplicaSet(object):
         replicas_to_downtime = []
         if not self.is_master_of_active_dc(host):
             replicas_to_downtime = host.get_replicas(recursive=True)
-        if '--include-masters' not in sys.argv:
+        if self.args.include_masters:
             replicas_to_question = ','.join([i.host for i in replicas_to_downtime])
             question_mark = input(
                 'This host has these hanging replicas: {}, '
