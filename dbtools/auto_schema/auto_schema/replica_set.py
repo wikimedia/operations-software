@@ -1,11 +1,12 @@
+from auto_schema.replication_discovery import HostReplicationDiscovery
 from .config import Config
 from .host import Host
 from .logger import Logger
 
 
 class ReplicaSet(object):
-    def __init__(self, replicas, section, skip=None, args=None):
-        self.config = Config()
+    def __init__(self, replicas, section, skip=None, args=None, replication_discovery=None, config=None):
+        self.config = config or Config()
         if args and args.section:
             section = args.section
         self.section = section
@@ -14,6 +15,7 @@ class ReplicaSet(object):
         self.section_masters = self.config.get_section_masters(section)
         self.dbs = []
         self.avoid_replicated_changes = []
+        self.replication_discovery = replication_discovery or HostReplicationDiscovery()
         self._init_replicas(replicas, skip)
 
     def _init_replicas(self, replicas, skip):
@@ -28,7 +30,7 @@ class ReplicaSet(object):
             replicas = []
             dc_masters = self.config.get_section_masters(self.section)
             for master in dc_masters:
-                replicas += Host(master, self.section).get_replicas()
+                replicas += self.replication_discovery.get_replicas(Host(master, self.section))
             for replica in replicas:
                 if replica in dc_masters:
                     replicas.remove(replica)
@@ -46,7 +48,7 @@ class ReplicaSet(object):
             if replica in skip:
                 continue
             complex = False
-            replica_replicas = replica.get_replicas()
+            replica_replicas = self.replication_discovery.get_replicas(replica)
             for i in skip:
                 if i in replica_replicas:
                     complex = True
@@ -93,12 +95,12 @@ class ReplicaSet(object):
         return self.dbs
 
     def check_host_for_replicas(self, host: Host):
-        if not host.has_replicas():
+        if not self.replication_discovery.has_replicas(host):
             return []
 
         replicas_to_downtime = []
         if not self.is_master_of_active_dc(host):
-            replicas_to_downtime = host.get_replicas(recursive=True)
+            replicas_to_downtime = self.replication_discovery.get_replicas(host, True)
         if self.args.include_masters:
             replicas_to_question = ','.join([i.host for i in replicas_to_downtime])
             question_mark = input(
@@ -131,6 +133,6 @@ class ReplicaSet(object):
             return True
         if self.is_master_of_active_dc(host):
             return True
-        if host.has_replicas():
+        if self.replication_discovery.has_replicas(host):
             return False
         return True
