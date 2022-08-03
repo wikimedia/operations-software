@@ -25,10 +25,13 @@ class ReplicaSet(object):
             self.replicas = [Host(master, self.section)]
             return
         if replicas is None:
-            master = self.config.get_section_master_for_dc(
-                self.section,
-                self.config.active_dc())
-            replicas = Host(master, self.section).get_replicas()
+            replicas = []
+            dc_masters = self.config.get_section_masters(self.section)
+            for master in dc_masters:
+                replicas += Host(master, self.section).get_replicas()
+            for replica in replicas:
+                if replica in dc_masters:
+                    replicas.remove(replica)
         else:
             replicas = [Host(i, self.section) for i in replicas]
 
