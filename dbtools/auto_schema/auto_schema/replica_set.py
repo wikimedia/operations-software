@@ -99,7 +99,7 @@ class ReplicaSet(object):
             return []
 
         replicas_to_downtime = []
-        if not self.is_master_of_active_dc(host):
+        if not self.is_master_of_a_dc(host):
             replicas_to_downtime = self.replication_discovery.get_replicas(host, True)
         if self.args.include_masters:
             replicas_to_question = ','.join([i.host for i in replicas_to_downtime])
@@ -114,9 +114,7 @@ class ReplicaSet(object):
                 return False
         return replicas_to_downtime
 
-    def is_master_of_active_dc(self, host):
-        if self.config.active_dc() != host.dc:
-            return False
+    def is_master_of_a_dc(self, host):
         if host.host.replace(':3306', '') not in [i.replace(
                 ':3306', '') for i in self.section_masters]:
             return False
@@ -131,7 +129,7 @@ class ReplicaSet(object):
     def change_without_replication(self, host: Host):
         if host in self.avoid_replicated_changes:
             return True
-        if self.is_master_of_active_dc(host):
+        if self.is_master_of_a_dc(host):
             return True
         if self.replication_discovery.has_replicas(host):
             return False

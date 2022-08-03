@@ -133,7 +133,7 @@ class SchemaChange(object):
         return (True, res)
 
     def _prepare_sql(self, host, sql):
-        if self.replica_set.is_master_of_active_dc(host):
+        if self.replica_set.is_master_of_a_dc(host):
             return ('SET SESSION sql_log_bin=0; SET SESSION innodb_lock_wait_timeout=1; ' +
                     'SET SESSION lock_wait_timeout=30; ' + sql)
         if self.replica_set.change_without_replication(host):
