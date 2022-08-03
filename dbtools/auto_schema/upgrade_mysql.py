@@ -7,7 +7,7 @@ ticket = 'T296143'
 replicas = None
 
 replica_set = ReplicaSet(replicas, section)
-for db in replica_set._per_replica_gen(ticket, 24, True):
+for db in replica_set._per_replica_gen(ticket, 24):
     sqldata_paths = db.run_on_host('ls /srv/')
     if 'sqldata.' in sqldata_paths:
         # TODO: Handle multiinstance

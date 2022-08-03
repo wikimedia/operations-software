@@ -16,5 +16,5 @@ for replica in replicas:
     db = Host(replica, section)
 
 replica_set = ReplicaSet(replicas, section)
-for host in replica_set._per_replica_gen(None, 'auto', None):
+for host in replica_set._per_replica_gen(None, 'auto'):
     print(replica_set.detect_depool(host))
