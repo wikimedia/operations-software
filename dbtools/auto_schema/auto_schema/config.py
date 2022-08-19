@@ -1,7 +1,12 @@
 import re
 
-from conftool import configuration, kvobject, loader
 import requests
+
+try:
+    from conftool import configuration, kvobject, loader
+    production = True
+except ImportError:
+    production = False
 
 
 class Config():
@@ -58,6 +63,9 @@ class Config():
 
     def active_dc(self):
         if self._active_dc:
+            return self._active_dc
+        if not production:
+            self._active_dc = 'eqiad'
             return self._active_dc
 
         schema = loader.Schema.from_file('/etc/conftool/schema.yaml')

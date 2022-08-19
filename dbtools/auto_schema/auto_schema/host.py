@@ -109,25 +109,6 @@ class Host(object):
     def _downtime_hosts(self, hours, hosts):
         run('cookbook sre.hosts.downtime --hours {} -r "Maintenance" {}'.format(hours, hosts))
 
-    def has_replicas(self):
-        return self.run_sql('show slave hosts;').strip() != ''
-
-    def get_replicas(self, recursive=False):
-        res = self.run_sql('show slave hosts;')
-        hosts = [
-            Host('{}:{}'.format(i[0], i[1]), self.section)
-            for i in re.findall(r'(\S+)\.(?:eqiad|codfw)\.wmnet\s*(\d+)', res)
-        ]
-        if not recursive:
-            return hosts
-        replicas_to_check = hosts.copy()
-        while replicas_to_check:
-            replica_replicas = replicas_to_check.pop().get_replicas(False)
-            hosts += replica_replicas.copy()
-            replicas_to_check += replica_replicas.copy()
-
-        return hosts
-
     def __eq__(self, other: object) -> bool:
         if isinstance(other, str):
             return str(self) == other
@@ -136,4 +117,7 @@ class Host(object):
         return False
 
     def __str__(self) -> str:
+        return self.host
+
+    def __repr__(self) -> str:
         return self.host
