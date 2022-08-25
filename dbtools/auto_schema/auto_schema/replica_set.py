@@ -21,10 +21,8 @@ class ReplicaSet(object):
     def _init_replicas(self, replicas, skip):
         if not skip:
             skip = []
-        if self.args.primary_master:
-            master = self.config.get_section_master_for_dc(
-                self.section, self.config.active_dc())
-            self.replicas = [Host(master, self.section)]
+        if self.args.dc_masters:
+            self.replicas = [Host(i, self.section) for i in self.config.get_section_masters(self.section)]
             return
         if replicas is None:
             replicas = []
@@ -101,7 +99,7 @@ class ReplicaSet(object):
         replicas_to_downtime = []
         if not self.is_master_of_a_dc(host):
             replicas_to_downtime = self.replication_discovery.get_replicas(host, True)
-        if self.args.include_masters:
+        if not self.args.include_masters:
             replicas_to_question = ','.join([i.host for i in replicas_to_downtime])
             question_mark = input(
                 'This host has these hanging replicas: {}, '

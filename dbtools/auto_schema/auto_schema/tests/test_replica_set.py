@@ -6,7 +6,7 @@ from argparse import Namespace
 
 
 def test_eqiad_master_without_skip():
-    args = Namespace(primary_master=False, section=None)
+    args = Namespace(dc_masters=False, section=None)
     replica_set = ReplicaSet(None, 's3', replication_discovery=MockReplicationDiscovery(),
                              config=MockConfig(), args=args)
     assert replica_set.replicas == [
@@ -23,7 +23,7 @@ def test_eqiad_master_without_skip():
 
 
 def test_eqiad_master_with_skip():
-    args = Namespace(primary_master=False, section=None)
+    args = Namespace(dc_masters=False, section=None)
     replica_set = ReplicaSet(
         None,
         's3',
@@ -54,7 +54,7 @@ def test_codfw_master_without_skip():
 
 
 def test_explicit_replicas():
-    args = Namespace(primary_master=False, section=None)
+    args = Namespace(dc_masters=False, section=None)
     replica_set = ReplicaSet(['db1175', 'db1179'], 's3',
                              replication_discovery=MockReplicationDiscovery(), config=MockConfig(), args=args)
     assert replica_set.replicas == [
@@ -64,9 +64,16 @@ def test_explicit_replicas():
 
 
 def test_explicit_replicas_with_skip():
-    args = Namespace(primary_master=False, section=None)
+    args = Namespace(dc_masters=False, section=None)
     replica_set = ReplicaSet(['db1175', 'db1179'], 's3', replication_discovery=MockReplicationDiscovery(
     ), config=MockConfig(), args=args, skip=['db1179'])
     assert replica_set.replicas == [
         'db1175',
     ]
+
+
+def test_dc_masters():
+    args = Namespace(dc_masters=True, section=None)
+    replica_set = ReplicaSet(None, 's3', replication_discovery=MockReplicationDiscovery(),
+                             config=MockConfig(), args=args)
+    assert replica_set.replicas == ['db1157', 'db2105']

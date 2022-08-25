@@ -12,10 +12,10 @@ def parse_args():
         dest='include_masters'
     )
     parser.add_argument(
-        '--primary-master',
+        '--dc-masters',
         action='store_true',
-        help='Run on master of section in primary dc',
-        dest='primary_master'
+        help='Run on master of section in dcs',
+        dest='dc_masters'
     )
     parser.add_argument('--run', action='store_true', help='Run the schema change')
     args = parser.parse_args()

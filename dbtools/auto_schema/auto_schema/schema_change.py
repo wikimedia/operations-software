@@ -66,13 +66,15 @@ class SchemaChange(object):
                 continue
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))
             sql_for_this_host = sql
-            host.run_sql('stop slave;')
+            if not self.replica_set.is_master_of_a_dc(host):
+                host.run_sql('stop slave;')
             try:
                 sql_for_this_host = self._prepare_sql(host, sql_for_this_host)
                 res = host.run_sql(sql_for_this_host)
                 self.logger.log_file('End of schema change sql on {}'.format(host.host))
             finally:
-                host.run_sql('start slave;')
+                if not self.replica_set.is_master_of_a_dc(host):
+                    host.run_sql('start slave;')
 
             if 'error' in res.lower():
                 self.cases['errored'].append(host.host)
@@ -98,7 +100,7 @@ class SchemaChange(object):
     def run_sql_per_db(self, host, sql, check):
         res = ''
         needed = False
-        if not self.check_only:
+        if not self.check_only and not self.replica_set.is_master_of_a_dc(host):
             host.run_sql('stop slave;')
         try:
             for db_name in self.replica_set.get_dbs():
@@ -110,7 +112,7 @@ class SchemaChange(object):
             else:
                 self.cases['needed in some dbs'].append(host.host)
         finally:
-            if not self.check_only:
+            if not self.check_only and not self.replica_set.is_master_of_a_dc(host):
                 host.run_sql('start slave;')
         return res
 
