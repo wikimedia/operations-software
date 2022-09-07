@@ -24,8 +24,10 @@ class Config():
             replicas += self._get_replicas_for_dc(section, dc)
         return replicas
 
-    def get_section_masters(self, section):
+    def get_section_masters(self, section, dc=None):
         masters = []
+        if dc:
+            return [self.get_section_master_for_dc(section, dc)]
         for dc in self.dcs:
             masters.append(self.get_section_master_for_dc(section, dc))
         return masters
@@ -35,7 +37,7 @@ class Config():
         section_in_config = 'DEFAULT' if section == 's3' else section
         type_in_config = 'sectionLoads' if section.startswith(
             's') else 'externalLoads'
-        return list(config[type_in_config][section_in_config][1].keys())
+        return sorted(list(config[type_in_config][section_in_config][1].keys()))
 
     def get_section_master_for_dc(self, section, dc):
         config = self.get_config(dc)

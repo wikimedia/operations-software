@@ -22,12 +22,15 @@ class ReplicaSet(object):
         if not skip:
             skip = []
         if self.args.dc_masters:
-            self.replicas = [Host(i, self.section) for i in self.config.get_section_masters(self.section)]
+            self.replicas = [
+                Host(i, self.section) for i in
+                self.config.get_section_masters(self.section, self.args.dc)
+            ]
             return
         if replicas is None:
             replicas = []
             dc_masters = self.config.get_section_masters(self.section)
-            for master in dc_masters:
+            for master in self.config.get_section_masters(self.section, self.args.dc):
                 replicas += self.replication_discovery.get_replicas(Host(master, self.section))
             for replica in replicas:
                 if replica in dc_masters:

@@ -18,5 +18,6 @@ def parse_args():
         dest='dc_masters'
     )
     parser.add_argument('--run', action='store_true', help='Run the schema change')
+    parser.add_argument('--dc', help='Only one datacenter. it can be either eqiad or codfw')
     args = parser.parse_args()
     return args

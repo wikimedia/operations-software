@@ -15,7 +15,7 @@ class HostReplicationDiscovery(ReplicationDiscovery):
         res = host.run_sql('show slave hosts;')
         hosts = [
             Host('{}:{}'.format(i[0], i[1]), host.section)
-            for i in re.findall(r'(\S+)\.(?:eqiad|codfw)\.wmnet\s*(\d+)', res)
+            for i in sorted(re.findall(r'(\S+)\.(?:eqiad|codfw)\.wmnet\s*(\d+)', res))
         ]
         if not recursive:
             return hosts
