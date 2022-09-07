@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 from collections import defaultdict
 
 from wmflib.exceptions import WmflibError
@@ -83,6 +84,10 @@ class SchemaChange(object):
             if check and not check(host) and self.args.run:
                 self.cases['errored'].append(host.host)
                 self.logger.log_file('PANIC: Schema change was not applied. Not repooling and stopping')
+                break
+            dir = os.path.dirname(__file__)
+            if self.args.run and not self.check_only and os.path.exists(os.path.join(dir, '..', 'STOP')):
+                self.logger.log_file('Requested a graceful stop. Stopping')
                 break
 
     def sql_on_each_db_of_each_replica(self, sql, check=None):
