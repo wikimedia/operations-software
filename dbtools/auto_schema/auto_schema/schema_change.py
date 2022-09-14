@@ -92,9 +92,8 @@ class SchemaChange(object):
 
     def sql_on_each_db_of_each_replica(self, sql, check=None):
         for host in self.gen:
-            sql = self._prepare_sql(host, sql)
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))
-            res = self.run_sql_per_db(host, sql, check)
+            res = self.run_sql_per_db(host, self._prepare_sql(host, sql), check)
             self.logger.log_file('End of schema change sql on {}'.format(host.host))
 
             if 'error' in res.lower():
