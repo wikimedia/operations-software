@@ -102,17 +102,6 @@ class ReplicaSet(object):
         replicas_to_downtime = []
         if not self.is_master_of_a_dc(host):
             replicas_to_downtime = self.replication_discovery.get_replicas(host, True)
-        if not self.args.include_masters:
-            replicas_to_question = ','.join([i.host for i in replicas_to_downtime])
-            question_mark = input(
-                'This host has these hanging replicas: {}, '
-                'Are you sure you want to continue? (y or yes): '
-                .format(replicas_to_question)).lower().strip()
-            if question_mark not in ['y', 'yes', 'si', 'ja']:
-                print(
-                    'Ignoring {} as it has hanging replicas'.format(
-                        host.host))
-                return False
         return replicas_to_downtime
 
     def is_master_of_a_dc(self, host):
