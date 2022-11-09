@@ -1,4 +1,4 @@
-/* eslint-disable no-console, no-implicit-globals, prefer-const */
+/* eslint-disable no-console, prefer-const */
 
 const CALENDAR_ID = 'd2lraW1lZGlhLm9yZ181OXJwOTczY243NmV2YWdzcmlxanMwZXV0OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t';
 
@@ -125,9 +125,9 @@ class Lumen {
 	}
 
 	get work() {
-		const startDateRe = /^Start.*End\n([^(]*)/m;
-		const endDateRe = /^Start.*End\n.*\t([^(]*)/m;
-		const locationRe = /Location\(s\):\s*(.*)/;
+		const startDateRe = /StartEnd([^(]+)/;
+		const endDateRe = /StartEnd.*?\)([^(]+)/;
+		const locationRe = /Location\(s\):\s*(.*)Customer/;
 		return Work.find( startDateRe, endDateRe, locationRe, this.message );
 	}
 }

@@ -38,25 +38,33 @@ IC-ID	Wavelength Single Link	1 x 6 hours
 test( 'Lumen', ( assert ) => {
 	const msg = new Message( 'stub' );
 	msg.textCache = `
+Scheduled Maintenance #: 1234
+
+Summary:
+
+What?
+Lumen intends to carry out internal maintenance within its network.
+
+Why?
+Work is required
+
+Where?
+Chippenham, United Kingdom
+
+When?
+See Customer Impact table below
+
+Lumen would like to apologise for any inconvenience caused by this maintenance.
+
 Updates:
 
-2021-08-24 14:16:03 GMT - This maintenance is scheduled.
+
+2022-11-09 11:07:15 GMT - This maintenance is scheduled.
+
 
 Customer Impact:
 
-ID
-
-
-Start	End
-2021-09-23 23:00 GMT (Greenwich Mean Time)	2021-09-24 05:00 GMT (Greenwich Mean Time)
-
-
-Maintenance Location(s): BUDE, United Kingdom
-
-
-Customer Name	Circuit ID	Alt Circuit ID	Bandwidth	A Location	Z Location	Impact Type	Maximum Duration	Order Number
-XXX
-
+25330216-1 StartEnd2022-12-02 21:00 GMT (Greenwich Mean Time)2022-12-03 05:00 GMT (Greenwich Mean Time)Maintenance Location(s): Dauntsey United Kingdom; Brinkworth United KingdomCustomer NameCircuit IDAlt Circuit IDBandwidthA LocationZ LocationImpact TypeMaximum DurationOrder NumberXXXOutage8 hours
 
 Click here for assistance on this scheduled maintenance via Email.
 
@@ -67,9 +75,9 @@ Click here to manage your notification subscriptions via the Lumen Portal.
 	assert.propContains( msg.work, {
 		0: {
 			allday: false,
-			details: 'BUDE, United Kingdom',
-			start: Date.parse( '2021-09-23T23:00:00.000Z' ),
-			end: Date.parse( '2021-09-24T05:00:00.000Z' )
+			details: 'Dauntsey United Kingdom; Brinkworth United Kingdom',
+			start: Date.parse( '2022-12-02T21:00:00.000Z' ),
+			end: Date.parse( '2022-12-03T05:00:00.000Z' )
 		}
 	} );
 	assert.strictEqual( msg.work.length, 1 );
