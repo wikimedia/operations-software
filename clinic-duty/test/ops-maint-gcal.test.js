@@ -13,23 +13,56 @@ test( 'No parser found', ( assert ) => {
 test( 'Telia single work', ( assert ) => {
 	const msg = new Message( 'stub' );
 	msg.textCache = `
-Please note that Telia Carrier will perform maintenance work as outlined below.
-Planned work reference:	...
-Action and Reason:	...
-Location:	Scottsville/VA, US
+Please note that Arelion will perform maintenance work as outlined below.
+Planned work reference:
 
-Service Window: PWICID primary	Work Status: Confirmed
-Service window start:	2021-08-31 04:00 UTC
-Service window end:	2021-08-31 12:00 UTC
+
+XXX
+
+
+Action and Reason:
+
+
+Change faulty card to avoid future outage
+
+Location:
+
+
+Denver
+
+
+Service Window: XXX primary
+
+
+Work Status: Confirmed
+
+
+Service window start:
+
+
+2022-11-10 10:00 UTC
+
+
+Service window end:
+
+
+2022-11-10 13:00 UTC
+
+
 Impacted Services
-IC-ID	Wavelength Single Link	1 x 6 hours
+
+XXX
+
+Wavelength Single Link
+
+               3 x 1 hours
 `;
 	assert.propContains( msg.work, {
 		0: {
 			allday: false,
-			details: 'Scottsville/VA, US',
-			start: Date.parse( '2021-08-31T04:00:00.000Z' ),
-			end: Date.parse( '2021-08-31T12:00:00.000Z' )
+			details: 'Denver',
+			start: Date.parse( '2022-11-10T10:00:00.000Z' ),
+			end: Date.parse( '2022-11-10T13:00:00.000Z' )
 		}
 	} );
 	assert.strictEqual( msg.work.length, 1 );

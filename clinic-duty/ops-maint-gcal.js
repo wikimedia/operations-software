@@ -153,24 +153,24 @@ class NTT {
 	}
 }
 
-class Telia {
+class Arelion {
 	constructor( message ) {
 		this.message = message;
 	}
 
 	static fromMessage( message ) {
-		const re = /(Telia Carrier|Arelion)/;
+		const re = /Arelion/;
 		if ( !re.exec( message.text ) ) {
 			return null;
 		}
-		return new Telia( message );
+		return new Arelion( message );
 	}
 
 	get work() {
 		// XXX support more than one timespan/window
-		const startDateRe = /^Service window start:(.*)$/m;
-		const endDateRe = /^Service window end:(.*)$/m;
-		const locationRe = /^Location:\s*(.*)$/m;
+		const startDateRe = /Service window start:\s+(.+)\n/m;
+		const endDateRe = /Service window end:\s+(.+)\n/m;
+		const locationRe = /Location:\s+(\S+)/m;
 		return Work.find( startDateRe, endDateRe, locationRe, this.message );
 	}
 }
@@ -277,7 +277,7 @@ class Message {
 
 	get work() {
 		let w = (
-			Telia.fromMessage( this ) ||
+			Arelion.fromMessage( this ) ||
 			NTT.fromMessage( this ) ||
 			Lumen.fromMessage( this ) ||
 			Equinix.fromMessage( this ) ||
