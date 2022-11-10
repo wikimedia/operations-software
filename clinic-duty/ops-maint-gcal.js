@@ -196,6 +196,27 @@ class Orange {
 	}
 }
 
+class Telxius {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /@telxius\.com/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new Telxius( message );
+	}
+
+	get work() {
+		const startDateRe = /SCHEDULE.*:\n(.+) - /m;
+		const endDateRe = /SCHEDULE.*:\n.+ - (.+)/m;
+		const locationRe = /LOCATION.*: (.+)/m;
+		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'UTC' );
+	}
+}
+
 class EuNetworks {
 	constructor( message ) {
 		this.message = message;
@@ -261,7 +282,8 @@ class Message {
 			Lumen.fromMessage( this ) ||
 			Equinix.fromMessage( this ) ||
 			EuNetworks.fromMessage( this ) ||
-			Orange.fromMessage( this )
+			Orange.fromMessage( this ) ||
+			Telxius.fromMessage( this )
 		);
 
 		if ( w !== null ) {

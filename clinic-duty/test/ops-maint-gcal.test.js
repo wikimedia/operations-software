@@ -430,3 +430,47 @@ The services concerned by the operation are listed in the table hereafter.
 	} );
 	assert.strictEqual( msg.work.length, 1 );
 } );
+
+test( 'Telxius', ( assert ) => {
+	const msg = new Message( 'stub' );
+	// Note: the text trailing/leading spaces are significant here.
+	msg.textCache = `
+Dear Sirs // Estimados Señores,
+WIKIMEDIA FOUNDATION, INC.
+Please find below our Scheduled Work Notification // Abajo encontrará nuestra Notificación de Trabajo Programado:
+NOTIFICATION NUMBER // NUMERO DE NOTIFICACION: XXX
+NOTIFICATION TYPE // TIPO DE NOTIFICACION: Normal
+DESCRIPTION // DESCRIPCION: A scheduled work will be carried out to relocate fiber cable due to civil works. // Se realizará un trabajo programado para reubicar cable de fibra debido a obras civiles.
+SERVICE IMPACT // IMPACTO EN SERVICIOS: SWITCH HITS
+LOCATION // LOCALIDAD: Paris, France
+SCHEDULE // VENTANA(S) DE TRABAJO (UTC):
+07-Dec-2022 21:00 - 08-Dec-2022 05:00
+AFFECTED CIRCUITS // CIRCUITOS AFECTADOS:
+
+[English]
+If you shall experience any problem with your services due to the performing of this task, please contact our Capacity Services NOC at +511 411 0070 or mailing to customerservice.capacity@telxius.com.
+We would like to apologize for any inconvenience caused by this maintenance to you and your customers. If any additional question appears, do not hesitate to contact us.
+Our personnel will be permanently available for you.
+[Español]
+Si experimenta algún problema con su servicio debido a la realización de esta actividad programada, por favor comuníquese a nuestro NOC de Capacity Services vía el +511 411 0070 o al correo customerservice.capacity@telxius.com.
+Lamentamos los inconvenientes que este mantenimiento pueda causarle a usted o sus clientes. Si una nueva consulta surgiera, no dude en comunicarse con nosotros, nuestro personal estará permanentemente disponible para usted.
+
+Este mensaje y sus adjuntos se dirigen exclusivamente a su destinatario, puede contener información privilegiada o confidencial y es para uso exclusivo de la persona o entidad de destino. Si no es usted. el destinatario indicado, queda notificado de que la
+ lectura, utilización, divulgación y/o copia sin autorización puede estar prohibida en virtud de la legislación vigente. Si ha recibido este mensaje por error, le rogamos que nos lo comunique inmediatamente por esta misma vía y proceda a su destrucción.
+
+The information contained in this transmission is confidential and privileged information intended only for the use of the individual or entity named above. If the reader of this message is not the intended recipient, you are hereby notified that any dissemination,
+ distribution or copying of this communication is strictly prohibited. If you have received this transmission in error, do not read it. Please immediately reply to the sender that you have received this communication in error and then delete it.
+
+Esta mensagem e seus anexos se dirigem exclusivamente ao seu destinatário, pode conter informação privilegiada ou confidencial e é para uso exclusivo da pessoa ou entidade de destino. Se não é vossa senhoria o destinatário indicado, fica notificado de que a
+ leitura, utilização, divulgação e/ou cópia sem autorização pode estar proibida em virtude da legislação vigente. Se recebeu esta mensagem por erro, rogamos-lhe que nos o comunique imediatamente por esta mesma via e proceda a sua destruição
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'Paris, France',
+			start: Date.parse( '2022-12-07T21:00:00.000Z' ),
+			end: Date.parse( '2022-12-08T05:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );
