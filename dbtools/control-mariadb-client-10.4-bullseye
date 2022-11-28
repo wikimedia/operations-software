@@ -1,5 +1,5 @@
 Package: wmf-mariadb104-client
-Version: 10.4.27+deb11u1
+Version: 10.4.26+deb11u1
 Section: misc
 Priority: optional
 Architecture: amd64
