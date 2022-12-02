@@ -2,7 +2,7 @@ required:
   '350-BBBW': 'No Bezel'
   '370-AAIP': 'Performance Optimized'
   '384-BBBL': 'Performance BIOS Settings'
-  '385-BBKT': 'iDRAC9,Enterprise'
+  '385-BBQV': 'iDRAC9, Enterprise 15G'
   '379-BCQY': 'iDRAC Group Manager, Disabled'
   '461-AADZ': 'No Trusted Platform Module'
   '450-AAGG': 'No Power Cord'
@@ -18,7 +18,10 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '210-AKWU': 'PowerEdge R640 Server'
   '210-AKZR': 'PowerEdge R740XD Server'
   '210-ARCU': 'PowerEdge R740xd2 Server'
+  '210-AZDS': 'PowerEdge R450 Server'
   # Chassis
+  ## 14G Specific SKUs moved from required
+  '385-BBKT': 'iDRAC9,Enterprise'
   ## R440
   '321-BCUQ': '3.5" Chassis with up to 4 Hot Plug Hard Drives and Software RAID'
   '321-BCUW': '2.5" Chassis with up to 8 Hot Plug Hard Drives and Software RAID'
@@ -45,6 +48,10 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBMU': 'Riser Config 3, 1xFH, Single CPU, R740xd2'
   '575-BBXC': 'Low Profile PCIe Blank Bracket'
   '575-BBXD': 'Full Height PCIe Blank Bracket'
+  ## R450
+  '321-BGSF': '8x2.5" (SAS/SATA) 2 CPU'
+  '379-BDSS': 'SAS/SATA Backplane'
+  '379-BDTF': '2.5 Chassis'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
@@ -55,11 +62,14 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '384-BBPZ': '6 Performance Fans forR740/740XD'
   '384-BBQJ': '8 Standard Fans for R640'
   '412-AAIQ': 'Standard 1U Heatsink'
+  '384-BCTN': 'Standard Fan x7' # R450
+  '412-ABBC': 'Heatsink for CPU less or equal 165W' # R450
   # Power supply
   '450-ADWM': 'Dual, Hot-plug, Redundant Power Supply (1+1), 1100W' #R740xd2
   '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AJSC': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
+  '450-AIQX': 'Dual, Hot-plug, PSU (1+1), 800, Mixed Mode, NAF' # R450
   #iDRAC allowed options
   '379-BCSG': 'iDRAC,Legacy Password'
   '379-BCRF': 'iDRAC,Legacy Password'
@@ -75,6 +85,8 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '389-DSWQ': 'PowerEdge R740 BIS Marking, No CE or CCC Marking'
   '389-DSVC': 'PowerEdge R740XD2 CE, CCC, BIS Marking'
   '389-DSVD': 'PowerEdge R740XD2 CCC and BIS Marking, No CE Marking'
+  '389-DYHB': 'PowerEdge Non BIS Marking' # R450
+  '389-DYLZ': 'PowerEdge 1U CCC Marking, No CE Marking' # R450
   # Rails
   '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
@@ -92,6 +104,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBHO': 'Riser Config 3, 2 x 16 LP'
   '330-BBHB': 'Riser Config 2, 3 x8, 1 x16 slots'
   '330-BBHG': 'Riser Config 2, 3 x8, 1 x16 slots'
+  '330-BBVG': 'Riser Config 1, 2x16LP' # R450
   # CPUs
   '338-BSWX': 'Intel Xeon Silver 4208 2.1G, 8C/16T, 9.6 GT/s, 11M Cache, Turbo, HT (85W) DDR 4-2400'
   '338-BVKD': 'Intel Xeon Silver 4210R 2.4G, 10C/ 20T, 9.6GT/s, 13.75M Cache, Turbo, H T (100W) DDR4-2400'
@@ -130,6 +143,8 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '780-BCDM': 'No RAID with Embedded SATA'
   '780-BCDI': 'No RAID'
   '780-BCDS': 'Unconfigured RAID'
+  '405-AAUZ': 'PERC H745 Controller, Front' # R450's basic sata controller
+  '750-ACFR': 'Front PERC Mechanical Parts, front load' # R450
   # Hard disks
   '400-ASXK': '480GB SSD SATA Read Intensive 6Gbps 512e 2.5in Flex Bay'
   '400-AXRT': '480GB SSD SATA Read Intensive 6G bps 512 2.5in Flex Bay AG Drive,3.5in HYB CARR, 1 DWPD'
@@ -164,6 +179,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '540-BBZE': 'Broadcom 57416 Dual Port 10 GbE SFP+ Network LOM Mezz Card'
   '542-BBBP': 'On-Board LOM' # Broadcom 5720 Dual-Port Rack Network Daughter Card
   '540-BBBW': 'Broadcom 5720 Quad Port 1GbE BASET, rNDC' # onboard 1GBe for R640
+  '412-AAVS': 'No OCP 3.0 mezzanine NIC card, Blank Filler Only' # R450
   # Support (all servers must have basic support, but the sku differs by model)
   '709-BBFM': 'Basic Next Business Day 36 Months'
   '709-BBFK': 'Basic Next Business Day 36 Months'
@@ -172,6 +188,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '340-BKNE': 'PowerEdge R640 Shipping'
   '340-BLBE': 'PowerEdge R740XD Shipping'
   '340-COPN': 'PowerEdge R740XD2 Shipping'
+  '340-CVKF': 'PowerEdge R450 Shipping'
   # Shipping material
   '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
   '340-COSM': 'PowerEdge R440 x4 Shipping Material, V2'
@@ -181,6 +198,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '343-BBFU': 'PowerEdge R740 Shipping Material'
   '340-CORZ': 'PowerEdge R740 Shipping Material'
   '340-CKUB': 'PowerEdge R740xd2 Shipping Material'
+  '343-BBRQ': 'PowerEdge R450 x8 Short Drive Shipping Material'
   # Media (the manuals and cds we do not want)
   '421-5736': 'No Media Required'
   '605-BBFN': 'No Media Required' #R740xd2
@@ -213,12 +231,14 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '350-BBKR': 'No Quick Sync' # R440
   '350-BBKB': 'No Quick Sync' # R640
   '350-BBJV': 'No Quick Sync' # R740xd
+  '350-BCEM': 'No Quick Sync' # R450
   # Luggage tag
   '350-BBKT': 'Dell EMC Luggage Tag'
   '350-BBKS': 'Dell EMC Luggage Tag for x10'
   '350-BBJT': 'Dell EMC Luggage Tag for x10'
   '389-BTTO': 'PE R740XD Luggage Tag'
   '350-BBJS': 'Dell EMC Luggage Tag' #R640
+  '350-BCFL': 'Dell EMC Lugage Tag (x8)'
   # Remote Support
   '973-2426': 'Declined Remote Consulting Service'
   # Dell System Services (shipping notification)
@@ -228,6 +248,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '365-0257': 'CFI Routing SKU'
   '368-0001': 'Configuration Services'
   '375-3088': 'CFI,Information,CSRouting,Elig ible,Factory Install'
+  '382-6301': 'CFI,DLVRY,INFO,CEVA,FACTORY INSTALL'
 
 disallowed:
   '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
