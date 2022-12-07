@@ -30,9 +30,19 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '321-BHDL': '2.5" Chassis up to 8 HP HDDs,PERC/HBA11'
   '321-BCUV': '2.5" Chassis with up to 8 Hot Plug Hard Drives'
   '340-COSL': 'PowerEdge R440 x8 Shipping Material, V2'
+  ## R450
+  '321-BGSF': '8x2.5" (SAS/SATA) 2 CPU'
+  '379-BDSS': 'SAS/SATA Backplane'
+  '379-BDTF': '2.5 Chassis'
   ## R640
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
   '321-BCYJ': '2.5 Chassis with up to 8 Hard Drives and 3PCIe slots,SATA (No PERC)'
+  ## R650XS
+  '210-AZKL': 'PowerEdge R650xs'
+  '321-BGIU': '2.5" Chassis with up to 10 NVMe Drives, No RAID, 2 CPU'
+  '379-BDSX': 'NVMe Backplane'
+  '379-BDTE': 'No Rear Storage'
+  '379-BEID': '10x2.5 Front Storage'
   ## R740xd
   '321-BGZY': 'Chassis up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config, PERC/HBA11'
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
@@ -48,10 +58,6 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBMU': 'Riser Config 3, 1xFH, Single CPU, R740xd2'
   '575-BBXC': 'Low Profile PCIe Blank Bracket'
   '575-BBXD': 'Full Height PCIe Blank Bracket'
-  ## R450
-  '321-BGSF': '8x2.5" (SAS/SATA) 2 CPU'
-  '379-BDSS': 'SAS/SATA Backplane'
-  '379-BDTF': '2.5 Chassis'
   ## Motherboard
   '384-BCFU': 'PowerEdge R540/R440 MLK Motherboard'
   '329-BEIK': 'PowerEdge R740/R740XD Motherboard'
@@ -64,6 +70,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '412-AAIQ': 'Standard 1U Heatsink'
   '384-BCTN': 'Standard Fan x7' # R450
   '412-ABBC': 'Heatsink for CPU less or equal 165W' # R450
+  '384-BCTM': 'Very High Performance Fan x7' # R650xs
   # Power supply
   '450-ADWM': 'Dual, Hot-plug, Redundant Power Supply (1+1), 1100W' #R740xd2
   '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
@@ -87,6 +94,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '389-DSVD': 'PowerEdge R740XD2 CCC and BIS Marking, No CE Marking'
   '389-DYHB': 'PowerEdge Non BIS Marking' # R450
   '389-DYLZ': 'PowerEdge 1U CCC Marking, No CE Marking' # R450
+  '389-DYLX': 'PowerEdge 1U CE, CCC, Marking' # R650xs
   # Rails
   '770-BCJI': 'ReadyRails Sliding Rails Without Cable Management Arm' # R440
   '770-BBBC': 'ReadyRails Sliding Rails Without Cable Management Arm' # R640
@@ -105,6 +113,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBHB': 'Riser Config 2, 3 x8, 1 x16 slots'
   '330-BBHG': 'Riser Config 2, 3 x8, 1 x16 slots'
   '330-BBVG': 'Riser Config 1, 2x16LP' # R450
+  '330-BBSZ': 'Riser Config 3, 1xOCP 3.0(x16)+ 2x16LP' # R650xs
   # CPUs
   '338-BSWX': 'Intel Xeon Silver 4208 2.1G, 8C/16T, 9.6 GT/s, 11M Cache, Turbo, HT (85W) DDR 4-2400'
   '338-BVKD': 'Intel Xeon Silver 4210R 2.4G, 10C/ 20T, 9.6GT/s, 13.75M Cache, Turbo, H T (100W) DDR4-2400'
@@ -120,6 +129,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   # Heat sinks
   '412-AAJT': 'Standard Heat Sink'
   '412-AAJU': 'Standard Heat Sink for 2nd CPU'
+  '412-AAVR': 'Heatsink for CPU less than 185W' # R650xs
   # Memory
   '370-ABWE': 'DIMM Blanks for System with 2 Processors'
   '370-ABXX': 'DIMM Blanks for System with 2 Processors' #R740xd2
@@ -145,6 +155,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '780-BCDS': 'Unconfigured RAID'
   '405-AAUZ': 'PERC H745 Controller, Front' # R450's basic sata controller
   '750-ACFR': 'Front PERC Mechanical Parts, front load' # R450
+  '780-BCDO': 'C30, No RAID for NVME chassis' # R650xs
   # Hard disks
   '400-ASXK': '480GB SSD SATA Read Intensive 6Gbps 512e 2.5in Flex Bay'
   '400-AXRT': '480GB SSD SATA Read Intensive 6G bps 512 2.5in Flex Bay AG Drive,3.5in HYB CARR, 1 DWPD'
@@ -167,6 +178,8 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '400-ASHY': '4TB 7.2K RPM NLSAS 12Gbps 512 n 3.5in Hot-plug Hard Drive'
   '400-ASIF': '8TB 7.2K RPM SATA 6Gbps 512e 3.5in Hot-plug Hard Drive'
   '403-BCLL': '1.6TB Enterprise NVMe Mixed Use AG Drive, AIC, PCIe 4.0, DIB'
+  '400-ABHL': 'No Hard Drive' # R650xs
+  '400-BKGF': '1.6TB Enterprise NVMe Mixed Use AG Drive U.2 Gen4 with carrier' # R650xs
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
@@ -180,6 +193,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '542-BBBP': 'On-Board LOM' # Broadcom 5720 Dual-Port Rack Network Daughter Card
   '540-BBBW': 'Broadcom 5720 Quad Port 1GbE BASET, rNDC' # onboard 1GBe for R640
   '412-AAVS': 'No OCP 3.0 mezzanine NIC card, Blank Filler Only' # R450
+  '540-BCOC': 'Broadcom 57414 Dual Port 10/25GbE SFP28, OCP NIC 3.0' # R650xs
   # Support (all servers must have basic support, but the sku differs by model)
   '709-BBFM': 'Basic Next Business Day 36 Months'
   '709-BBFK': 'Basic Next Business Day 36 Months'
@@ -189,6 +203,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '340-BLBE': 'PowerEdge R740XD Shipping'
   '340-COPN': 'PowerEdge R740XD2 Shipping'
   '340-CVKF': 'PowerEdge R450 Shipping'
+  '340-CUQU': 'PowerEdge R650xs Shipping'
   # Shipping material
   '343-BBIC': 'PowerEdge R440 x4 Drive Shipping Material'
   '340-COSM': 'PowerEdge R440 x4 Shipping Material, V2'
@@ -199,6 +214,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '340-CORZ': 'PowerEdge R740 Shipping Material'
   '340-CKUB': 'PowerEdge R740xd2 Shipping Material'
   '343-BBRQ': 'PowerEdge R450 x8 Short Drive Shipping Material'
+  '343-BBQW': 'PowerEdge R650xs x4 or x10 or x8 NVMe Shipping Material'
   # Media (the manuals and cds we do not want)
   '421-5736': 'No Media Required'
   '605-BBFN': 'No Media Required' #R740xd2
@@ -239,6 +255,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '389-BTTO': 'PE R740XD Luggage Tag'
   '350-BBJS': 'Dell EMC Luggage Tag' #R640
   '350-BCFL': 'Dell EMC Lugage Tag (x8)'
+  '350-BCEN': 'Dell EMC Luggage Tag (x8 or x10 chassis)' # R650xs
   # Remote Support
   '973-2426': 'Declined Remote Consulting Service'
   # Dell System Services (shipping notification)
@@ -248,7 +265,8 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '365-0257': 'CFI Routing SKU'
   '368-0001': 'Configuration Services'
   '375-3088': 'CFI,Information,CSRouting,Elig ible,Factory Install'
-  '382-6301': 'CFI,DLVRY,INFO,CEVA,FACTORY INSTALL'
+  '382-6301': 'CFI,DLVRY,INFO,CEVA,FACTORY INSTALL' # R450
+  '382-3979': 'CFI,DLVRY,INFO,CEVA,FACTORY INSTALL' # R650xs
 
 disallowed:
   '492-BBDH': 'C13 to C14, PDU Style, 12 AMP, 2 Feet (.6m) Power Cord, North America'
