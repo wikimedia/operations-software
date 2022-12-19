@@ -34,6 +34,11 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '321-BGSF': '8x2.5" (SAS/SATA) 2 CPU'
   '379-BDSS': 'SAS/SATA Backplane'
   '379-BDTF': '2.5 Chassis'
+  '321-BGQS': '8x2.5" (SAS/SATA) 1 CPU' # R450 Config A
+  '330-BBVF': 'Riser Config 0, 1xOCP 3.0(x16)+ 1x16LP' # R450 Config A
+  '384-BCTZ': 'Standard Fan x5' # R450 Config A
+  '412-AAVV': 'Blank for 1CPU Configuration' # R450 Config A
+  '450-AKMP': 'Dual, Hot-Plug, Redundant Power Supply (1+1), 600W' # R450 Config A
   ## R640
   '321-BCQL': '2.5 Chassis with up to 10 Hard Drives and 3PCIe slots'
   '321-BCYJ': '2.5 Chassis with up to 8 Hard Drives and 3PCIe slots,SATA (No PERC)'
