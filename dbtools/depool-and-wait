@@ -17,7 +17,7 @@ if [ $# -lt 2 ]; then
     echo "    $prog INSTANCE REASON"
     echo
     echo "Depools a database instance, and waits for up to 5 minutes for all"
-    echo "wikiuser202206/wikiadmin/dump/root db processes to end."
+    echo "wikiuser2023/wikiadmin/dump/root db processes to end."
     echo
     echo "E.g.:"
     echo "    $prog db1139:3316 'schema change T259831'"
@@ -37,10 +37,10 @@ sudo dbctl instance "$instance" depool
 sudo dbctl config diff || :
 sudo dbctl config commit -b -m "$instance depooling: $reason"
 
-printf "=======> Wait for wikiuser202206/wikiadmin/dump/root connections to finish: "
+printf "=======> Wait for wikiuser2023/wikiadmin/dump/root connections to finish: "
 for i in {1..60}; do
     sleep 5
-    if [ $(sudo db-mysql "$instance" -BN -e "select count(*) from information_schema.processlist where user regexp '(wikiuser202206|wikiadmin|dump|root)'") == 1 ]; then
+    if [ $(sudo db-mysql "$instance" -BN -e "select count(*) from information_schema.processlist where user regexp '(wikiuser2023|wikiadmin|dump|root)'") == 1 ]; then
         # == 1 because the check itself will generate one entry for 'root'
         echo " OK"
         exit 0
