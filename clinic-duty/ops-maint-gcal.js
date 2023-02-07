@@ -260,8 +260,8 @@ class Message {
 			return this.textCache;
 		}
 
-		// join all html-blob text together
-		const htmlBlobs = this.message.getElementsByTagName( 'html-blob' );
+		// fetch elements with the message's content
+		const htmlBlobs = this.message.querySelectorAll( '[role="region"]' );
 		if ( htmlBlobs.length < 1 ) {
 			return null;
 		}
