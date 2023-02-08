@@ -164,7 +164,6 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '780-BCDM': 'No RAID with Embedded SATA'
   '780-BCDI': 'No RAID'
   '780-BCDS': 'Unconfigured RAID'
-  '405-AAUZ': 'PERC H745 Controller, Front' # R450's basic sata controller
   '750-ACFR': 'Front PERC Mechanical Parts, front load' # R450
   '780-BCDO': 'C30, No RAID for NVME chassis' # R650xs
   # Hard disks
@@ -291,3 +290,4 @@ disallowed:
   '540-BBBZ': 'QLogic 57800 2x10Gb BT + 2x1Gb BT Network Daughter Card' # 10GBase-T
   '540-BBCX': 'Broadcom 5720 DP 1Gb Network Interface Card' # add-on, not LOM
   '770-BBHJ': 'No Rack Rails or Cable Management Arm'
+  '405-AAUZ': 'PERC H745 Controller, Front' # R450's default but not best (we want HBA330i) sata controller
