@@ -238,6 +238,27 @@ class EuNetworks {
 	}
 }
 
+class SGIX {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /@sgix.sg/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new SGIX( message );
+	}
+
+	get work() {
+		const startDateRe = /Start Time:\s+(.+?) at (.+?) hrs/m;
+		const endDateRe = /End Time:\s+(.+?) at (.+?) hrs/m;
+		const locationRe = /(SG[0-9]+)/m;
+		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'GMT+8' );
+	}
+}
+
 /**
  * Represent a maintenance message we have received.
  *
@@ -283,7 +304,8 @@ class Message {
 			Equinix.fromMessage( this ) ||
 			EuNetworks.fromMessage( this ) ||
 			Orange.fromMessage( this ) ||
-			Telxius.fromMessage( this )
+			Telxius.fromMessage( this ) ||
+			SGIX.fromMessage( this )
 		);
 
 		if ( w !== null ) {

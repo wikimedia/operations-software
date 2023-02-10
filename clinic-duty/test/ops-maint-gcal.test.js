@@ -507,3 +507,46 @@ Esta mensagem e seus anexos se dirigem exclusivamente ao seu destinatário, pode
 	} );
 	assert.strictEqual( msg.work.length, 1 );
 } );
+
+test( 'sgix', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Please take note SGIX will be performing linecard replacement maintenance on Equinix SG1 SGIX switch (SW01) slot6.
+This will affect the following SGIX member’s BGP session that connected to slot6 card.
+
+Start Time: 9-Mar-2023 at 02:00 hrs (GMT+8)
+End Time:  9-Mar-2023 at 06:00 hrs (GMT+8)
+
+1. Who will be affect:
+Member’s BGP sessions that connected to Equinix SG1 SGIX switch slot 6 card.
+ 
+...
+ 
+2. How you will be affected:
+Intermittent service disruption.
+Duration is approximately 4 hours.
+
+For clarifications, please email notice@sgix.sg.
+For assistance or support during the maintenance, please email noc@sgix.sg.
+
+
+
+--------
+To unsubscribe, click here:-
+https://cportal.sgix.sg:8808/unsubscribe.php
+
+
+
+
+--- End of automate email ---
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'SG1',
+			start: Date.parse( '2023-03-08T18:00:00.000Z' ),
+			end: Date.parse( '2023-03-08T22:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );
