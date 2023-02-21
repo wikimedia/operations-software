@@ -61,14 +61,17 @@ class ReplicaSet(object):
             final_list += [i for i in replica_replicas if i not in skip]
         self.replicas = final_list
 
-    def _per_replica_gen(self, ticket, downtime_hours):
+    def _per_replica_gen(self, ticket, downtime_hours, live=False):
         logger = Logger(ticket)
         for host in self.replicas:
             replicas_to_downtime = self.check_host_for_replicas(host)
             if replicas_to_downtime is False:
                 logger.log_file('Skipping {} as requested'.format(host.host))
                 continue
-            should_depool_this_host = self.detect_depool(host)
+            if live:
+                should_depool_this_host = False
+            else:
+                should_depool_this_host = self.detect_depool(host)
 
             # never depool the master:
             if host.host in self.section_masters:

@@ -15,7 +15,7 @@ from .replica_set import ReplicaSet
 class SchemaChange(object):
     def __init__(self, replicas, section, command, check,
                  all_dbs, ticket, downtime_hours, skip=None,
-                 check_only=None):
+                 check_only=None, live=False):
         args = parse_args()
         self.replica_set = ReplicaSet(replicas, section, skip, args)
         self.command = command
@@ -23,13 +23,14 @@ class SchemaChange(object):
         self.all_dbs = all_dbs
         self.check_only = check_only or args.check
         self.args = args
+        self.live = live
         self.logger = Logger(ticket, args.run, args.check)
         self.cases = defaultdict(list)
         if self.check_only:
             self.gen = self.replica_set.replicas
         else:
             self.gen = self.replica_set._per_replica_gen(
-                ticket, downtime_hours)
+                ticket, downtime_hours, live)
 
     def run(self):
         if self.args.run and not self.check_only:
@@ -67,14 +68,14 @@ class SchemaChange(object):
                 continue
             self.logger.log_file('Start of schema change sql on {}'.format(host.host))
             sql_for_this_host = sql
-            if not self.replica_set.is_master_of_a_dc(host):
+            if not self.replica_set.is_master_of_a_dc(host) and not self.live:
                 host.run_sql('stop slave;')
             try:
                 sql_for_this_host = self._prepare_sql(host, sql_for_this_host)
                 res = host.run_sql(sql_for_this_host)
                 self.logger.log_file('End of schema change sql on {}'.format(host.host))
             finally:
-                if not self.replica_set.is_master_of_a_dc(host):
+                if not self.replica_set.is_master_of_a_dc(host) and not self.live:
                     host.run_sql('start slave;')
 
             if 'error' in res.lower():
@@ -104,7 +105,7 @@ class SchemaChange(object):
     def run_sql_per_db(self, host, sql, check):
         res = ''
         needed = False
-        if not self.check_only and not self.replica_set.is_master_of_a_dc(host):
+        if not self.check_only and not self.replica_set.is_master_of_a_dc(host) and not self.live:
             host.run_sql('stop slave;')
         try:
             for db_name in self.replica_set.get_dbs():
@@ -116,7 +117,7 @@ class SchemaChange(object):
             else:
                 self.cases['needed in some dbs'].append(host.host)
         finally:
-            if not self.check_only and not self.replica_set.is_master_of_a_dc(host):
+            if not self.check_only and not self.replica_set.is_master_of_a_dc(host) and not self.live:
                 host.run_sql('start slave;')
         return res
 
