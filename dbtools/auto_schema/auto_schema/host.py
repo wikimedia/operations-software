@@ -3,6 +3,7 @@ import sys
 import time
 
 from .bash import run
+from .db import Db
 
 
 # NOTE: Hosts here are the same sense of instance.
@@ -12,6 +13,7 @@ from .bash import run
 class Host(object):
     def __init__(self, host, section):
         self.host = host.replace(':3306', '')
+        self.port = host.split(':')[1] if ':' in host else '3306'
         self.section = section
         if re.findall(r'\w1\d{3}', host):
             self.dc = 'eqiad'
@@ -108,6 +110,14 @@ class Host(object):
 
     def _downtime_hosts(self, hours, hosts):
         run('cookbook sre.hosts.downtime --hours {} -r "Maintenance" {}'.format(hours, hosts))
+
+    def get_columns(self, table_name, db):
+        db = Db(self, db)
+        return db.get_columns(table_name)
+
+    def get_indexes(self, table_name, db):
+        db = Db(self, db)
+        return db.get_indexes(table_name)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, str):
