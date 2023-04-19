@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-ZARCILLO_HOST=db1115
+ZARCILLO_HOST=db1215
 
 if [ $# -ne 3 ]; then
     echo "Usage:"
