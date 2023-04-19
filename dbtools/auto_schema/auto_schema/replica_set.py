@@ -5,7 +5,7 @@ from .logger import Logger
 
 
 class ReplicaSet(object):
-    def __init__(self, replicas, section, skip=None, args=None, replication_discovery=None, config=None):
+    def __init__(self, replicas, section, args=None, replication_discovery=None, config=None):
         self.config = config or Config()
         if args and args.section:
             section = args.section
@@ -16,11 +16,9 @@ class ReplicaSet(object):
         self.dbs = []
         self.avoid_replicated_changes = []
         self.replication_discovery = replication_discovery or HostReplicationDiscovery()
-        self._init_replicas(replicas, skip)
+        self._init_replicas(replicas)
 
-    def _init_replicas(self, replicas, skip):
-        if not skip:
-            skip = []
+    def _init_replicas(self, replicas):
         if self.args.dc_masters:
             self.replicas = [
                 Host(i, self.section) for i in
@@ -37,29 +35,7 @@ class ReplicaSet(object):
                     replicas.remove(replica)
         else:
             replicas = [Host(i, self.section) for i in replicas]
-
-        # We don't have to skip anything, life is good
-        if not skip:
-            self.replicas = replicas
-            return
-
-        final_list = []
-        skip = [i.replace(':3306', '') for i in skip]
-        for replica in replicas:
-            if replica in skip:
-                continue
-            complex = False
-            replica_replicas = self.replication_discovery.get_replicas(replica)
-            for i in skip:
-                if i in replica_replicas:
-                    complex = True
-            if not complex:
-                final_list.append(replica)
-                continue
-            self.avoid_replicated_changes.append(replica)
-            final_list.append(replica)
-            final_list += [i for i in replica_replicas if i not in skip]
-        self.replicas = final_list
+        self.replicas = replicas
 
     def _per_replica_gen(self, ticket, downtime_hours, live=False):
         logger = Logger(ticket)
