@@ -126,7 +126,7 @@ sudo dbctl instance {newpri} set-candidate-master --section {section} false
 [] Check zarcillo was updated
 ** db-switchover should do this. If it fails, do it manually: https://phabricator.wikimedia.org/P13956
 ```
-sudo db-mysql db1115 zarcillo -e "select * from masters where section = '{section}';"
+sudo db-mysql db1215 zarcillo -e "select * from masters where section = '{section}';"
 ```
 [] (If needed): Depool {oldpri} for maintenance.
 ```
