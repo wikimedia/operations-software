@@ -4,11 +4,11 @@ RETEVAL=0
 # DB where data will be stored
 DATABASE="zarcillo"
 TABLE="nil_grants"
-DB_HOST="db1115.eqiad.wmnet"
+DB_HOST="db1215.eqiad.wmnet"
 DB_USER="root"
 
 # DB from where to get the list of live hosts
-SOURCE_DB_HOST="db1115.eqiad.wmnet"
+SOURCE_DB_HOST="db1215.eqiad.wmnet"
 SOURCE_DB="zarcillo"
 SOURCE_DB_TABLE="instances"
 # Timeout in seconds
