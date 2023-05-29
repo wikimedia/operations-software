@@ -7,7 +7,6 @@ logging log_id
 pagelinks pl_from
 page page_id
 revision rev_id
-revision_comment_temp revcomment_rev
 slots slot_revision_id
 text old_id
 user user_id
