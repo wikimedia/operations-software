@@ -291,3 +291,4 @@ disallowed:
   '540-BBCX': 'Broadcom 5720 DP 1Gb Network Interface Card' # add-on, not LOM
   '770-BBHJ': 'No Rack Rails or Cable Management Arm'
   '405-AAUZ': 'PERC H745 Controller, Front' # R450's default but not best (we want HBA330i) sata controller
+  '405-AACD': 'No Controller'
