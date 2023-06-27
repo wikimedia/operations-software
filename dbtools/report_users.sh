@@ -36,9 +36,8 @@ $MYSQL $SOURCE_DB_HOST $SOURCE_DB -e "select server,port from $SOURCE_DB_TABLE;"
 do
 
 # The following IPs are whitelisted as they are proxies and we cannot remove haproxy or set a password for it see: T199061#4426646
-# '10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.16.14', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.64.32.179'. '10.192.48.47', 10.64.0.15
 
-	$MYSQL $server:$port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.16.14','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.64.32.179','10.192.48.47','10.64.0.15');" -BN | while read user host
+	$MYSQL $server:$port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' and host NOT IN ('10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137','10.64.16.14','10.64.48.42','10.64.37.27','10.64.48.43', '10.64.32.180', '10.64.0.134','10.64.16.19','10.64.32.179','10.192.48.47','10.64.0.15','10.64.32.10');" -BN | while read user host
 	do
 		echo "set session binlog_format=row; INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL $DB_HOST -u $DB_USER $DATABASE
 	done
@@ -47,9 +46,6 @@ done
 
 # Check and report existing users
 # Not sending any kind of username/host on email to avoid any kind hint of over email
-
-# The following IPs are whitelisted as they are proxies and we cannot remove haproxy or set a password for it see: T199061#4426646
-# '10.64.37.14','10.64.37.15','10.64.16.18','10.192.0.129','10.192.16.9','10.64.0.135','10.192.32.137', '10.64.16.14', '10.64.48.42', '10.64.37.27', '10.64.48.43', '10.64.32.180', '10.64.0.134', '10.64.16.19', '10.64.32.179'
 
 USERS_COUNT=$($MYSQL $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from nil_grants;" -BN)
 
