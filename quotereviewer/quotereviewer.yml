@@ -34,6 +34,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '321-BGSF': '8x2.5" (SAS/SATA) 2 CPU'
   '379-BDSS': 'SAS/SATA Backplane'
   '379-BDTF': '2.5 Chassis'
+  '405-AAXY': 'Front HBA355i Front Load' # R450 onboard controller
   '321-BGQS': '8x2.5" (SAS/SATA) 1 CPU' # R450 Config A
   '330-BBVF': 'Riser Config 0, 1xOCP 3.0(x16)+ 1x16LP' # R450 Config A
   '384-BCTZ': 'Standard Fan x5' # R450 Config A
@@ -75,6 +76,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '329-BFBM': 'PowerEdge R740xd2 MLK Motherboad, V2'
   '329-BEIJ': 'PowerEdge R640 MLK Motherboard'
   '384-BCHR': 'PowerEdge R440 MLK Motherboard V2'
+  '329-BGHZ': 'PowerEdge R450 Motherboard with Broadcom 5720 Dual Port 1Gb On-BoardLOM'
   # Heatsinks and fans
   '384-BBPZ': '6 Performance Fans forR740/740XD'
   '384-BBQJ': '8 Standard Fans for R640'
@@ -135,6 +137,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '338-BSDT': 'Intel Xeon Gold 5217 3.0G, 8C/16T, 1 0.4GT/s, 11M Cache, Turbo, HT (115W) DDR4-2666'
   '338-BSDI': 'Intel Xeon Gold 5220 2.2G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (12 5W) DDR4-2666'
   '338-BSGN': 'Intel Xeon Gold 6240 2.6G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (15 0W) DDR4-2933'
+  '338-CBWJ': 'Intel Xeon Silver 4310 2.1G, 12C/24T, 10.4GT/s, 18M Cache, Turbo, HT (120W) DDR4-2666'
   '374-BBBX': 'No Additional Processor'
   '379-BDCO': 'Additional Processor Selected'
   # Heat sinks
