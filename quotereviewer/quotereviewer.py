@@ -147,11 +147,11 @@ def parse_portal_pdf(pdf):
                 tokens.append(line)
             else:
                 # Missing separator on new page, CFI number before Category in the first page.
-                if tokens[-1] == FORMAT_IDENTIFIER or tokens[-1].startswith('CFI Project Number'):
+                if tokens[-1] == FORMAT_IDENTIFIER or 'CFI Project Number' in tokens[-1]:
                     tokens.append(line)
                 else:
                     last = tokens.pop()
-                    tokens.append(last + f' {line}')
+                    tokens.append(last + line)
 
             in_token = True
 
@@ -173,8 +173,10 @@ def parse_portal_pdf(pdf):
             if len(line) < batch:
                 continue  # Reached end of page
 
-            skus = re.findall(r'\[(\d{3}-[0-9A-Z]{4})\]', line[key_index])
+            skus = re.findall(r'\[(\d{3}-?[0-9A-Z]{4})\]', line[key_index])
             for sku in skus:
+                if '-' not in sku:
+                    sku = f'{sku[:3]}-{sku[3:]}'
                 parsed[sku] = line[value_index]
 
     return parsed
