@@ -46,6 +46,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   ## R650XS
   '210-AZKL': 'PowerEdge R650xs'
   '321-BGIU': '2.5" Chassis with up to 10 NVMe Drives, No RAID, 2 CPU'
+  '329-BGEZ': 'PowerEdge R650xs Motherboard withBroadcom 5720 Dual Port 1Gb On-Board LOM'
   '379-BDSX': 'NVMe Backplane'
   '379-BDTE': 'No Rear Storage'
   '379-BEID': '10x2.5 Front Storage'
@@ -128,6 +129,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBVG': 'Riser Config 1, 2x16LP' # R450
   '330-BBSZ': 'Riser Config 3, 1xOCP 3.0(x16)+ 2x16LP' # R650xs
   # CPUs
+  '338-CBWN': 'Intel Xeon Gold 5317 3G, 12C/24T,11.2GT/s, 18M Cache, Turbo, HT (150W) DDR4-2933'
   '338-BSWX': 'Intel Xeon Silver 4208 2.1G, 8C/16T, 9.6 GT/s, 11M Cache, Turbo, HT (85W) DDR 4-2400'
   '338-BVKD': 'Intel Xeon Silver 4210R 2.4G, 10C/ 20T, 9.6GT/s, 13.75M Cache, Turbo, H T (100W) DDR4-2400'
   '338-BLUS': 'Intel Xeon Silver 4214 2.2G, 12C/24T, 9. 6GT/s, 16.5M Cache, Turbo, HT (85W) DDR4-2400'
@@ -170,6 +172,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '750-ACFR': 'Front PERC Mechanical Parts, front load' # R450
   '780-BCDO': 'C30, No RAID for NVME chassis' # R650xs
   # Hard disks
+  '345-BCSK': '1.92TB SSD vSAS Mixed Use 12Gbps 512e 2.5in Hot-Plug ,AG Drive SED, 3DWPD'
   '400-ASXK': '480GB SSD SATA Read Intensive 6Gbps 512e 2.5in Flex Bay'
   '400-AXRT': '480GB SSD SATA Read Intensive 6G bps 512 2.5in Flex Bay AG Drive,3.5in HYB CARR, 1 DWPD'
   '400-BDSD': '480GB SSD SATA Mixed Use 6Gbps 512e 2.5in Hot Plug S4610 Drive'
