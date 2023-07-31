@@ -550,3 +550,65 @@ https://cportal.sgix.sg:8808/unsubscribe.php
 	} );
 	assert.strictEqual( msg.work.length, 1 );
 } );
+
+test( 'de-cix', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+MAINTENANCE: Planned linecard upgrade  (OPEN)
+
+DE-CIX Maintenance ID: DXDB:MAINT:1619
+
+Work start: 2023-08-09 05:00 UTC
+Work end: 2023-08-09 11:00 UTC
+
+Work status: ANNOUNCED
+Notification type: OPEN
+Impact: Full Disruption
+
+Affected entities:
+Devices: edge01.dfw1.dfw.de-cix.net:chassis-1/5, edge01.dfw1.dfw.de-cix.net:chassis-1/6
+
+Work description:
+
+We will be upgrading our line cards in DFW to support more capacity. We will be migrating customers from these cards to prepare for the installation of new line cards. We expect a disruption in service during this time.
+
+If you have any questions or concerns, please feel free to reach out to support@de-cix.net.
+
+Affected Customers:
+AS62 - CyrusOne LLC
+AS10310 - Yahoo EMEA Limited
+AS11492 - CABLE ONE, INC.
+AS12200 - Rackspace (US, Inc./Germany GmbH)
+AS13354 - zColo (previously known as CoreXchange), part of Zayo Gorup
+AS13649 - Flexential Corp. / ViaWest
+AS13760 - Uniti Fiber
+AS15695 - Expereo International
+AS33171 - Find Your Route LLC
+AS36086 - Digital Realty
+AS36351 - SoftLayer Technologies, Inc. (an IBM Company)
+AS43531 - IX Reach LTD
+AS46925 - Pavlov Media
+AS47147 - ANEXIA Internetdienstleistungs GmbH
+AS53828 - Network Innovations, LLC d/b/a Nitel
+AS199524 - G-Core labs S.A
+AS399462 - SUMOFIBER of TEXAS LLC
+
+
+If you have any questions, do not hesitate to ask!
+
+Best regards,
+-- 
+DE-CIX Customer Service
+
+DE-CIX North America Inc. | 590 Madison Avenue | 21st Floor | New York | NY 10022 | Phone +1-212-796-6914 | support@de-cix.net | President Ivaylo Ivanov | https://de-cix.net/en/locations/united-states
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'edge01.dfw1.dfw.de-cix.net:chassis-1/5, edge01.dfw1.dfw.de-cix.net:chassis-1/6',
+			start: Date.parse( '2023-08-09T05:00:00.000Z' ),
+			end: Date.parse( '2023-08-09T11:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );

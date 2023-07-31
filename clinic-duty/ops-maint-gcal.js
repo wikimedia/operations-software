@@ -259,6 +259,27 @@ class SGIX {
 	}
 }
 
+class DECIX {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /support@de-cix.net/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new DECIX( message );
+	}
+
+	get work() {
+		const startDateRe = /Work start:\s+(.*)$/m;
+		const endDateRe = /Work end:\s+(.*)$/m;
+		const locationRe = /Devices: (.*)/m;
+		return Work.find( startDateRe, endDateRe, locationRe, this.message );
+	}
+}
+
 /**
  * Represent a maintenance message we have received.
  *
@@ -305,7 +326,8 @@ class Message {
 			EuNetworks.fromMessage( this ) ||
 			Orange.fromMessage( this ) ||
 			Telxius.fromMessage( this ) ||
-			SGIX.fromMessage( this )
+			SGIX.fromMessage( this ) ||
+			DECIX.fromMessage( this )
 		);
 
 		if ( w !== null ) {
