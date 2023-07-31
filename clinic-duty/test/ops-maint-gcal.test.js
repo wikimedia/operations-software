@@ -161,6 +161,69 @@ Dallas, Texas, USA
 	assert.strictEqual( msg.work.length, 1 );
 } );
 
+test( 'NTT-gin', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+    NTT - Global IP Network - AS2914
+        Regular Scheduled Maintenance: Initial Notification
+      
+	      	Direct Impact
+	
+	
+    
+  		The following notification
+          is to inform you of an event on the NTT Global IP Network. For more information, please reference the ticket number below and contact the NTT Global IP Network Operations Center.
+         
+        Event Details
+          
+              Ticket Number:
+              
+              GIN-CHG0054536
+              
+            
+            
+              Start Date/Time:
+              
+              2023-08-03 09:00 UTC
+              
+            
+            
+              End Date/Time:
+              
+              2023-08-03 12:00
+                        
+							UTC
+						
+						
+              
+                        
+              Direct Impact:
+              
+              Users connected to this device will experience downtime during this maintenance window.
+            
+              Reason:
+              
+              We will be performing a software upgrade affecting the service(s) listed below.
+		
+Affected Services
+
+Service ID	Service Type	IP Address	IPv6 Address	Device	Port ID	Market	Impact Level
+stub description
+       	
+
+To unsubscribe from this notification, please email coins@gin.ntt.net.
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'stub description',
+			start: Date.parse( '2023-08-03T09:00:00.000Z' ),
+			end: Date.parse( '2023-08-03T12:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );
+
 test( 'Equinix single work single day', ( assert ) => {
 	const msg = new Message( 'stub' );
 	msg.textCache = `

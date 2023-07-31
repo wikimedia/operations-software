@@ -138,7 +138,7 @@ class NTT {
 	}
 
 	static fromMessage( message ) {
-		const re = /noc@ntt.net/;
+		const re = /(noc@ntt.net|coins@gin.ntt.net)/;
 		if ( !re.exec( message.text ) ) {
 			return null;
 		}
@@ -146,10 +146,10 @@ class NTT {
 	}
 
 	get work() {
-		const startDateRe = /^Start Date\/Time:\n(.*)/m;
-		const endDateRe = /^End Date\/Time:\n(.*)$/m;
-		const locationRe = /^Affected Services\n\n.*\n(.*)/m;
-		return Work.find( startDateRe, endDateRe, locationRe, this.message );
+		const startDateRe = /Start Date\/Time:\n(?:\s+\n\s+)?(.*)/m;
+		const endDateRe = /End Date\/Time:\n(?:\s+\n\s+)?(.*)$/m;
+		const locationRe = /Affected Services\n\n.*\n(.*)/m;
+		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'UTC' );
 	}
 }
 
