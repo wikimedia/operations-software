@@ -280,6 +280,28 @@ class DECIX {
 	}
 }
 
+class DigitalRealty {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /ecc@digitalrealty.com/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new DigitalRealty( message );
+	}
+
+	get work() {
+		const startDateRe = /Time Start:\s+(.+?) Local time/m;
+		const endDateRe = /Time End:\s+(.+?) Local time/m;
+		const locationRe = /Site Location\s*: (.+?)Impact/m;
+		// XXX not necessarily accurate depending on daylight savings or the actual location
+		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'GMT+2' );
+	}
+}
+
 /**
  * Represent a maintenance message we have received.
  *
@@ -327,7 +349,8 @@ class Message {
 			Orange.fromMessage( this ) ||
 			Telxius.fromMessage( this ) ||
 			SGIX.fromMessage( this ) ||
-			DECIX.fromMessage( this )
+			DECIX.fromMessage( this ) ||
+			DigitalRealty.fromMessage( this )
 		);
 
 		if ( w !== null ) {

@@ -612,3 +612,47 @@ DE-CIX North America Inc. | 590 Madison Avenue | 21st Floor | New York | NY 1002
 	} );
 	assert.strictEqual( msg.work.length, 1 );
 } );
+
+test( 'digital-realty', ( assert ) => {
+	const msg = new Message( 'stub' );
+	/* eslint-disable no-irregular-whitespace */
+	msg.textCache = `
+ Summary 
+Communication
+
+Case Number
+CS1183034
+
+Case Received on
+26-07-2023 10:30:13 CEST
+
+Category
+Communication
+
+Sub category
+Maintenance
+
+Case status
+Open
+
+Dear Sir / Madam,
+With reference to case CS1183034 created on 26-07-2023 10:30:13 CEST, we would like to inform you that the case has been updated as follows: Summary: Preventative maintenance on detection and automatic fire extinguishing systemSite Location : MRS2 Data Center [ Marseille, France]Impact to Service: None Expected, Customer Intervention is NOT Required Type: FireTime Start: 26 September 2023 09:00 Local timeTime End: 06 October 2023 18:00 Local time  Message: Dear Valued Customer,Digital Realty would like to inform you that a preventive maintenance of detection and automatic fire extinguishing is planned as describe above.Respectfully,Digital RealtySubject Line and Summary Section Definitions included in each notificationSubject Guide – [site] [Impact] [Notification Type] Case Reference Site Reflects the Digital Realty name of the site affected by the maintenanceImpact No Action RequiredNO customer action is required during this event.Action Required Customer action IS required during this eventAction Maybe RequiredCustomer action MAYBE required during this eventNotification TypeInformational NotificationNotification of works for information only, no intervention required ; a visual inspection of the data centre by Digital Realty personnelPreventative Maintenance NotificationNotification of routine proactive maintenance normally scheduled in advance on a regular basis – i.e. regular UPS MaintenanceCorrective Maintenance NotificationNotification of corrective maintenance following routine checks and/or proactive monitoring – i.e. a fault has been detected with a CRAC and this will require maintenance to resolve.Emergency Maintenance NotificationNotification of urgent maintenance required to prevent a service affecting fault – i.e. a hardware replacement must be performed on a CRAC to prevent temperatures from rising above agreed thresholds and interrupting service.Incident NotificationNotification of a service affecting incidentSummary Provides a brief summary of the maintenance works being scheduled or the nature of the incident.Impact to Service GuideNone Expected, Customer Intervention is NOT Required The work being undertaken is not expected to affect service to customers – i.e. a redundant Cooling Unit is being worked upon whilst the live remains operational.Potential, Customer Intervention MAY BE Required The work being undertaken may potentially affect service to customers – i.e. power work being undertaken on a UPS A-Feed, power will be provided via the B-Feed for dual fed customers. Single fed customers will need to take actionExpected, Customer Intervention WILL BE RequiredThe work being undertaken will affect service to customers – i.e. power work being undertaken on a UPS for both feeds that will certainly affect all customers connected to that UPS.    Résumé : Maintenance préventive de notre système de détection et extinction incendieEmplacement du site: MRS2 Data Center [ Marseille, France]Impact du Service: Aucun, l'intervention du client n´est pas nécessaire.Type: FeuHeure de début : 26 Septembre 2023 09:00 Heure localeHeure de fin : 06 Octobre 2023 18:00 Heure localeMessage : Madame, Monsieur,Digital Realty souhaite vous informer qu’une maintenance préventive de notre système de détection et extinction incendie est planifiée comme décrit ci-dessus.Cordialement,Digital RealtyLigne Objet et section résumé Définitions inclus dans chaque notification:Guide-sujet - [site] [impact] [Type de notification] Scénario de référenceSite Reflète le nom du site Digital Realty affecté par la maintenanceimpact Aucune action nécessaireL´intervention du client n´est pas nécessaire lors de cet événement.Action nécessaireL'action du client est nécessaire lors de cet événementAction peut être nécessaireL'action du client peut être nécessaire lors de cet événementtype de notificationNotification informativeNotification de travaux pour information, l´intervention n´est pas nécessaire, inspection visuelle du data centre par le personnel d´Digital Realty.Notification Maintenance PréventiveNotification d'une maintenance proactive de routine normalement prévue à l'avance sur une base régulière – par exemple la maintenance régulière des onduleurs.Notifications de maintenance CorrectiveNotification d'une maintenance corrective suite à des contrôles de routine et / ou une surveillance proactive - soit un défaut a été détecté avec les armoires de climatisation et une maintenance sera nécessaire pour résoudre le problème.Les notifications de maintenance d'urgenceNotification de travaux de maintenance urgents nécessaires pour empêcher un défaut de service. - Ou bien un remplacement du matériel doit être effectué sur une armoire de climatisation pour éviter que les températures augmentent au-delà des limites convenues et interrompent le service.Notification des incidentsNotification d'un incident affectant le serviceRésumé Fournit un bref résumé des travaux de maintenance prévus à l´avance, ou la nature de l'incident.Impact Guide des servicesPas d´impact, l'intervention du client n´est pas nécessaire Le travail entrepris ne devrait pas affecter le service aux clients – i.e. Travaux sur une armoire de climatisation redondante, le service reste opérationnel Potentiel, intervention du client peut être nécessaireLes travaux entrepris peuvent potentiellement affecter le service aux clients – par exemple le travail sur le courant effectué sur un onduleur A, l´alimentation sera assurée par l ´onduleur B pour les clients alimentés par deux voies. Les clients alimentés par une seule voie devront prendre les mesures. nécessaires.Attendu, l'intervention du client est nécessaireLes travaux entrepris auront une incidence sur le service aux clients - par exemple les travaux sur les onduleurs dédiés à deux voies affecteront probablement les clients connectés à cet onduleur. Please click here should you want to check the status.
+
+Respectfully,
+ Digital Realty
+
+Contact: ecc@digitalrealty.com
+
+Ref:MSG30954022_NrejjrAn0TpLC5OiMhP
+`;
+	/* eslist-enable no-irregular-whitespace */
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'MRS2 Data Center [ Marseille, France]',
+			start: Date.parse( '2023-09-26T07:00:00.000Z' ),
+			end: Date.parse( '2023-10-06T16:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );
