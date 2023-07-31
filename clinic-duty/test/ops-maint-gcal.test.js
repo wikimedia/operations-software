@@ -656,3 +656,19 @@ Ref:MSG30954022_NrejjrAn0TpLC5OiMhP
 	} );
 	assert.strictEqual( msg.work.length, 1 );
 } );
+
+test( 'GTT', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Planned Work Notification: Master 7570054 - New                  As part of our commitment to continually improve the quality of service we provide to our clients, we will be performing a planned work in United States, Dallas between 2023-08-08 07:00:00 - 2023-08-08 11:00:00 GMT. Please see details of the work and impact on your service below.     Detail:                  Start        2023-08-08 07:00:00 GMT                    End        2023-08-08 11:00:00 GMT                          Location        United States, Dallas                    Planned work Reason:      Maintenance on our IP platform related to Junos software upgrade                            Child Tickets        Services Affected        SLID/CCSD        CPON / Client Item Label        Service Type        Expected Impact to your Service        Site Address                              7571183        VPLS/00943500        681000-4793082        CID-2569        VPLS        90 min        1950 N Stemmons Fwy,Dallas,TX,75207,USA                       Comments (Color explanation) :            Service interruption        Service will experience interruption lasting maximum the duration value in the service row                  Resiliency Loss        Primary or backup circuit will be impacted only. Service will remain operational throughout the maintenance                  Non-Service Affecting        No Service is affected. Service will remain operational throughout the maintenance      If you have any questions regarding the planned work, please login to EtherVision or contact our Change Management Team using the email below.    Kind Regards,    GTT Network Operations        netopsadmin@gtt.net          Did you know that it is now easier than ever to log your tickets on our EtherVision portal? You will be able to answer a few troubleshooting questions and receive a ticket ID immediately. Check out this quick tutorial here. EtherVision also helps you check on status of existing tickets and access your escalation list.  If you do not have an EtherVision login, you can contact your company’s account administrator or submit a request on our website.
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'United States, Dallas',
+			start: Date.parse( '2023-08-08T07:00:00.000Z' ),
+			end: Date.parse( '2023-08-08T11:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );

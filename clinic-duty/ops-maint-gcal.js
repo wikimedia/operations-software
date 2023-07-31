@@ -302,6 +302,27 @@ class DigitalRealty {
 	}
 }
 
+class GTT {
+	constructor( message ) {
+		this.message = message;
+	}
+
+	static fromMessage( message ) {
+		const re = /netopsadmin@gtt.net/;
+		if ( !re.exec( message.text ) ) {
+			return null;
+		}
+		return new GTT( message );
+	}
+
+	get work() {
+		const startDateRe = /Start\s+(.+?) GMT/m;
+		const endDateRe = /End\s+(.+?) GMT/m;
+		const locationRe = /Location\s+(.+?)\s+Planned/m;
+		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'GMT' );
+	}
+}
+
 /**
  * Represent a maintenance message we have received.
  *
@@ -350,7 +371,8 @@ class Message {
 			Telxius.fromMessage( this ) ||
 			SGIX.fromMessage( this ) ||
 			DECIX.fromMessage( this ) ||
-			DigitalRealty.fromMessage( this )
+			DigitalRealty.fromMessage( this ) ||
+			GTT.fromMessage( this )
 		);
 
 		if ( w !== null ) {
