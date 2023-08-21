@@ -24,10 +24,9 @@
 //     search('wanobjectcache')
 //     search('mediawiki_(http|rate)')
 //
-// Node.js usage (Node 12 or higher is required):
+// Node.js usage (Node 18 or higher is required):
 //
-//     fresh$ npm install node-fetch@3
-//     fresh$ node ./search-grafana-dashboards.js 'mediawiki_(http|rate)'
+//     $ node ./search-grafana-dashboards.js 'mediawiki_(http|rate)'
 //
 async function search(pattern) {
 	const urlListQuery = 'https://grafana.wikimedia.org/api/search?query=&starred=false';
@@ -81,8 +80,7 @@ async function search(pattern) {
 // Node.js usage
 if (typeof process !== 'undefined' && !process.browser) {
 	(async function main() {
-		global.fetch = (await import('node-fetch')).default;
-		const path = await import('path');
+		const path = await import('node:path');
 		const pattern = process.argv[2];
 		if (!pattern) {
 			const cmd = path.basename(process.argv[0]);
