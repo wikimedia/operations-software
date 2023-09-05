@@ -14,10 +14,10 @@ from .replica_set import ReplicaSet
 
 class SchemaChange(object):
     def __init__(self, replicas, section, command, check,
-                 all_dbs, ticket, downtime_hours, skip=None,
+                 all_dbs, ticket, downtime_hours,
                  check_only=None, live=False):
         args = parse_args()
-        self.replica_set = ReplicaSet(replicas, section, skip, args)
+        self.replica_set = ReplicaSet(replicas, section, args)
         self.command = command
         self.check = check
         self.all_dbs = all_dbs
