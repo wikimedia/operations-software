@@ -31,24 +31,50 @@
 async function search(pattern) {
 	const urlListQuery = 'https://grafana.wikimedia.org/api/search?query=&starred=false';
 	const urlDashApiBase = 'https://grafana.wikimedia.org/api/dashboards/uid/';
-	const urlDashViewBase = 'https://grafana.wikimedia.org';
+	const urlBase = 'https://grafana.wikimedia.org';
+	const urlAlertQuery = 'https://grafana.wikimedia.org/api/ruler/grafana/api/v1/rules?subtype=cortex';
 	const API_BATCH_SIZE = 30;
 	const PROGRESS_CHUNK = API_BATCH_SIZE;
 
 	const rPattern = new RegExp('[^"\')}]*?' + pattern + '[^"\')}]*', 'g');
 	console.info('Searching for: ' + rPattern);
 
-	const resp = await fetch(urlListQuery);
-	const list = await resp.json();
+	// start fetches in parallel, await later
+	const listFetch = fetch(urlListQuery);
+	const alertsFetch = fetch(urlAlertQuery);
+
+	const listResp = await listFetch;
+	const list = await listResp.json();
 	const dashes = list.filter(item => item.type == 'dash-db');
 	const total = dashes.length;
-	console.info(`Found ${total} dashboards`);
+
+	const alertsResp = await alertsFetch;
+	const alertsMap = await alertsResp.json();
+	let alertTotal = 0;
+	for (const folder in alertsMap) {
+		alertTotal += alertsMap[folder].length;
+	}
+	console.info(`... found ${total} dashboards and ${alertTotal} alerts.`);
+
+	for (const folder in alertsMap) {
+		const alerts = alertsMap[folder];
+		for (const alert of alerts) {
+			const str = JSON.stringify(alert, null, 2);
+			const m = str.match(rPattern);
+			if (m) {
+				const alertUrl = `${urlBase}/alerting/grafana/${alert.rules[0].grafana_alert.uid}/view`;
+				console.log('Matched %s (%s / %s)', alertUrl, folder, alert.name);
+				console.log(m);
+			}
+		}
+	}
+
 
 	let i = 0;
 	function progress() {
 		i++;
 		if ((i % PROGRESS_CHUNK) === 0 || i === total) {
-			console.info(`Checked ${i}/${total}...`);
+			console.info(`... checked dashboard ${i}/${total}...`);
 		}
 	}
 
@@ -68,7 +94,7 @@ async function search(pattern) {
 			const blob = await resp.text();
 			const m = blob.match(rPattern);
 			if (m) {
-				console.log('Matched %s%s (%s)', urlDashViewBase, dash.url, dash.title);
+				console.log('Matched %s%s (%s)', urlBase, dash.url, dash.title);
 				console.log(m);
 			}
 		}
