@@ -1,5 +1,5 @@
 Package: wmf-mariadb106
-Version: 10.6.15+deb11u1
+Version: 10.6.16+deb11u1
 Section: misc
 Priority: optional
 Architecture: amd64
