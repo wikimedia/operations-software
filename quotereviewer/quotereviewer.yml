@@ -87,6 +87,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '384-BCTM': 'Very High Performance Fan x7' # R650xs
   # Power supply
   '450-ADWM': 'Dual, Hot-plug, Redundant Power Supply (1+1), 1100W' #R740xd2
+  '450-AKLF': 'Dual, Fully Redundant(1+1), Hot-Plug Power Supply,1100W MM(100-240Vac) Titanium'
   '450-ADWS': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AJSC': 'Dual, Hot-plug, Redundant Power Supply (1+1), 750W'
   '450-AGOY': 'Dual, Hot Plug, Redundant Power Supply (1+1), 550W'
@@ -130,6 +131,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '330-BBSZ': 'Riser Config 3, 1xOCP 3.0(x16)+ 2x16LP' # R650xs
   # CPUs
   '338-CBWN': 'Intel Xeon Gold 5317 3G, 12C/24T,11.2GT/s, 18M Cache, Turbo, HT (150W) DDR4-2933'
+  '338-CBWO': 'Intel Xeon Gold 5318Y 2.1G, 24C/48T,11.2GT/s, 36M Cache, Turbo, HT (165W)DDR4-2933'
   '338-BSWX': 'Intel Xeon Silver 4208 2.1G, 8C/16T, 9.6 GT/s, 11M Cache, Turbo, HT (85W) DDR 4-2400'
   '338-BVKD': 'Intel Xeon Silver 4210R 2.4G, 10C/ 20T, 9.6GT/s, 13.75M Cache, Turbo, H T (100W) DDR4-2400'
   '338-BLUS': 'Intel Xeon Silver 4214 2.2G, 12C/24T, 9. 6GT/s, 16.5M Cache, Turbo, HT (85W) DDR4-2400'
@@ -196,6 +198,8 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '403-BCLL': '1.6TB Enterprise NVMe Mixed Use AG Drive, AIC, PCIe 4.0, DIB'
   '400-ABHL': 'No Hard Drive' # R650xs
   '400-BKGF': '1.6TB Enterprise NVMe Mixed Use AG Drive U.2 Gen4 with carrier' # R650xs
+  '403-BCLK': '6.4TB Enterprise NVMe Mixed Use AG Drive, AIC, PCIe 4.0, DIB'
+  '403-BCLH': 'SKU'
   ## must be selected if GPT disks are used but is otherwise optional
   '800-BBDM': 'UEFI BIOS Boot Mode with GPT Partition'
   # Optical drives
@@ -210,6 +214,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '540-BBBW': 'Broadcom 5720 Quad Port 1GbE BASET, rNDC' # onboard 1GBe for R640
   '412-AAVS': 'No OCP 3.0 mezzanine NIC card, Blank Filler Only' # R450
   '540-BCOC': 'Broadcom 57414 Dual Port 10/25GbE SFP28, OCP NIC 3.0' # R650xs
+  '329-BHNE': 'PowerEdge R450 Motherboard with Broadcom 5720 Dual Port 1Gb On-Board LOM, V4'
   # Support (all servers must have basic support, but the sku differs by model)
   '709-BBFM': 'Basic Next Business Day 36 Months'
   '709-BBFK': 'Basic Next Business Day 36 Months'
