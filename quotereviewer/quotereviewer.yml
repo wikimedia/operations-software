@@ -53,9 +53,12 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '750-ACFQ': 'Front PERC Mechanical Parts, rear load' # R650xs Config E
   '405-AAZB': 'PERC H755 SAS Front' # R650xs Config E
   '321-BGIS': '2.5" Chassis with up to 10 Hard Drives (SAS/SATA), 2 CPU'
+  '321-BGQJ': '2.5" Chassis with up to 8 Hard Drives (SAS/SATA), 2 CPU'
   '384-BCTO': 'High Performance Fan x7'
   '389-DYMB': 'Dell/EMC label (BIS) for Chassis'
   '540-BCNT': 'Broadcom 57412 Dual Port 10GbE SFP+, OCP NIC 3.0'
+  '343-BBRH': 'PowerEdge R650xs x8 Shipping Material'
+  '379-BEIC': ' 8x2.5 Front Storage'
   ## R740xd
   '321-BGZY': 'Chassis up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config, PERC/HBA11'
   '321-BDSI': 'Chassis with up to 12x3.5" HDDs on BP, No Mid-Bay and 4x2.5" HDDs Flexbay, 1 or 2CPU Config'
@@ -85,6 +88,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '384-BCTN': 'Standard Fan x7' # R450
   '412-ABBC': 'Heatsink for CPU less or equal 165W' # R450
   '384-BCTM': 'Very High Performance Fan x7' # R650xs
+  '412-AAVQ': 'Heatsink for 2 CPU configuration (CPU greater than or equal to 185W)' # R650xs
   # Power supply
   '450-ADWM': 'Dual, Hot-plug, Redundant Power Supply (1+1), 1100W' #R740xd2
   '450-AKLF': 'Dual, Fully Redundant(1+1), Hot-Plug Power Supply,1100W MM(100-240Vac) Titanium'
@@ -142,6 +146,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '338-BSDI': 'Intel Xeon Gold 5220 2.2G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (12 5W) DDR4-2666'
   '338-BSGN': 'Intel Xeon Gold 6240 2.6G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (15 0W) DDR4-2933'
   '338-CBWJ': 'Intel Xeon Silver 4310 2.1G, 12C/24T, 10.4GT/s, 18M Cache, Turbo, HT (120W) DDR4-2666'
+  '338-CBXJ': 'Intel Xeon Gold 6326 2.9G, 16C/32T,11.2GT/s, 24M Cache, Turbo, HT (185W)DDR4-3200'
   '374-BBBX': 'No Additional Processor'
   '379-BDCO': 'Additional Processor Selected'
   # Heat sinks
