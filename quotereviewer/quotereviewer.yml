@@ -243,6 +243,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '839-6885': 'Standard Delivery'
   # Misc
   '387-BBMK': 'Energy Star'
+  '387-BBRD': 'Energy Star'
   '332-1286': 'US Order'
   # Warranty and support
   ## R440
