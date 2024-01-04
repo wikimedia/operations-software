@@ -173,6 +173,7 @@ optional: # Optional and items with multiple skus (example: idrac factory genera
   '338-BSGN': 'Intel Xeon Gold 6240 2.6G, 18C/36T, 10.4GT/s, 24.75M Cache, Turbo, HT (15 0W) DDR4-2933'
   '338-CBWJ': 'Intel Xeon Silver 4310 2.1G, 12C/24T, 10.4GT/s, 18M Cache, Turbo, HT (120W) DDR4-2666'
   '338-CBXJ': 'Intel Xeon Gold 6326 2.9G, 16C/32T,11.2GT/s, 24M Cache, Turbo, HT (185W)DDR4-3200'
+  '338-CBWK': 'Intel Xeon Silver 4314 2.4G, 16C/32T,10.4GT/s, 24M Cache, Turbo, HT (135W)DDR4-2666'
   '374-BBBX': 'No Additional Processor'
   '379-BDCO': 'Additional Processor Selected'
   # Heat sinks
