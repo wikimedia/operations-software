@@ -161,8 +161,13 @@ def parse_portal_pdf(pdf):
             logger.warning('No SKUs found on page {num}'.format(num=page_num))
             continue
 
-        headers = ['Category', 'Description', 'Code', 'SKU', 'ID']
-        key_index = 3
+        if 'Qty' in tokens[start:]:
+            headers = ['Category', 'Description', 'Code', 'Qty', 'SKU', 'ID']
+            key_index = 4
+        else:
+            headers = ['Category', 'Description', 'Code', 'SKU', 'ID']
+            key_index = 3
+
         value_index = 1
         batch = len(headers)
         if tokens[start:start+batch] != headers:
