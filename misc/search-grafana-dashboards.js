@@ -19,7 +19,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-// Browser usage, after pasting this file into the console:
+// Browser usage, after pasting this file into the console (in a grafana page to avoid CSP errors):
 //
 //     search('wanobjectcache')
 //     search('mediawiki_(http|rate)')
