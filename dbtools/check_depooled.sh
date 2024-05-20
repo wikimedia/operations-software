@@ -10,7 +10,7 @@ case "$1" in
     ;;
   --all)
 echo "All depooled hosts"
-dbctl instance all get | jq 'select(..|.pooled? == false)' | jq -s 'unique'
+dbctl instance all get | jq 'to_entries | map(select(.key | test("^pc") | not) | select(.. | .pooled? == false)) | from_entries | select(length > 0)'
 
 echo "To get more information about an specific host run: dbctl instance dbXXXX get"
 ;;
