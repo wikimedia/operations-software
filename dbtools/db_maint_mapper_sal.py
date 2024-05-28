@@ -12,9 +12,9 @@ except BaseException:
 phab_title_cache = {}
 DBAs = {
     'marostegui': 'marostegui',
-    'kormat': 'kormat',
     'jynus': 'jynus',
-    'Amir1': 'ladsgroup'
+    'Amir1': 'ladsgroup',
+    'arnaudb': 'ABran-WMF'
 }
 
 
