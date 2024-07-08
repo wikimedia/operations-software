@@ -97,16 +97,17 @@ class Equinix {
 		return new Equinix( message );
 	}
 
-	// XXX support multiple spans
 	get work() {
-		const startDateRe = /^SPAN:\s+(\S+)/m;
-		const endDateRe = /^SPAN:\s+\S+\s+-\s+(\S+)/m;
-		const locationRe = /^IBX(?:\(s\))?:\s+(\S+)/m;
+		const startDateRe = /DATE:\s+(\S+)/m;
+		const endDateRe = /DATE:\s+\S+\s+-\s+(\S+)SPAN/m;
+		const locationRe = /IBX(?:\(s\))?:\s+(\S+)/m;
 		const w = Work.find( startDateRe, endDateRe, locationRe, this.message, 'UTC' );
-		// No start/end time in spans, thus set work as all day
-		w.forEach( function ( item ) {
-			item.allday = true;
-		} );
+		if ( w !== null ) {
+			// No start/end time in spans, thus set work as all day
+			w.forEach( function ( item ) {
+				item.allday = true;
+			} );
+		}
 		return w;
 	}
 }
@@ -387,7 +388,7 @@ class Message {
 /* exported addLinks */
 function addLinks( verbose ) {
 	const messages = document.querySelectorAll( 'section[role="listitem"]' );
-	const title = document.querySelector( 'div[role=list]' ).getAttribute( 'aria-label' );
+	const title = document.querySelector( 'title' ).text;
 	const url = location.href;
 
 	for ( let i = 0, len = messages.length; i < len; i++ ) {
