@@ -69,7 +69,7 @@ case "$1" in
     # Check and report existing users with empty passwords
     USERS_COUNT=$($MYSQL $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from nil_grants;" -BN)
 
-    if [ $USERS_COUNT != 0 ]; then
+    if [ "${USERS_COUNT:-0}" != "0" ]; then
         echo "There are users with empty passwords. Please check $DATABASE.$TABLE table on $DB_HOST - this email address isn't monitored" | mail -s "Users with empty passwords detected" sre-data-persistence@wikimedia.org -aFrom:checkusers@wikimedia.org
     fi
     ;;
