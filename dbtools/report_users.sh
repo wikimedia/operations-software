@@ -7,7 +7,7 @@ RETEVAL=0
 DATABASE="zarcillo"
 TABLE="nil_grants"
 DB_HOST="db1215.eqiad.wmnet"
-DB_USER="root"
+DB_USER="cumin2024"
 
 SOURCE_DB_HOST="db1215.eqiad.wmnet"
 SOURCE_DB="zarcillo"
