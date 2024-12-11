@@ -35,6 +35,7 @@ WHITELISTED_IPS=(
     '10.192.23.11'
     '10.192.21.11'
     '10.192.32.105'
+    '10.192.48.31'
 )
 # Check if db-mysql is available
 if ! command -v "$MYSQL" &> /dev/null; then
