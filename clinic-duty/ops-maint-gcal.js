@@ -2,6 +2,9 @@
 
 const CALENDAR_ID = 'd2lraW1lZGlhLm9yZ181OXJwOTczY243NmV2YWdzcmlxanMwZXV0OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t';
 
+// T381680 - Google will return 400 when path + query params exceed this length.
+const MAX_PATH_QUERY_LEN = 16384;
+
 // XXX add cyrusone
 
 /**
@@ -35,13 +38,33 @@ class Work {
 			endDateGcal = endAllday.toISOString().replace( /-|T.*/g, '' );
 		}
 
-		let href = 'https://www.google.com/calendar/event?action=TEMPLATE' +
+		const base = '/calendar/event?action=TEMPLATE' +
 			'&src=' + encodeURIComponent( calendar ) +
 			'&text=' + encodeURIComponent( this.message.title ) +
-			'&details=' + encodeURIComponent( this.message.inviteDetails ) +
 			'&location=' + encodeURIComponent( this.details ) +
-			'&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal );
-		return href;
+			'&dates=' + encodeURIComponent( startDateGcal ) + '/' + encodeURIComponent( endDateGcal ) +
+			'&details=';
+		let details = this.message.inviteDetails;
+		// We may need to truncate details in order to produce a link that Google will accept.
+		const ok = ( len ) =>
+			base.length + encodeURIComponent( details.slice( 0, len ) ).length <=
+				MAX_PATH_QUERY_LEN;
+		if ( !ok( details.length ) ) {
+			// Bisect until we find a length to which details must be truncated.
+			let lower = 0;
+			let upper = details.length;
+			let mid = lower + Math.floor( ( upper - lower ) / 2 );
+			for ( ; mid !== lower; mid = lower + Math.floor( ( upper - lower ) / 2 ) ) {
+				if ( ok( mid ) ) {
+					lower = mid;
+				} else {
+					upper = mid;
+				}
+			}
+			details = details.slice( 0, mid );
+			console.warn( `Note: maintenance details have been truncated from ${this.message.inviteDetails.length} to ${details.length} characters` );
+		}
+		return 'https://www.google.com' + base + encodeURIComponent( details );
 	}
 
 	/* Assume the first capture group from start/end re will have the date we're looking for.

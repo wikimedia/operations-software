@@ -68,6 +68,61 @@ Wavelength Single Link
 	assert.strictEqual( msg.work.length, 1 );
 } );
 
+test( 'Telia single work with truncated description', ( assert ) => {
+	const msg = new Message( 'stub' );
+	msg.textCache = `
+Please note that Arelion will perform maintenance work as outlined below.
+Planned work reference:
+
+
+XXX
+
+
+Action and Reason:
+
+
+Change faulty card to avoid future outage
+
+Location:
+
+
+Denver
+
+
+Service Window: XXX primary
+
+
+Work Status: Confirmed
+
+
+Service window start:
+
+
+2022-11-10 10:00 UTC
+
+
+Service window end:
+
+
+2022-11-10 13:00 UTC
+
+
+Impacted Services
+
+XXX
+
+Wavelength Single Link
+
+               3 x 1 hours
+
+` + 'A'.repeat( 16384 ); // Pad the description beyond 16k
+	assert.strictEqual( msg.work.length, 1 );
+	const link = new URL( msg.work[ 0 ].gcalendarLink( 'calendar_id', 'link text' ) );
+	// Note: Since the padding does not contain multi-byte code points,
+	// we'll actually be able to truncate to exactly 16384.
+	assert.true( link.pathname.length + link.search.length <= 16384 );
+} );
+
 test( 'Lumen', ( assert ) => {
 	const msg = new Message( 'stub' );
 	msg.textCache = `
