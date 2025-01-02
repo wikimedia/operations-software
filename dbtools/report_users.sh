@@ -18,7 +18,6 @@ MYSQL="`which db-mysql`"
 
 # IPs to be whitelisted
 WHITELISTED_IPS=(
-    '10.192.32.137'
     '10.64.32.180'
     '10.64.32.179'
     '10.192.48.47'
