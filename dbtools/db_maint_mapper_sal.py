@@ -14,7 +14,6 @@ DBAs = {
     'marostegui': 'marostegui',
     'jynus': 'jynus',
     'Amir1': 'ladsgroup',
-    'arnaudb': 'ABran-WMF'
 }
 
 
