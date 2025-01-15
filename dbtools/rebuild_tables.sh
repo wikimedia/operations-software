@@ -27,13 +27,21 @@ for TABLE in "${TABLES[@]}"; do
 
     for SCHEMA in $SCHEMAS; do
         echo "Processing schema: $SCHEMA, table: $TABLE"
+        START_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+        echo "Start time: $START_TIME"
+
         db-mysql "$HOSTNAME" "$SCHEMA" -e \
             "SET SESSION sql_log_bin=0; ALTER TABLE $TABLE ENGINE=InnoDB, FORCE;"
 
         if [ $? -eq 0 ]; then
+            END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
             echo "Successfully altered $TABLE in schema $SCHEMA"
+            echo "End time: $END_TIME"
         else
+            END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
             echo "Failed to alter $TABLE in schema $SCHEMA"
+            echo "End time: $END_TIME"
         fi
     done
+
 done
