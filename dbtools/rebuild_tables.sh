@@ -31,7 +31,7 @@ for TABLE in "${TABLES[@]}"; do
         echo "Start time: $START_TIME"
 
         db-mysql "$HOSTNAME" "$SCHEMA" -e \
-            "SET SESSION sql_log_bin=0; ALTER TABLE $TABLE ENGINE=InnoDB, FORCE;"
+            "STOP SLAVE; SET SESSION sql_log_bin=0; ALTER TABLE $TABLE ENGINE=InnoDB, FORCE; START SLAVE;"
 
         if [ $? -eq 0 ]; then
             END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
