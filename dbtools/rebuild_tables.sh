@@ -13,6 +13,12 @@ fi
 
 HOSTNAME=$1
 
+# Downtime the host
+echo "Downtiming $HOSTNAME for 12 hours"
+
+# For now, 12h hardcoded downtime
+sudo cookbook sre.hosts.downtime --hours 12 -r "Index rebuild" $HOSTNAME*
+
 # Tables to alter
 TABLES=("linter" "pagelinks" "recentchanges")
 
