@@ -14,7 +14,7 @@ fi
 HOSTNAME=$1
 
 # Tables to alter
-TABLES=("pagelinks" "recentchanges")
+TABLES=("linter" "pagelinks" "recentchanges")
 
 for TABLE in "${TABLES[@]}"; do
     SCHEMAS=$(db-mysql "$HOSTNAME" information_schema -e \
