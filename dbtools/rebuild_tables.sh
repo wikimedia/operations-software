@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <hostname>"
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <hostname> <taskid>"
     exit 1
 fi
 
@@ -12,12 +12,13 @@ if [ -z "$STY" ]; then
 fi
 
 HOSTNAME=$1
+TASKID=$2
 
 # Downtime the host
 echo "Downtiming $HOSTNAME for 12 hours"
 
 # For now, 12h hardcoded downtime
-sudo cookbook sre.hosts.downtime --hours 12 -r "Index rebuild" $HOSTNAME*
+sudo cookbook sre.hosts.downtime --hours 12 -r "Index rebuild" -t $TASKID $HOSTNAME*
 
 # Tables to alter
 TABLES=("linter" "pagelinks" "recentchanges")
@@ -51,3 +52,19 @@ for TABLE in "${TABLES[@]}"; do
     done
 
 done
+
+# Check replication lag
+echo "Checking replication lag..."
+while true; do
+    REPL_LAG=$(db-mysql "$HOSTNAME" -e "SHOW SLAVE STATUS\\G" | grep 'Seconds_Behind_Master' | awk -F': ' '{print $2}')
+    if [ "$REPL_LAG" -eq 0 ]; then
+        echo "Replication lag is 0. Proceeding."
+        break
+    else
+        echo "Replication lag: $REPL_LAG seconds. Waiting..."
+        sleep 60
+    fi
+done
+
+# Run repool cookbook - repooling in 4 steps
+sudo cookbook sre.mysql.pool -r "Repooling after rebuild index $TASKID" $HOSTNAME
