@@ -55,6 +55,7 @@ done
 
 # Check replication lag
 echo "Checking replication lag..."
+sleep 60
 while true; do
     REPL_LAG=$(db-mysql "$HOSTNAME" -e "SHOW SLAVE STATUS\\G" | grep 'Seconds_Behind_Master' | awk -F': ' '{print $2}')
     if [ "$REPL_LAG" -eq 0 ]; then
