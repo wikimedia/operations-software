@@ -5,7 +5,7 @@ case "$1" in
   "")
     echo "Options:"
     echo "check_depooled --all (to show all depooled hosts)"
-    echo "check_depooled sX (to display depooled hosts for the given section. Values: s1,s2,s3,s4,s5,s6,s7,s8,s10,x1,x2,es1,es2,es3, es4, es5, es6, es7"
+    echo "check_depooled sX (to display depooled hosts for the given section. Values: s1,s2,s3,s4,s5,s6,s7,s8,s10,x1,x2,es1,es2,es3, es4, es5, es6, es7 pc1 pc2 pc3 pc4 pc5 pc6 pc7"
     RETVAL=1
     ;;
   --all)
