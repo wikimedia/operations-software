@@ -5,7 +5,7 @@ DC="eqiad"
 echo
 echo "If a section reports something unsual, inspect it deeper to find out which host it is"
 echo
-for i in s1 s2 s3 s4 s5 s6 s7 s8 x1 x2 pc1 pc2 pc3 es1 es2 es3 es4 es5 es6 es7
+for i in s1 s2 s3 s4 s5 s6 s7 s8 x1 ms1 ms2 ms3 pc1 pc2 pc3 es1 es2 es3 es4 es5 es6 es7
 do
 
 echo "== Check event_scheduler=OFF for $i in $DC ==="
