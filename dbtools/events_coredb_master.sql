@@ -1,4 +1,4 @@
--- Events for s[1-7] masters
+-- Events for s[1-8] masters
 
 set @cache_sql_log_bin := @@session.sql_log_bin;
 set @@session.sql_log_bin = 0;
