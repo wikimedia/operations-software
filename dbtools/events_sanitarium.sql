@@ -1,4 +1,4 @@
--- Events for sanitarium eqiad: db11(54|55) codfw: db21(86|87)
+-- Events for sanitarium eqiad: db11(54|55)
 
 set @cache_sql_log_bin := @@session.sql_log_bin;
 set @@session.sql_log_bin = 1;
