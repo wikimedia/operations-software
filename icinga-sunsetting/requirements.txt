@@ -1,0 +1,5 @@
+pandas
+jq
+python-box
+pypuppetdb
+click
