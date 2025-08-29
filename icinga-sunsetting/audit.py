@@ -78,7 +78,7 @@ RTYPES = [
     "Monitoring::Check_prometheus",
     "promql",
     (. | join("|")),
-    "None",
+    $parameters.migration_task,
     $file,
     $line
   ]

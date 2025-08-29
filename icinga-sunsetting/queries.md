@@ -48,7 +48,7 @@ jq -r '
     "Monitoring::Check_prometheus",
     "promql",
     (. | join("|")),
-    "T321808",
+    $parameters.migration_task,
     $file,
     $line
   ]
