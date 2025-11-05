@@ -25,8 +25,7 @@ fi
 sudo cookbook sre.hosts.downtime --hours 1 -r "Maintenance" "${HOST}"*
 
 # Depool the host
-sudo dbctl instance "$HOST" depool
-sudo dbctl config commit -b -m "Depool $HOST for migration to mariadb 10.11"
+sudo cookbook sre.mysql.depool -r "Depool $HOST for migration to mariadb 10.11" $HOST
 
 # Stop mariadb, remove old version, run puppet, restart mariadb, and re-enable replication
 sudo cumin --force "${HOST}"* 'systemctl stop mariadb; apt-get remove --purge wmf-mariadb106 -y ; run-puppet-agent ; systemctl start mariadb ; mysql_upgrade ; mysql -e "start slave"'
@@ -35,4 +34,4 @@ sudo cumin --force "${HOST}"* 'systemctl stop mariadb; apt-get remove --purge wm
 sleep 300
 
 # Gradually repool the host
-sudo /home/marostegui/git/software/dbtools/repool "$HOST" 10 25 50 75 100
+sudo cookbook sre.mysql.pool -r "Repooling after upgrade" $HOST
