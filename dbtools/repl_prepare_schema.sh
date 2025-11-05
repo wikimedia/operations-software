@@ -134,7 +134,6 @@ create table if not exists repl_filter (
     primary key (table_name, column_name)
 ) engine=innodb default charset=binary;
 
-replace into repl_filter values ('abuse_filter_log','afl_ip',"''");
 replace into repl_filter values ('aft_article_feedback','af_user_ip',"''");
 replace into repl_filter values ('archive','ar_text',"''");
 replace into repl_filter values ('archive','ar_comment',"''");
