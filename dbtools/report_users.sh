@@ -14,6 +14,9 @@ SOURCE_DB="zarcillo"
 SOURCE_DB_TABLE="instances"
 DB_TIMEOUT=5
 
+MAILTO="sre-data-persistence@wikimedia.org"
+MAILFROM="checkusers@wikimedia.org"
+
 MYSQL="`which db-mysql`"
 
 # IPs to be whitelisted
@@ -63,14 +66,21 @@ case "$1" in
         do
             echo "set session binlog_format=row; INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL $DB_HOST -u $DB_USER $DATABASE
         done
+
+	# Check if the new role has ANY grants https://jira.mariadb.org/browse/MDEV-5215 - this is only happening on mariadb dbs created from scratch (in 10.11)
+	PUBLIC_GRANTS=$($MYSQL $server:$port -e "SHOW GRANTS FOR 'PUBLIC';" -BN 2>/dev/null)
+	if [ -n "$PUBLIC_GRANTS" ]; then
+		echo "PUBLIC role has grants on ${server}:${port}, please check the output of show grants for 'PUBLIC' and revoke it. Please note that this role comes with MariaDB by default and shows up in new installations" | mail -s "MariaDB PUBLIC grants detected on ${server}:${port}" "$MAILTO" -aFrom:"$MAILFROM"
+	fi
     done
 
     # Check and report existing users with empty passwords
     USERS_COUNT=$($MYSQL $DB_HOST -u $DB_USER $DATABASE -e "select count(*) from nil_grants;" -BN)
 
     if [ "${USERS_COUNT:-0}" != "0" ]; then
-        echo "There are users with empty passwords. Please check $DATABASE.$TABLE table on $DB_HOST - this email address isn't monitored" | mail -s "Users with empty passwords detected" sre-data-persistence@wikimedia.org -aFrom:checkusers@wikimedia.org
+        echo "There are users with empty passwords. Please check $DATABASE.$TABLE table on $DB_HOST - this email address isn't monitored" | mail -s "Users with empty passwords detected" "$MAILTO" -aFrom:"$MAILFROM"
     fi
+
     ;;
   --unused-grants)
     echo "unused-grants report"
