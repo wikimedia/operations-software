@@ -59,7 +59,7 @@ case "$1" in
             exclude_hosts+="and host !='$ip' "
         done
 
-        $MYSQL $server:$port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user !='mariadb.sys' $exclude_hosts" -BN | while read user host
+        $MYSQL $server:$port -e "select User,Host from mysql.user where password='' and plugin !='unix_socket' and user !='labsdbuser' and user !='research_role' and user!='PUBLIC' and user !='mariadb.sys' $exclude_hosts" -BN | while read user host
         do
             echo "set session binlog_format=row; INSERT INTO $TABLE VALUES ('${server}','${port}','${user}','${host}',NOW()) ON DUPLICATE KEY UPDATE last_update = NOW();" | $MYSQL $DB_HOST -u $DB_USER $DATABASE
         done
