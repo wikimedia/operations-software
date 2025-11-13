@@ -1,5 +1,5 @@
 Package: wmf-mariadb1011
-Version: 10.11.14+deb13u1
+Version: 10.11.15+deb13u1
 Section: misc
 Priority: optional
 Architecture: amd64
