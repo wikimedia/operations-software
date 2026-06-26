@@ -234,8 +234,8 @@ class Telxius {
 	}
 
 	get work() {
-		const startDateRe = /SCHEDULE.*:\n(.+) - /m;
-		const endDateRe = /SCHEDULE.*:\n.+ - (.+)/m;
+		const startDateRe = /SCHEDULE.*:\n\n?(.+?) - /m;
+		const endDateRe = /SCHEDULE.*:\n\n?.+ - (.+)/m;
 		const locationRe = /LOCATION.*: (.+)/m;
 		return Work.find( startDateRe, endDateRe, locationRe, this.message, 'UTC' );
 	}

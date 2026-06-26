@@ -591,6 +591,55 @@ Esta mensagem e seus anexos se dirigem exclusivamente ao seu destinatário, pode
 	assert.strictEqual( msg.work.length, 1 );
 } );
 
+test( 'Telxius-multiple', ( assert ) => {
+	const msg = new Message( 'stub' );
+	// Note: the text trailing/leading spaces are significant here.
+	msg.textCache = `
+Dear Sirs,
+WIKIMEDIA FOUNDATION, INC.
+Please find below our Scheduled Work Notification // Abajo encontrará nuestra Notificación de Trabajo Programado:
+
+NOTIFICATION NUMBER // NUMERO DE NOTIFICACION: SWX0037312
+
+NOTIFICATION TYPE // TIPO DE NOTIFICACION: NORMAL
+
+DESCRIPTION // DESCRIPCION: A scheduled work in order to make improvements to the network. // Trabajo programado con el fin de realizar mejoras en la red.
+
+
+SERVICE IMPACT // IMPACTO EN SERVICIOS: OUTAGE UP TO 360 MINUTES
+
+LOCATION // LOCALIDAD: CHAROLLES, FRANCE
+
+SCHEDULE // VENTANA(S) DE TRABAJO (UTC):
+
+21-Jul-2026 23:00 - 22-Jul-2026 05:0022-Jul-2026 23:00 - 23-Jul-2026 05:00
+
+AFFECTED CIRCUITS // CIRCUITOS AFECTADOS:
+
+
+
+CRM Number
+CRM Name
+CRT
+ASH/EQ-MRS/IX 10GB S001
+CRT-008647
+
+
+[English] If you experience any problems with your services due to the performing of this task, please contact our Capacity Services NOC at +511 411 0070 or emailing
+
+customerservice.capacity@telxius.com. We apologize for any inconvenience caused by this maintenance to you and your customers. If you have any additional questions, please do not hesitate to contact us. Our personnel will be permanently available for you.
+`;
+	assert.propContains( msg.work, {
+		0: {
+			allday: false,
+			details: 'CHAROLLES, FRANCE',
+			start: Date.parse( '2026-07-21T23:00:00.000Z' ),
+			end: Date.parse( '2026-07-23T05:00:00.000Z' )
+		}
+	} );
+	assert.strictEqual( msg.work.length, 1 );
+} );
+
 test( 'sgix', ( assert ) => {
 	const msg = new Message( 'stub' );
 	msg.textCache = `
