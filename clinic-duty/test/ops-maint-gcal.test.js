@@ -156,7 +156,7 @@ Customer Impact:
 
 Click here for assistance on this scheduled maintenance via Email.
 
-Click here for immediate information on scheduled maintenances via the Lumen Customer Portal.
+Sign in to Lumen Connect to get status of a planned maintenance, access detailed circuit information, update your notification preferences or open a case for any assistance you need. To learn more, visit our Lumen Connect support page.
 
 Click here to manage your notification subscriptions via the Lumen Portal.
 `;

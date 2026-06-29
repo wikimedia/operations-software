@@ -141,7 +141,7 @@ class Lumen {
 	}
 
 	static fromMessage( message ) {
-		const re = /Lumen Customer Portal/;
+		const re = /Lumen Connect/;
 		if ( !re.exec( message.text ) ) {
 			return null;
 		}
