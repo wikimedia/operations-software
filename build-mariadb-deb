@@ -1,0 +1,154 @@
+#!/bin/bash
+# Build a WMF .deb package from a MariaDB upstream source tarball.
+#
+# Usage: build-mariadb-deb <url-or-file> [debian_codename] [revision]
+#
+#   url-or-file:     Direct download URL for the MariaDB source tarball, or
+#                    path to an existing local .tar.gz file
+#                    e.g. https://downloads.mariadb.org/.../mariadb-10.11.16-linux-x86_64.tar.gz
+#                    e.g. /tmp/mariadb-10.11.16-linux-x86_64.tar.gz
+#   debian_codename: Target Debian release: bullseye, bookworm (default), trixie
+#   revision:        Package upload revision suffix (default: u1)
+#
+# Example:
+#   build-mariadb-deb https://.../mariadb-10.11.16-linux-x86_64.tar.gz bookworm u1
+#   build-mariadb-deb /tmp/mariadb-10.11.16-linux-x86_64.tar.gz bookworm u1
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+    echo "Usage: $0 <url-or-file> [debian_codename] [revision]"
+    echo "  url-or-file:     URL to download or path to an existing local .tar.gz"
+    echo "  debian_codename: bullseye, bookworm (default), trixie"
+    echo "  revision:        e.g. u1 (default)"
+    exit 1
+}
+
+[ $# -lt 1 ] && usage
+
+INPUT="$1"
+CODENAME="${2:-bookworm}"
+REVISION="${3:-u1}"
+
+# Determine if the first argument is a URL or a local file
+if [[ "$INPUT" =~ ^https?:// ]]; then
+    IS_URL=true
+    URL="$INPUT"
+else
+    IS_URL=false
+    # Resolve to absolute path
+    if [[ "$INPUT" = /* ]]; then
+        LOCAL_PATH="$INPUT"
+    else
+        LOCAL_PATH="$(pwd)/$INPUT"
+    fi
+    if [ ! -f "$LOCAL_PATH" ]; then
+        echo "Local file not found: $LOCAL_PATH" >&2
+        exit 1
+    fi
+fi
+
+# Map codename -> Debian number
+case "$CODENAME" in
+    bullseye) DEBNUM=11 ;;
+    bookworm) DEBNUM=12 ;;
+    trixie)   DEBNUM=13 ;;
+    *) echo "Unknown Debian codename '$CODENAME' (expected bullseye, bookworm, or trixie)" >&2; exit 1 ;;
+esac
+
+# Derive names from URL
+FILENAME=$(basename "$URL")
+# Extract version (e.g. 10.11.16) from filename
+VERSION=$(echo "$FILENAME" | grep -oP '\d+\.\d+\.\d+')
+if [ -z "$VERSION" ]; then
+    echo "Could not extract version from filename: $FILENAME" >&2
+    exit 1
+fi
+
+MAJOR_MINOR=$(echo "$VERSION" | grep -oP '^\d+\.\d+')
+MM_NODOT=$(echo "$MAJOR_MINOR" | tr -d '.')
+
+PACKAGE="wmf-mariadb${MM_NODOT}"
+DEB_VERSION="${VERSION}+deb${DEBNUM}${REVISION}"
+WMF_TARNAME="${PACKAGE}_${DEB_VERSION}_amd64"
+WMF_TARBALL="${WMF_TARNAME}.tar.gz"
+CONTROL="${SCRIPT_DIR}/control-mariadb-${MAJOR_MINOR}-${CODENAME}"
+
+# Source directory created by extracting the downloaded tarball
+SRCDIR="mariadb-${VERSION}"
+# Binary tarball produced by make packages, located inside SRCDIR
+BUILT_TARBALL="${SRCDIR}/mariadb-${VERSION}-linux-x86_64.tar.gz"
+
+# Directory name after extracting BUILT_TARBALL
+BINARY_DIRNAME="mariadb-${VERSION}-linux-x86_64"
+
+echo "=== MariaDB .deb builder ==="
+echo "URL:          $URL"
+echo "Version:      $VERSION ($MAJOR_MINOR)"
+echo "Codename:     $CODENAME (deb${DEBNUM})"
+echo "Package:      $PACKAGE"
+echo "Deb version:  $DEB_VERSION"
+echo "WMF tarball:  $WMF_TARBALL"
+echo "Control file: $CONTROL"
+echo ""
+
+if [ ! -f "$CONTROL" ]; then
+    echo "Control file not found: $CONTROL" >&2
+    exit 1
+fi
+
+cd "$SCRIPT_DIR"
+
+# 1. Download
+echo "=== [1/6] Downloading ==="
+wget -c "$URL" -O "$FILENAME"
+
+# 2. Extract source
+echo "=== [2/6] Extracting source tarball ==="
+rm -rf "$SRCDIR"
+tar zxvf "$FILENAME"
+
+# 3. Configure and build
+echo "=== [3/6] cmake configure ==="
+cd "$SRCDIR"
+cmake . \
+    -DBUILD_CONFIG=mysql_release \
+    -DWITH_SSL=system \
+    -DPLUGIN_MROONGA=NO \
+    -DPLUGIN_OQGRAPH=NO \
+    -DPLUGIN_AWS_KEY_MANAGEMENT=NO \
+    -DPLUGIN_TOKUDB=NO \
+    -DWITH_JEMALLOC=system \
+    -DWITH_SYSTEMD=yes \
+    -DINNODB_EXTRA_DEBUG=ON
+
+echo "=== [4/6] make packages ==="
+make package -j1
+
+cd "$SCRIPT_DIR"
+
+if [ ! -f "$BUILT_TARBALL" ]; then
+    echo "Expected built tarball not found: $BUILT_TARBALL" >&2
+    exit 1
+fi
+
+# 4. Extract binary tarball, rename, and repackage under WMF name
+echo "=== [5/6] Renaming and repackaging ==="
+rm -rf "$BINARY_DIRNAME" "$WMF_TARNAME"
+tar zxvf "$BUILT_TARBALL"
+mv "$BINARY_DIRNAME" "$WMF_TARNAME"
+tar czvf "$WMF_TARBALL" "$WMF_TARNAME"
+rm -rf "$WMF_TARNAME"
+
+# 5. Update version in control file
+echo "=== [6/6] Updating control file: Version -> $DEB_VERSION ==="
+sed -i "s/^Version: .*/Version: ${DEB_VERSION}/" "$CONTROL"
+
+# 6. Build .deb
+echo "=== Building .deb ==="
+"${SCRIPT_DIR}/mariadb-deb" "$CONTROL" "$WMF_TARBALL"
+
+echo ""
+echo "Done. Package: ${WMF_TARNAME}.deb"
