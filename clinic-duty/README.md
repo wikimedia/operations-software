@@ -26,6 +26,14 @@ Script usage is as follows:
 Code will remain loaded until the current tab is refreshed. Use the navigation
 buttons within Google Groups to avoid having to load the code again.
 
+## Maintenance notices skill (Claude)
+
+[`skills/`](skills/README.md) contains a Claude skill that turns vendor
+maintenance emails, pasted into a chat, into one report of click-to-add
+Google Calendar links (or an `.ics`). It does not replace `ops-maint-gcal`;
+it handles any vendor format and multi-window notices without per-vendor
+regexes. See [`skills/README.md`](skills/README.md).
+
 ## Contributing
 
 To run the unit test, run the following in an isolated environment

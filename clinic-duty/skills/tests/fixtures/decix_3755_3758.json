@@ -1,0 +1,115 @@
+{
+	"notices": [
+		{
+			"vendor": "DE-CIX",
+			"notice_type": "new",
+			"sites": [
+				"DE-CIX Marseille"
+			],
+			"affected_services": [
+				"all devices at DE-CIX Marseille"
+			],
+			"impact": "no-impact",
+			"impact_text": "Impact: FYI; No service impact is expected during these activities.",
+			"summary": "CPM filter adjustments (multi-step plan).",
+			"ticket_id": "DXDB:MAINT:3755",
+			"windows": [
+				{
+					"start": "2026-10-20T04:00",
+					"end": "2026-10-20T07:00",
+					"tz": "UTC",
+					"label": "Step 3 primary",
+					"conditional": false,
+					"evidence": "Work start: 2026-10-20 04:00 UTC / Work end: 2026-10-20 07:00 UTC"
+				}
+			],
+			"uncertain": [
+				"Body repeats the full 4-window plan; windows of other tickets are not added here: Step 3 primary = DXDB:MAINT:3755, Step 3 backup = DXDB:MAINT:3756, Step 4 primary/backup = ticket IDs not given."
+			]
+		},
+		{
+			"vendor": "DE-CIX",
+			"notice_type": "new",
+			"sites": [
+				"DE-CIX Marseille"
+			],
+			"affected_services": [
+				"all devices at DE-CIX Marseille"
+			],
+			"impact": "no-impact",
+			"impact_text": "Impact: FYI; No service impact is expected during these activities.",
+			"summary": "CPM filter adjustments (multi-step plan).",
+			"ticket_id": "DXDB:MAINT:3756",
+			"windows": [
+				{
+					"start": "2026-10-22T04:00",
+					"end": "2026-10-22T07:00",
+					"tz": "UTC",
+					"label": "Step 3 backup",
+					"conditional": true,
+					"evidence": "Work start: 2026-10-22 04:00 UTC / Work end: 2026-10-22 07:00 UTC"
+				}
+			],
+			"uncertain": [
+				"If Step 3 succeeds in its primary window on 2026-10-20, this slot becomes the Step 4 primary window, so it may be real work rather than a spare.",
+				"Body repeats the full 4-window plan; windows of other tickets are not added here: Step 3 primary = DXDB:MAINT:3755, Step 3 backup = DXDB:MAINT:3756, Step 4 primary/backup = ticket IDs not given."
+			]
+		},
+		{
+			"vendor": "DE-CIX",
+			"ticket_id": "DXDB:MAINT:3757",
+			"notice_type": "new",
+			"sites": [
+				"DE-CIX Marseille"
+			],
+			"affected_services": [
+				"all devices at DE-CIX Marseille"
+			],
+			"impact": "no-impact",
+			"impact_text": "Impact: FYI; No service impact is expected during these activities.",
+			"summary": "CPM filter adjustments, Step 4 primary window.",
+			"windows": [
+				{
+					"start": "2026-10-27T05:00",
+					"end": "2026-10-27T08:00",
+					"tz": "UTC",
+					"label": "Step 4 primary",
+					"conditional": false,
+					"evidence": "Work start: 2026-10-27 05:00 UTC / Work end: 2026-10-27 08:00 UTC"
+				}
+			],
+			"uncertain": [
+				"Vendor note: if Step 3 succeeds in its primary window (2026-10-20), the Step 3 backup slot (2026-10-22, DXDB:MAINT:3756) is used as the Step 4 primary instead. In that case this 27 Oct window may effectively become the spare; wording is ambiguous, wait for a vendor update.",
+				"Body repeats the full plan; other windows belong to their own tickets: 3755 (Step 3 primary), 3756 (Step 3 backup), Step 4 backup (ticket ID not given, 2026-10-29 05:00-08:00 UTC)."
+			]
+		},
+		{
+			"vendor": "DE-CIX",
+			"ticket_id": "DXDB:MAINT:3758",
+			"notice_type": "new",
+			"sites": [
+				"DE-CIX Marseille"
+			],
+			"affected_services": [
+				"all devices at DE-CIX Marseille"
+			],
+			"impact": "no-impact",
+			"impact_text": "Impact: FYI; No service impact is expected during these activities.",
+			"summary": "CPM filter adjustments, Step 4 backup window.",
+			"windows": [
+				{
+					"start": "2026-10-29T05:00",
+					"end": "2026-10-29T08:00",
+					"tz": "UTC",
+					"label": "Step 4 backup",
+					"conditional": true,
+					"evidence": "Work start: 2026-10-29 05:00 UTC / Work end: 2026-10-29 08:00 UTC"
+				}
+			],
+			"uncertain": [
+				"Backup window: only used if Step 4 cannot be completed in its primary window (DXDB:MAINT:3757, 2026-10-27).",
+				"Body repeats the full plan; other windows belong to their own tickets: 3755 (Step 3 primary), 3756 (Step 3 backup), 3757 (Step 4 primary)."
+			]
+		}
+	]
+}

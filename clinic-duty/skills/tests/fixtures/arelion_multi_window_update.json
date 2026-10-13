@@ -1,0 +1,48 @@
+{
+	"notices": [
+		{
+			"vendor": "Arelion",
+			"notice_type": "update",
+			"sites": [
+				"Atlanta/GA"
+			],
+			"affected_services": [
+				"IC-000000 Wavelength Single Link"
+			],
+			"impact": "at-risk",
+			"impact_text": "Service is only AT RISK and should not see any impact. Estimated Impact per service: At risk.",
+			"summary": "Working near live fibers in splice enclosure to restore single customer services",
+			"ticket_id": "PWIC000000",
+			"windows": [
+				{
+					"start": "2026-10-11T04:01",
+					"end": "2026-10-11T09:00",
+					"tz": "UTC",
+					"label": "PWIC000000.1 primary - COMPLETED, do not add",
+					"conditional": false,
+					"evidence": "Service Window: PWIC000000.1 primary / Work Status: Implemented / Service window start: 2026-10-11 04:01 UTC / Service window end: 2026-10-11 09:00 UTC"
+				},
+				{
+					"start": "2026-10-17T04:01",
+					"end": "2026-10-17T09:00",
+					"tz": "UTC",
+					"label": "PWIC000000.2 additional",
+					"conditional": false,
+					"evidence": "Service Window: PWIC000000.2 additional / Work Status: Confirmed / Service window start: 2026-10-17 04:01 UTC / Service window end: 2026-10-17 09:00 UTC"
+				},
+				{
+					"start": "2026-10-18T04:01",
+					"end": "2026-10-18T09:00",
+					"tz": "UTC",
+					"label": "PWIC000000.3 additional",
+					"conditional": false,
+					"evidence": "Service Window: PWIC000000.3 additional / Work Status: Confirmed / Service window start: 2026-10-18 04:01 UTC / Service window end: 2026-10-18 09:00 UTC"
+				}
+			],
+			"uncertain": [
+				"Update mail restates the whole schedule; only window .1 changed to Work Status: Implemented. Windows .2 and .3 are still Confirmed and are the actionable ones.",
+				"All windows share the one planned work reference (\"Multiple service windows\"), unlike DE-CIX one-ticket-per-window mails."
+			]
+		}
+	]
+}
