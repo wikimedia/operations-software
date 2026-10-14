@@ -124,6 +124,12 @@ notice is in the conversation; if it isn't, say so rather than assuming. If
 several notices for one ticket arrive in a batch, the script flags it so the
 user can pick the latest.
 
+If a pasted email is **identical** to one already in the running batch (same
+vendor, ticket and windows), it is a re-paste, not a new notice: do NOT append
+it. Say it is already in the report, hand back the existing link, and leave the
+batch unchanged. Appending it would put the same slot on the calendar twice,
+which is exactly what the duplicate flag is there to prevent.
+
 ## Vendor quirks and learning
 
 `references/vendors.md` lists, per vendor, how to recognize it, the field

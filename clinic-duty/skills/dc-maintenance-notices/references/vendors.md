@@ -57,3 +57,30 @@ is not the one assumed.
 - `Location:` can be a bare city/state with a trailing comma ("Atlanta/GA,").
   It is a place, not a site code, and it is *not* a timezone source — Arelion
   states the zone on the window lines, so never derive one from the location.
+- **Arelion** single-window mails drop the "(Multiple service windows)" suffix:
+  the header is just `Planned work reference: PWIC<n>` with one
+  `Service Window: PWIC<n>.1 primary` block. Same structure, same handling —
+  the parent `PWIC<n>` is still the `ticket_id`.
+- **Orange**: the ticket reference lives in the *subject* ("Service Impacting
+  Change No CAB N° T<digits>"); the body has no reference field, only
+  `Type:` / `Nature:` / `Cause:`. Times are `Beginning:` / `End:` as
+  `<Weekday> DD/Mon/YYYY at HH:MM (UTC)` with the zone in parentheses, plus a
+  `Duration:` to cross-check. `Impact: Complete failure` means a full outage
+  (map to `outage`, not at-risk). The two product tables ("critical product" /
+  "other product") often carry `- - -` in the Sites and Corporate name columns,
+  so there is genuinely no location — leave `sites` empty and note it rather
+  than deriving a site from the product ID or IP. Columns run together in the
+  plaintext copy: record product type/ID and whatever is under `Ends` (an IP,
+  an AS number) verbatim in `affected_services` without interpreting them.
+- **Equinix** (Service Insight / Global Service Desk mails) give the window
+  four times: `DATE:` and `SPAN:` carry the dates *with the year* but no times,
+  then `LOCAL:` and `UTC:` carry weekday + day + month + times but **no year**.
+  Use the `UTC:` line for the window and take the year from `DATE:`/`SPAN:` —
+  do not treat the date-only `DATE:` line as an all-day event when `LOCAL:`/
+  `UTC:` times are present. The `LOCAL:` line is a free cross-check of the IBX
+  zone (e.g. SG3 = UTC+8); if LOCAL and UTC disagree, flag it instead of
+  picking one. Site is `IBX:` (singular here, `IBX(s):` elsewhere). The change
+  reference is in the closing prose — "Please reference CHG<digits>" — not in a
+  labelled field. Impact is prose only, no per-service table: redundancy +
+  failover wording with "may experience minor or no impact" is `at-risk`, not
+  `no-impact`, even when the mail also says no impact is expected.
